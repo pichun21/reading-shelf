@@ -477,7 +477,6 @@ a.btn.primary{color:var(--accent-ink)}
     <hr>
     <button type="button" id="mBatch">逐本補上封面<span id="mBatchCount"></span></button>
     <button type="button" id="mTidy">整理全部封面<span>去白邊、書背</span></button>
-    <button type="button" id="mRestore">移除網路搜尋的封面</button>
     <hr>
     <button type="button" id="mClear" style="color:var(--ribbon)">清空這台裝置的書房</button>
   </div>
@@ -1245,17 +1244,7 @@ async function batchFillCurrentYearCovers(){
 function stopBatch(){if(!batchModeActive)return;batchModeActive=false;batchQueue=[];batchIndex=0;$('skipBatch').hidden=true;toast('已停止補封面')}
 $('skipBatch').onclick=async()=>{if(!batchModeActive)return;batchIndex++;await openBatchBook()};
 function isRemoteCover(v){return /^https?:\/\//i.test(String(v||''))}
-async function restoreOnlineSearchData(){
-  closeMenu();
-  const affected=books.filter(b=>isRemoteCover(b.cover)||b.coverSource==='search');
-  if(!affected.length){toast('目前沒有從網路搜尋來的封面');return}
-  const ok=await ask({title:'移除網路搜尋的封面',body:`找到 ${affected.length} 本用網路搜尋設定的封面。\n會移除這些封面，並把原始書單中被自動帶入的作者還原；書名、月份、喜歡、標籤和筆記都不會動，你自己上傳的封面也會保留。`,buttons:[{label:'取消',value:false},{label:'移除',value:true,cls:'danger solid'}]});
-  if(!ok)return;
-  const seedMap=new Map(SEED_BOOKS.map(b=>[String(b.id),b]));let n=0;
-  for(const b of affected){b.cover='';delete b.coverSource;const s=seedMap.get(String(b.id));if(s)b.author=s.author||'';await saveBook(b);n++}
-  markDirty();await reload();render(false);toast(`已移除 ${n} 本的網路封面`);
-}
-$('mBatch').onclick=batchFillCurrentYearCovers;$('mRestore').onclick=restoreOnlineSearchData;
+$('mBatch').onclick=batchFillCurrentYearCovers;
 
 /* ---- 儲存 ---- */
 $('editForm').onsubmit=async e=>{
