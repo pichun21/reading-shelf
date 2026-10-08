@@ -301,16 +301,22 @@ async function findCoverOnline(){
  finally{document.getElementById('findCover').disabled=false}
 }
 
-async function searchCoverForBook(book){
+async function searchCoverForBook(book,attempt=0){
  const q=encodeURIComponent(cleanSearchTitle(book.title));
  const url=`https://openlibrary.org/search.json?title=${q}&fields=title,author_name,cover_i,isbn&limit=8`;
- const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),10000);
+ const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),12000);
  try{
    const r=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
+   if((r.status===429 || r.status===403) && attempt<2){
+     // Open Library 對未識別請求限制較嚴；遇到限流時退避後再試。
+     await sleep(attempt===0?3500:7000);
+     return searchCoverForBook(book,attempt+1);
+   }
    if(!r.ok) throw new Error('HTTP '+r.status);
    const j=await r.json();
    const docs=j.docs||[];
-   const exact=docs.find(x=>x.cover_i && String(x.title||'').trim().toLowerCase()===cleanSearchTitle(book.title).toLowerCase());
+   const target=cleanSearchTitle(book.title).trim().toLowerCase();
+   const exact=docs.find(x=>x.cover_i && String(x.title||'').trim().toLowerCase()===target);
    const hit=exact || docs.find(x=>x.cover_i) || docs.find(x=>Array.isArray(x.isbn)&&x.isbn.length);
    if(!hit) return null;
    const cover=hit.cover_i?`https://covers.openlibrary.org/b/id/${hit.cover_i}-L.jpg?default=false`:`https://covers.openlibrary.org/b/isbn/${encodeURIComponent(hit.isbn[0])}-L.jpg?default=false`;
@@ -336,10 +342,10 @@ async function batchFillCurrentYearCovers(){
        else failed++;
      }catch(err){console.warn('cover search failed',b.title,err);failed++;}
      // 保守一點，避免連續大量請求被公開服務限制。
-     if(i<targets.length-1)await sleep(700);
+     if(i<targets.length-1)await sleep(1300);
    }
    books=await getAll(); render();
-   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。`;
+   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。若剛才曾被限流，請隔幾分鐘再補一次。`;
    toast(`已補上 ${found} 本封面`);
    setTimeout(()=>progress.classList.remove('show'),4500);
  }finally{btn.disabled=false}
