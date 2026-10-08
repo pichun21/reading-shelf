@@ -51,7 +51,7 @@ button{cursor:pointer}
 .detail{position:sticky;top:18px;background:rgba(255,250,242,.94);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;min-height:360px}
 .detail.empty{display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted)}
 .cover-large{aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#dbe2d5,#eee0cf);max-width:170px;margin:0 auto 16px;box-shadow:0 10px 20px rgba(55,43,33,.15)}
-.cover-large img{width:100%;height:100%;object-fit:contain;background:#f7f0e5}
+.cover-large img{width:100%;height:100%;object-fit:cover;background:#f7f0e5}
 .cover-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:serif;font-weight:700;line-height:1.45}
 .detail h2{font-family:serif;margin:10px 0 4px;font-size:25px}
 .meta{display:grid;grid-template-columns:72px 1fr;gap:9px;font-size:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
@@ -67,7 +67,7 @@ button{cursor:pointer}
 .shelf:after{content:"";position:absolute;left:8px;right:8px;bottom:8px;height:12px;border-radius:4px;background:linear-gradient(#a8754f,#865936);box-shadow:0 4px 0 var(--wood2)}
 .books{display:flex;gap:12px;align-items:flex-end;min-height:160px;overflow-x:auto;padding:8px 2px 12px}
 .book{position:relative;flex:0 0 94px;width:94px;height:142px;border:0;padding:0;border-radius:5px 9px 9px 5px;overflow:hidden;background:#e8ddce;box-shadow:0 6px 13px rgba(48,36,27,.16);transition:.16s}
-.book img{width:100%;height:100%;object-fit:cover;display:block}
+.book img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center center;will-change:transform}
 .book .fallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-family:serif;font-size:12px;font-weight:700;line-height:1.35;background:
 linear-gradient(150deg,hsl(var(--h) 28% 86%),hsl(var(--h) 25% 72%));color:#423d35}
 .book .fav{position:absolute;top:0;right:10px;width:16px;height:27px;background:var(--rose);clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
@@ -129,6 +129,8 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
 }
 
 .cover-candidates{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px;margin-top:10px}.cover-choice{border:1px solid #ddd1bd;border-radius:12px;background:#fffaf1;padding:6px;cursor:pointer;text-align:center}.cover-choice:hover{border-color:#5d765f}.cover-choice img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:7px;display:block}.cover-choice span{display:block;font-size:11px;line-height:1.25;margin-top:5px;max-height:2.5em;overflow:hidden}.cover-choice small{display:block;color:#7d7569;font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.cover-crop-box{margin-top:10px}.cover-crop-stage{width:180px;aspect-ratio:2/3;margin:0 auto;border-radius:12px;overflow:hidden;background:#eee6da;border:1px solid var(--line);position:relative;touch-action:none;cursor:grab;box-shadow:0 6px 16px rgba(48,36,27,.12)}.cover-crop-stage:active{cursor:grabbing}.cover-crop-stage img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center center;user-select:none;-webkit-user-drag:none;pointer-events:none}.cover-crop-stage.empty:after{content:"尚未選擇封面";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}.cover-crop-controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:10px;flex-wrap:wrap}.cover-crop-controls label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}.cover-crop-controls input[type=range]{width:160px}.cover-crop-controls button{border:1px solid var(--line);background:#fffaf2;color:var(--ink);border-radius:10px;padding:7px 10px}.crop-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:7px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -151,10 +153,6 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
         <div class="segment">
           <button id="monthMode" class="active">月份書櫃</button>
           <button id="yearMode">年度總覽</button>
-        </div>
-        <div class="segment" aria-label="書籍顯示方式">
-          <button id="spineView" class="active">書背</button>
-          <button id="coverView">封面</button>
         </div>
         <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
         <button id="batchCovers" class="utility" type="button" title="逐本搜尋候選封面，由你確認後才儲存">✨ 批次封面（安全模式）</button>
@@ -199,7 +197,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
     <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
   </div>
   <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
-  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button><button type="button" id="skipBatch" hidden>跳過這本 →</button></div><div id="coverStatus" class="cover-status">網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverPreview" class="preview-sm"></div></label>
+  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button><button type="button" id="skipBatch" hidden>跳過這本 →</button></div><div id="coverStatus" class="cover-status">封面選好後，可直接拖曳調整位置並用滑桿縮放。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverCropBox" class="cover-crop-box"><div id="coverCropStage" class="cover-crop-stage" aria-label="封面裁切預覽"></div><div id="coverCropControls" class="cover-crop-controls"><label>縮放 <input id="coverZoom" type="range" min="1" max="2.2" value="1" step="0.01"></label><button type="button" id="resetCrop">重設位置</button></div><div class="crop-hint">拖曳封面可移動位置；縮放後再調整到你想保留的範圍。</div></div><div id="coverPreview" class="preview-sm" hidden></div></label>
   <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
   <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
   <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
@@ -224,7 +222,7 @@ async function migrateExcelCovers(){
 
 const DB_NAME='readingShelfDB'; const STORE='books'; let db;
 let books=[], currentYear=2026, mode='month', favoritesOnly=false, selectedId=null, pendingCover=null;
-let visualMode=localStorage.getItem('readingShelfVisualMode')||'spine';
+let pendingCrop={x:50,y:50,zoom:1};
 
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);
 r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'})};
@@ -238,12 +236,13 @@ async function seed(){let all=await getAll(); if(all.length===0){for(const b of 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function hue(s){let h=0;for(const ch of s)h=(h*31+ch.charCodeAt(0))%360;return h}
 function monthNum(m){const x=String(m).match(/\d+/);return x?Number(x[0]):0}
-function coverHTML(b, cls=''){return b.cover?`<img src="${b.cover}" alt="${esc(b.title)}封面">`:`<div class="fallback" style="--h:${hue(b.title)}">${esc(b.title)}</div>`}
+function cropOf(b){return {x:Number.isFinite(Number(b?.coverX))?Number(b.coverX):50,y:Number.isFinite(Number(b?.coverY))?Number(b.coverY):50,zoom:Number.isFinite(Number(b?.coverZoom))?Math.max(1,Number(b.coverZoom)):1}}
+function coverImgStyle(b){const c=cropOf(b);return `object-position:${c.x}% ${c.y}%;transform:scale(${c.zoom})`}
+function coverHTML(b, cls=''){return b.cover?`<img src="${b.cover}" alt="${esc(b.title)}封面" style="${coverImgStyle(b)}">`:`<div class="fallback" style="--h:${hue(b.title)}">${esc(b.title)}</div>`}
 function bookButton(b){
  const selected=selectedId===b.id?'selected':'';
  const fav=b.favorite?'<span class="fav"></span>':'';
- if(visualMode==='spine') return `<button class="book spine ${selected}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}"><span class="spine-body" style="--h:${hue(b.title)}"><span class="spine-title">${esc(b.title)}</span></span>${fav}</button>`;
- return `<button class="book cover-card ${selected}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}"><span class="cover-mat">${coverHTML(b)}</span>${fav}</button>`;
+ return `<button class="book ${selected}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}">${coverHTML(b)}${fav}</button>`;
 }
 
 function filtered(){
@@ -299,13 +298,11 @@ function render(){
  renderYears(); const list=filtered();renderStats(list);renderWorkspace(list);
  document.getElementById('monthMode').classList.toggle('active',mode==='month');
  document.getElementById('yearMode').classList.toggle('active',mode==='year');
- document.getElementById('spineView').classList.toggle('active',visualMode==='spine');
- document.getElementById('coverView').classList.toggle('active',visualMode==='cover');
 }
 function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1500)}
 function yearsForForm(){const y=[...new Set([...books.map(b=>Number(b.year)),new Date().getFullYear()])].sort((a,b)=>b-a);document.getElementById('bookYear').innerHTML=y.map(v=>`<option value="${v}">${v}</option>`).join('')}
 function openEditor(b=null){
- yearsForForm(); pendingCover=b?.cover||'';
+ yearsForForm(); pendingCover=b?.cover||''; pendingCrop=cropOf(b||{});
  document.getElementById('formTitle').textContent=b?'編輯閱讀紀錄':'新增書籍';
  document.getElementById('bookId').value=b?.id||'';
  document.getElementById('bookTitle').value=b?.title||'';
@@ -315,13 +312,28 @@ function openEditor(b=null){
  document.getElementById('bookFav').checked=!!b?.favorite;
  document.getElementById('bookNote').value=b?.note||'';
  document.getElementById('bookCoverFile').value='';
- updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('skipBatch').hidden=!batchModeActive;document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。搜尋結果不會自動覆蓋。':'安全搜尋：Google Books＋Apple Books 只提供候選，請確認後再儲存。';document.getElementById('editor').showModal();
+ updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('skipBatch').hidden=!batchModeActive;document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可直接拖曳／縮放重新裁切，或重新搜尋、手動更換。':'安全搜尋：Google Books＋Apple Books 只提供候選；選好後可拖曳／縮放裁切。';document.getElementById('editor').showModal();
 }
-function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
+function updatePreview(){
+ const stage=document.getElementById('coverCropStage');
+ const zoom=document.getElementById('coverZoom');
+ zoom.value=String(pendingCrop.zoom||1);
+ stage.classList.toggle('empty',!pendingCover);
+ stage.innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面裁切預覽" style="object-position:${pendingCrop.x}% ${pendingCrop.y}%;transform:scale(${pendingCrop.zoom})">`:'';
+}
+function resetPendingCrop(){pendingCrop={x:50,y:50,zoom:1};updatePreview()}
+let cropDrag=null;
+const cropStage=document.getElementById('coverCropStage');
+cropStage.addEventListener('pointerdown',e=>{if(!pendingCover)return;cropDrag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:pendingCrop.x,startY:pendingCrop.y};cropStage.setPointerCapture?.(e.pointerId);});
+cropStage.addEventListener('pointermove',e=>{if(!cropDrag||cropDrag.id!==e.pointerId)return;const r=cropStage.getBoundingClientRect();const dx=(e.clientX-cropDrag.x)/Math.max(1,r.width)*100;const dy=(e.clientY-cropDrag.y)/Math.max(1,r.height)*100;pendingCrop.x=Math.max(0,Math.min(100,cropDrag.startX-dx));pendingCrop.y=Math.max(0,Math.min(100,cropDrag.startY-dy));updatePreview();});
+function endCropDrag(e){if(cropDrag&&(!e||cropDrag.id===e.pointerId))cropDrag=null}
+cropStage.addEventListener('pointerup',endCropDrag);cropStage.addEventListener('pointercancel',endCropDrag);
+document.getElementById('coverZoom').addEventListener('input',e=>{pendingCrop.zoom=Math.max(1,Math.min(2.2,Number(e.target.value)||1));updatePreview()});
+document.getElementById('resetCrop').onclick=resetPendingCrop;
 async function compress(file){
  return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=520;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.78))};img.src=fr.result};fr.readAsDataURL(file)})
 }
-document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.files[0];if(f){pendingCover=await compress(f);updatePreview();document.getElementById('coverStatus').textContent='已使用你上傳的封面。'}};
+document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.files[0];if(f){pendingCover=await compress(f);resetPendingCrop();document.getElementById('coverStatus').textContent='已使用你上傳的封面。可拖曳並縮放裁切。'}};
 function cleanSearchTitle(t){return String(t||'').replace(/[（(].*?[）)]/g,'').trim()||String(t||'').trim()}
 function shortSearchTitle(t){return cleanSearchTitle(t).replace(/[：:—–\-].*$/,'').trim()||cleanSearchTitle(t)}
 function normalizeTitle(t){return cleanSearchTitle(t).replace(/[\s·・，。！？、:：()（）《》〈〉「」『』【】\-—–]/g,'').toLowerCase()}
@@ -399,7 +411,7 @@ function renderCoverCandidates(list){
    const img=btn.querySelector('img');
    img.addEventListener('error',()=>{btn.remove();if(!box.children.length)document.getElementById('coverStatus').textContent='候選結果有回傳，但圖片本身無法載入。請改用手動上傳。';});
    btn.addEventListener('click',()=>{
-     pendingCover=x.image;updatePreview();
+     pendingCover=x.image;resetPendingCrop();
      document.getElementById('coverStatus').textContent=`已暫選「${x.title}」封面（${x.source}）。只有按下「儲存」後才會寫入，作者不會被自動修改。`;
      box.querySelectorAll('.cover-choice').forEach(b=>b.style.outline='');btn.style.outline='2px solid #5d765f';
    });
@@ -482,11 +494,11 @@ document.getElementById('restoreOnlineCovers').onclick=restoreOnlineSearchData;
 document.getElementById('batchCovers').onclick=batchFillCurrentYearCovers;
 
 document.getElementById('findCover').onclick=findCoverOnline;
-document.getElementById('clearCover').onclick=()=>{pendingCover='';updatePreview();document.getElementById('coverStatus').textContent='已移除封面。'};
+document.getElementById('clearCover').onclick=()=>{pendingCover='';pendingCrop={x:50,y:50,zoom:1};updatePreview();document.getElementById('coverStatus').textContent='已移除封面。'};
 document.getElementById('skipBatch').onclick=skipBatchBook;
 document.getElementById('editForm').onsubmit=async e=>{
  e.preventDefault();const old=books.find(x=>String(x.id)===document.getElementById('bookId').value);
- const b={id:old?.id||('b'+Date.now()),title:document.getElementById('bookTitle').value.trim(),year:Number(document.getElementById('bookYear').value),month:document.getElementById('bookMonth').value.trim(),author:document.getElementById('bookAuthor').value.trim(),favorite:document.getElementById('bookFav').checked,note:document.getElementById('bookNote').value.trim(),cover:pendingCover||''};
+ const b={id:old?.id||('b'+Date.now()),title:document.getElementById('bookTitle').value.trim(),year:Number(document.getElementById('bookYear').value),month:document.getElementById('bookMonth').value.trim(),author:document.getElementById('bookAuthor').value.trim(),favorite:document.getElementById('bookFav').checked,note:document.getElementById('bookNote').value.trim(),cover:pendingCover||'',coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
  await putBook(b);books=await getAll();currentYear=b.year;selectedId=b.id;document.getElementById('editor').close();render();
  if(batchModeActive){
    toast('已儲存，前往下一本');
@@ -502,8 +514,6 @@ document.getElementById('closeEditor').onclick=()=>{document.getElementById('edi
 document.getElementById('cancelEditor').onclick=()=>{document.getElementById('editor').close();stopBatch()};
 document.getElementById('monthMode').onclick=()=>{mode='month';render()};
 document.getElementById('yearMode').onclick=()=>{mode='year';render()};
-document.getElementById('spineView').onclick=()=>{visualMode='spine';localStorage.setItem('readingShelfVisualMode',visualMode);render()};
-document.getElementById('coverView').onclick=()=>{visualMode='cover';localStorage.setItem('readingShelfVisualMode',visualMode);render()};
 document.getElementById('search').oninput=()=>render();
 function setFav(v){favoritesOnly=v;render();document.getElementById('navFav').classList.toggle('active',v);document.getElementById('navAll').classList.toggle('active',!v)}
 document.getElementById('navFav').onclick=()=>setFav(true);
@@ -516,7 +526,7 @@ function backup(){
 }
 function normalizeImported(raw){
  const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null; if(!arr)throw new Error('不是可辨識的閱讀書櫃備份檔');
- return arr.map((b,i)=>({id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),favorite:!!b.favorite,note:String(b.note||''),cover:String(b.cover||'')})).filter(b=>b.title&&Number.isFinite(b.year)&&b.month)
+ return arr.map((b,i)=>({id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),favorite:!!b.favorite,note:String(b.note||''),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1})).filter(b=>b.title&&Number.isFinite(b.year)&&b.month)
 }
 async function importBackup(file){
  const text=await file.text(); let raw; try{raw=JSON.parse(text)}catch{throw new Error('JSON 檔案格式錯誤')}
