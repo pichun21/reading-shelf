@@ -197,7 +197,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
     <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
   </div>
   <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
-  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button><button type="button" id="skipBatch" hidden>跳過這本 →</button></div><div id="coverStatus" class="cover-status">封面選好後，可直接拖曳調整位置並用滑桿縮放。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverCropBox" class="cover-crop-box"><div id="coverCropStage" class="cover-crop-stage" aria-label="封面裁切預覽"></div><div id="coverCropControls" class="cover-crop-controls"><label>縮放 <input id="coverZoom" type="range" min="1" max="2.2" value="1" step="0.01"></label><button type="button" id="resetCrop">重設位置</button></div><div class="crop-hint">拖曳封面可移動位置；縮放後再調整到你想保留的範圍。</div></div><div id="coverPreview" class="preview-sm" hidden></div></label>
+  <div class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*" hidden><div class="cover-tools"><button type="button" id="chooseCover">📁 更換／上傳封面</button><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button><button type="button" id="skipBatch" hidden>跳過這本 →</button></div><div id="coverStatus" class="cover-status">封面選好後，可直接拖曳調整位置並用滑桿縮放。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverCropBox" class="cover-crop-box"><div id="coverCropStage" class="cover-crop-stage" aria-label="封面裁切預覽"></div><div id="coverCropControls" class="cover-crop-controls"><label>縮放 <input id="coverZoom" type="range" min="1" max="2.2" value="1" step="0.01"></label><button type="button" id="resetCrop">重設位置</button></div><div class="crop-hint">拖曳封面只會調整裁切位置；要換圖片請按「更換／上傳封面」。</div></div><div id="coverPreview" class="preview-sm" hidden></div></div>
   <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
   <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
   <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
@@ -324,15 +324,16 @@ function updatePreview(){
 function resetPendingCrop(){pendingCrop={x:50,y:50,zoom:1};updatePreview()}
 let cropDrag=null;
 const cropStage=document.getElementById('coverCropStage');
-cropStage.addEventListener('pointerdown',e=>{if(!pendingCover)return;cropDrag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:pendingCrop.x,startY:pendingCrop.y};cropStage.setPointerCapture?.(e.pointerId);});
-cropStage.addEventListener('pointermove',e=>{if(!cropDrag||cropDrag.id!==e.pointerId)return;const r=cropStage.getBoundingClientRect();const dx=(e.clientX-cropDrag.x)/Math.max(1,r.width)*100;const dy=(e.clientY-cropDrag.y)/Math.max(1,r.height)*100;pendingCrop.x=Math.max(0,Math.min(100,cropDrag.startX-dx));pendingCrop.y=Math.max(0,Math.min(100,cropDrag.startY-dy));updatePreview();});
+cropStage.addEventListener('pointerdown',e=>{if(!pendingCover)return;e.preventDefault();e.stopPropagation();cropDrag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:pendingCrop.x,startY:pendingCrop.y};cropStage.setPointerCapture?.(e.pointerId);});
+cropStage.addEventListener('pointermove',e=>{if(!cropDrag||cropDrag.id!==e.pointerId)return;e.preventDefault();e.stopPropagation();const r=cropStage.getBoundingClientRect();const dx=(e.clientX-cropDrag.x)/Math.max(1,r.width)*100;const dy=(e.clientY-cropDrag.y)/Math.max(1,r.height)*100;pendingCrop.x=Math.max(0,Math.min(100,cropDrag.startX-dx));pendingCrop.y=Math.max(0,Math.min(100,cropDrag.startY-dy));updatePreview();});
 function endCropDrag(e){if(cropDrag&&(!e||cropDrag.id===e.pointerId))cropDrag=null}
-cropStage.addEventListener('pointerup',endCropDrag);cropStage.addEventListener('pointercancel',endCropDrag);
+cropStage.addEventListener('pointerup',e=>{e.preventDefault();e.stopPropagation();endCropDrag(e)});cropStage.addEventListener('pointercancel',endCropDrag);cropStage.addEventListener('click',e=>{e.preventDefault();e.stopPropagation()});
 document.getElementById('coverZoom').addEventListener('input',e=>{pendingCrop.zoom=Math.max(1,Math.min(2.2,Number(e.target.value)||1));updatePreview()});
 document.getElementById('resetCrop').onclick=resetPendingCrop;
 async function compress(file){
  return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=520;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.78))};img.src=fr.result};fr.readAsDataURL(file)})
 }
+document.getElementById('chooseCover').onclick=()=>document.getElementById('bookCoverFile').click();
 document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.files[0];if(f){pendingCover=await compress(f);resetPendingCrop();document.getElementById('coverStatus').textContent='已使用你上傳的封面。可拖曳並縮放裁切。'}};
 function cleanSearchTitle(t){return String(t||'').replace(/[（(].*?[）)]/g,'').trim()||String(t||'').trim()}
 function shortSearchTitle(t){return cleanSearchTitle(t).replace(/[：:—–\-].*$/,'').trim()||cleanSearchTitle(t)}
