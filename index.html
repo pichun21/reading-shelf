@@ -181,7 +181,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
     <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
   </div>
   <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
-  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">可用書名搜尋 Open Library；若找到封面與作者，也會協助補上作者。</div><div id="coverPreview" class="preview-sm"></div></label>
+  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">使用 Apple Books 台灣商店搜尋；若找到封面與作者，也會協助補上作者。</div><div id="coverPreview" class="preview-sm"></div></label>
   <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
   <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
   <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
@@ -276,7 +276,7 @@ function openEditor(b=null){
  document.getElementById('bookFav').checked=!!b?.favorite;
  document.getElementById('bookNote').value=b?.note||'';
  document.getElementById('bookCoverFile').value='';
- updatePreview();document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'可用書名搜尋 Open Library；若找到封面與作者，也會協助補上作者。';document.getElementById('editor').showModal();
+ updatePreview();document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'使用 Apple Books 台灣商店搜尋；若找到封面與作者，也會協助補上作者。';document.getElementById('editor').showModal();
 }
 function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
 async function compress(file){
@@ -284,44 +284,47 @@ async function compress(file){
 }
 document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.files[0];if(f){pendingCover=await compress(f);updatePreview();document.getElementById('coverStatus').textContent='已使用你上傳的封面。'}};
 function cleanSearchTitle(t){return String(t||'').replace(/[：:—–\-].*$/,'').replace(/[（(].*?[）)]/g,'').trim()||String(t||'').trim()}
+function normalizeTitle(t){return cleanSearchTitle(t).replace(/[\s·・，。！？、:：()（）《》〈〉「」『』【】\-—–]/g,'').toLowerCase()}
+function appleArtworkLarge(url){return String(url||'').replace(/^http:/,'https:').replace(/100x100[^/]*\.(jpg|jpeg|png)$/i,'600x600bb.$1').replace('100x100','600x600')}
+function appleBooksSearch(title,timeoutMs=12000){
+ return new Promise((resolve,reject)=>{
+   const cb='__bookcb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+   const script=document.createElement('script');
+   const timer=setTimeout(()=>cleanup(new Error('搜尋逾時')),timeoutMs);
+   function cleanup(err,data){clearTimeout(timer);try{delete window[cb]}catch{};script.remove();err?reject(err):resolve(data)}
+   window[cb]=(data)=>cleanup(null,data);
+   script.onerror=()=>cleanup(new Error('無法連線 Apple Books 搜尋服務'));
+   const q=encodeURIComponent(cleanSearchTitle(title));
+   script.src=`https://itunes.apple.com/search?term=${q}&country=tw&media=ebook&entity=ebook&limit=12&callback=${cb}`;
+   document.head.appendChild(script);
+ });
+}
+function pickAppleBook(title,data){
+ const rows=(data&&data.results)||[]; if(!rows.length)return null;
+ const target=normalizeTitle(title);
+ const scored=rows.map(x=>{const name=normalizeTitle(x.trackName||x.collectionName||'');let score=0;if(name===target)score=100;else if(name.includes(target)||target.includes(name))score=70;else{const a=new Set(target),b=new Set(name);let same=0;a.forEach(ch=>{if(b.has(ch))same++});score=Math.round(50*same/Math.max(target.length,1))}return {x,score}}).sort((a,b)=>b.score-a.score);
+ const hit=scored.find(r=>r.x.artworkUrl100); return hit?hit.x:null;
+}
 async function findCoverOnline(){
  const title=document.getElementById('bookTitle').value.trim(), status=document.getElementById('coverStatus');
  if(!title){status.textContent='請先輸入書名，再搜尋封面。';return}
- status.textContent='正在網路搜尋封面…'; document.getElementById('findCover').disabled=true;
+ status.textContent='正在 Apple Books 搜尋封面…'; document.getElementById('findCover').disabled=true;
  try{
-   const q=encodeURIComponent(cleanSearchTitle(title));
-   const url=`https://openlibrary.org/search.json?title=${q}&fields=title,author_name,cover_i,isbn&limit=8`;
-   const r=await fetch(url,{headers:{'Accept':'application/json'}}); if(!r.ok)throw new Error('搜尋服務暫時無法使用');
-   const j=await r.json(); const hit=(j.docs||[]).find(x=>x.cover_i) || (j.docs||[]).find(x=>Array.isArray(x.isbn)&&x.isbn.length);
-   if(!hit){status.textContent='目前沒有找到可用封面，可以改用手動上傳。';return}
-   pendingCover=hit.cover_i?`https://covers.openlibrary.org/b/id/${hit.cover_i}-L.jpg?default=false`:`https://covers.openlibrary.org/b/isbn/${encodeURIComponent(hit.isbn[0])}-L.jpg?default=false`;
-   if(!document.getElementById('bookAuthor').value.trim() && hit.author_name?.[0]) document.getElementById('bookAuthor').value=hit.author_name[0];
-   updatePreview(); status.textContent=`已找到「${hit.title||title}」的封面。請確認版本是否正確；若不對可再手動上傳。`;
+   const data=await appleBooksSearch(title);
+   const hit=pickAppleBook(title,data);
+   if(!hit){status.textContent='Apple Books 目前沒有找到可用封面，可以改用手動上傳。';return}
+   pendingCover=appleArtworkLarge(hit.artworkUrl100||hit.artworkUrl60);
+   if(!document.getElementById('bookAuthor').value.trim() && hit.artistName) document.getElementById('bookAuthor').value=hit.artistName;
+   updatePreview(); status.textContent=`已找到「${hit.trackName||hit.collectionName||title}」的封面。請確認版本是否正確；若不對可再手動上傳。`;
  }catch(err){status.textContent='封面搜尋失敗：'+err.message+'。仍可使用手動上傳。'}
  finally{document.getElementById('findCover').disabled=false}
 }
 
-async function searchCoverForBook(book,attempt=0){
- const q=encodeURIComponent(cleanSearchTitle(book.title));
- const url=`https://openlibrary.org/search.json?title=${q}&fields=title,author_name,cover_i,isbn&limit=8`;
- const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),12000);
- try{
-   const r=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
-   if((r.status===429 || r.status===403) && attempt<2){
-     // Open Library 對未識別請求限制較嚴；遇到限流時退避後再試。
-     await sleep(attempt===0?3500:7000);
-     return searchCoverForBook(book,attempt+1);
-   }
-   if(!r.ok) throw new Error('HTTP '+r.status);
-   const j=await r.json();
-   const docs=j.docs||[];
-   const target=cleanSearchTitle(book.title).trim().toLowerCase();
-   const exact=docs.find(x=>x.cover_i && String(x.title||'').trim().toLowerCase()===target);
-   const hit=exact || docs.find(x=>x.cover_i) || docs.find(x=>Array.isArray(x.isbn)&&x.isbn.length);
-   if(!hit) return null;
-   const cover=hit.cover_i?`https://covers.openlibrary.org/b/id/${hit.cover_i}-L.jpg?default=false`:`https://covers.openlibrary.org/b/isbn/${encodeURIComponent(hit.isbn[0])}-L.jpg?default=false`;
-   return {cover,author:(!book.author && hit.author_name?.[0])?hit.author_name[0]:book.author};
- }finally{clearTimeout(timer)}
+async function searchCoverForBook(book){
+ const data=await appleBooksSearch(book.title);
+ const hit=pickAppleBook(book.title,data);
+ if(!hit || !(hit.artworkUrl100||hit.artworkUrl60)) return null;
+ return {cover:appleArtworkLarge(hit.artworkUrl100||hit.artworkUrl60),author:(!book.author&&hit.artistName)?hit.artistName:book.author};
 }
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 async function batchFillCurrentYearCovers(){
@@ -329,7 +332,7 @@ async function batchFillCurrentYearCovers(){
  const progress=document.getElementById('coverProgress'),text=document.getElementById('coverProgressText'),fill=document.getElementById('coverProgressFill');
  const targets=books.filter(b=>Number(b.year)===Number(currentYear) && !b.cover);
  if(!targets.length){toast(`${currentYear} 年的書都有封面了`);return}
- if(!confirm(`要替 ${currentYear} 年目前沒有封面的 ${targets.length} 本書自動搜尋封面嗎？\n\n會依書名逐本搜尋；抓錯的封面之後仍可個別更換。`))return;
+ if(!confirm(`要替 ${currentYear} 年目前沒有封面的 ${targets.length} 本書自動搜尋封面嗎？\n\n會使用 Apple Books 台灣商店逐本搜尋，速度會比較慢；抓錯的封面之後仍可個別更換。`))return;
  btn.disabled=true; progress.classList.add('show'); let found=0,failed=0;
  try{
    for(let i=0;i<targets.length;i++){
@@ -341,13 +344,12 @@ async function batchFillCurrentYearCovers(){
        if(hit){b.cover=hit.cover;b.author=hit.author||b.author||'';await putBook(b);found++;}
        else failed++;
      }catch(err){console.warn('cover search failed',b.title,err);failed++;}
-     // 保守一點，避免連續大量請求被公開服務限制。
-     if(i<targets.length-1)await sleep(1300);
+     if(i<targets.length-1)await sleep(3200);
    }
    books=await getAll(); render();
-   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。若剛才曾被限流，請隔幾分鐘再補一次。`;
+   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。`;
    toast(`已補上 ${found} 本封面`);
-   setTimeout(()=>progress.classList.remove('show'),4500);
+   setTimeout(()=>progress.classList.remove('show'),5000);
  }finally{btn.disabled=false}
 }
 document.getElementById('batchCovers').onclick=batchFillCurrentYearCovers;
