@@ -142,7 +142,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
           <button id="yearMode">年度總覽</button>
         </div>
         <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
-        <button id="batchCovers" class="utility" type="button" title="安全模式：批次自動寫入已停用">✨ 批次封面（安全模式）</button>
+        <button id="batchCovers" class="utility" type="button" title="逐本搜尋候選封面，由你確認後才儲存">✨ 批次封面（安全模式）</button>
         <button id="restoreOnlineCovers" class="utility" type="button">↩ 復原搜尋資料</button>
         <button id="topImport" class="utility" type="button">匯入</button>
         <button id="topBackup" class="utility" type="button">匯出</button>
@@ -184,7 +184,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
     <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
   </div>
   <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
-  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverPreview" class="preview-sm"></div></label>
+  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button><button type="button" id="skipBatch" hidden>跳過這本 →</button></div><div id="coverStatus" class="cover-status">網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverPreview" class="preview-sm"></div></label>
   <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
   <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
   <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
@@ -279,7 +279,7 @@ function openEditor(b=null){
  document.getElementById('bookFav').checked=!!b?.favorite;
  document.getElementById('bookNote').value=b?.note||'';
  document.getElementById('bookCoverFile').value='';
- updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。搜尋結果不會自動覆蓋。':'安全搜尋：Google Books＋Apple Books 只提供候選，請確認後再儲存。';document.getElementById('editor').showModal();
+ updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('skipBatch').hidden=!batchModeActive;document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。搜尋結果不會自動覆蓋。':'安全搜尋：Google Books＋Apple Books 只提供候選，請確認後再儲存。';document.getElementById('editor').showModal();
 }
 function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
 async function compress(file){
@@ -382,8 +382,44 @@ async function findCoverOnline(){
  }catch(err){status.textContent='封面搜尋失敗：'+err.message+'。你的原資料完全不會被修改。'}
  finally{document.getElementById('findCover').disabled=false}
 }
+let batchQueue=[];
+let batchIndex=0;
+let batchModeActive=false;
+async function openBatchBook(){
+ if(!batchModeActive)return;
+ if(batchIndex>=batchQueue.length){
+   batchModeActive=false;
+   document.getElementById('skipBatch').hidden=true;
+   toast('本年度封面檢查完成');
+   return;
+ }
+ const id=batchQueue[batchIndex];
+ const b=books.find(x=>String(x.id)===String(id));
+ if(!b){batchIndex++;return openBatchBook()}
+ openEditor(b);
+ document.getElementById('skipBatch').hidden=false;
+ document.getElementById('coverStatus').textContent=`安全批次 ${batchIndex+1} / ${batchQueue.length}：正在搜尋「${b.title}」候選封面…`;
+ await findCoverOnline();
+}
 async function batchFillCurrentYearCovers(){
- toast('安全模式下已停用批次自動寫入。請逐本搜尋、確認候選封面後再儲存。');
+ const targets=books.filter(b=>Number(b.year)===Number(currentYear) && !b.cover).map(b=>b.id);
+ if(!targets.length){toast(`${currentYear} 年目前沒有缺封面的書`);return}
+ const ok=confirm(`將開始 ${currentYear} 年安全批次封面，共 ${targets.length} 本。\n\n每一本都會先顯示候選封面，由你確認後按「儲存」才會寫入；找不到或不確定時可直接跳過。`);
+ if(!ok)return;
+ batchQueue=targets;batchIndex=0;batchModeActive=true;
+ await openBatchBook();
+}
+function stopBatch(){
+ if(!batchModeActive)return;
+ batchModeActive=false;batchQueue=[];batchIndex=0;
+ document.getElementById('skipBatch').hidden=true;
+ toast('已結束安全批次');
+}
+async function skipBatchBook(){
+ if(!batchModeActive)return;
+ document.getElementById('editor').close();
+ batchIndex++;
+ await openBatchBook();
 }
 function isRemoteCover(v){return /^https?:\/\//i.test(String(v||''))}
 async function restoreOnlineSearchData(){
@@ -411,15 +447,23 @@ document.getElementById('batchCovers').onclick=batchFillCurrentYearCovers;
 
 document.getElementById('findCover').onclick=findCoverOnline;
 document.getElementById('clearCover').onclick=()=>{pendingCover='';updatePreview();document.getElementById('coverStatus').textContent='已移除封面。'};
+document.getElementById('skipBatch').onclick=skipBatchBook;
 document.getElementById('editForm').onsubmit=async e=>{
  e.preventDefault();const old=books.find(x=>String(x.id)===document.getElementById('bookId').value);
  const b={id:old?.id||('b'+Date.now()),title:document.getElementById('bookTitle').value.trim(),year:Number(document.getElementById('bookYear').value),month:document.getElementById('bookMonth').value.trim(),author:document.getElementById('bookAuthor').value.trim(),favorite:document.getElementById('bookFav').checked,note:document.getElementById('bookNote').value.trim(),cover:pendingCover||''};
- await putBook(b);books=await getAll();currentYear=b.year;selectedId=b.id;document.getElementById('editor').close();render();showDetail(b.id);toast('已儲存');
+ await putBook(b);books=await getAll();currentYear=b.year;selectedId=b.id;document.getElementById('editor').close();render();
+ if(batchModeActive){
+   toast('已儲存，前往下一本');
+   batchIndex++;
+   await openBatchBook();
+ }else{
+   showDetail(b.id);toast('已儲存');
+ }
 };
 document.getElementById('addBtn').onclick=()=>openEditor();
 document.getElementById('mobileAdd').onclick=()=>openEditor();
-document.getElementById('closeEditor').onclick=()=>document.getElementById('editor').close();
-document.getElementById('cancelEditor').onclick=()=>document.getElementById('editor').close();
+document.getElementById('closeEditor').onclick=()=>{document.getElementById('editor').close();stopBatch()};
+document.getElementById('cancelEditor').onclick=()=>{document.getElementById('editor').close();stopBatch()};
 document.getElementById('monthMode').onclick=()=>{mode='month';render()};
 document.getElementById('yearMode').onclick=()=>{mode='year';render()};
 document.getElementById('search').oninput=()=>render();
