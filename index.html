@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e4e8e1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141819" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="拾頁書房">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
 <title>拾頁書房</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -241,6 +249,7 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .hint{font-size:12px;color:var(--ink-soft);line-height:1.5}
 .hint.warn{color:var(--brass)}
 .hint.err{color:var(--ribbon)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
 .row{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px}
 #bookYearCustom{margin-top:6px}
 .mchips{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
@@ -430,6 +439,7 @@ a.btn.primary{color:var(--accent-ink)}
   .sheet{width:100vw;max-height:94vh;border-radius:18px 18px 0 0}
   dialog.bottom{margin:auto 0 0}
   .row{grid-template-columns:1fr}
+  .row2{grid-template-columns:1fr;gap:0}
   .cover-row{grid-template-columns:120px minmax(0,1fr)}
   .cover-crop-stage{width:120px}
   .import-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -471,6 +481,7 @@ a.btn.primary{color:var(--accent-ink)}
   </div>
   <div class="menu" id="menu" hidden>
     <div class="backup-note" id="backupNote"></div>
+    <button type="button" id="mInstall" hidden>安裝到主畫面<span>像 App 一樣開啟</span></button>
     <button type="button" id="mSync">跨裝置同步<span>GitHub</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel</span></button>
@@ -547,9 +558,15 @@ a.btn.primary{color:var(--accent-ink)}
         <input id="bookTitle" maxlength="160" autocomplete="off" placeholder="例如：52赫茲的鯨魚">
         <div class="hint" id="titleHint" hidden></div>
       </div>
-      <div class="field">
-        <label for="bookAuthor">作者</label>
-        <input id="bookAuthor" maxlength="80" autocomplete="off">
+      <div class="row2">
+        <div class="field">
+          <label for="bookAuthor">作者</label>
+          <input id="bookAuthor" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bookTranslator">譯者</label>
+          <input id="bookTranslator" maxlength="80" autocomplete="off" placeholder="翻譯書才需要填">
+        </div>
       </div>
       <div class="row">
         <div class="field">
@@ -695,7 +712,7 @@ a.btn.primary{color:var(--accent-ink)}
       <div class="howto" style="margin:0"><b>Excel 書單的格式</b>
         <ol>
           <li>第一列放欄位名稱，至少要有「書名」「年份」「月份」。</li>
-          <li>可以再加「作者」「標籤」「喜歡」「閱讀筆記」。「喜歡」填「是」，或把書名那格塗上底色都可以。</li>
+          <li>可以再加「作者」「譯者」「標籤」「喜歡」「閱讀筆記」。「喜歡」填「是」，或把書名那格塗上底色都可以。</li>
           <li>封面圖可以直接貼在 Excel 裡同一列的格子上。</li>
           <li>如果每個年份分一個工作表，工作表名稱寫年份（例如 2025），就可以不用「年份」欄。</li>
         </ol>
@@ -963,7 +980,7 @@ function renderSpread(){
       ${recallMode?`<p class="recall">${esc(recallLine(b))}</p>`:''}
       <div class="when"><b>${esc(b.year)}</b>　${esc(monthLabel(b.month))}讀完</div>
       <h2>${esc(b.title)}</h2>
-      ${b.author?`<p class="author">${esc(b.author)}</p>`:''}
+      ${b.author||b.translator?`<p class="author">${[b.author,b.translator?b.translator+' 譯':''].filter(Boolean).map(esc).join('　')}</p>`:''}
       ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
       <button type="button" class="fav-toggle ${b.favorite?'on':''}" id="bvFav" aria-pressed="${b.favorite}"><svg viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg><span>${b.favorite?'已放進珍藏':'放進珍藏'}</span></button>
       <div class="lined ${note?'':'placeholder'}">${note?esc(note):'還沒寫下感想。按「編輯」，留一句話給以後的自己。'}</div>
@@ -1007,12 +1024,12 @@ function runSearch(){
   const q=$('searchInput').value.trim().replace(/^#/,''), ql=q.toLowerCase();
   let list;
   if(!q)list=[...books].sort((a,b)=>Number(b.year)-Number(a.year)||monthNum(b.month)-monthNum(a.month)||orderKey(b)-orderKey(a)).slice(0,8);
-  else list=books.map(b=>{let s=0;const t=b.title.toLowerCase();if(t===ql)s=100;else if(t.startsWith(ql))s=80;else if(t.includes(ql))s=60;if(String(b.author||'').toLowerCase().includes(ql))s=Math.max(s,50);if(b.tags.some(x=>x.toLowerCase().includes(ql)))s=Math.max(s,45);if(String(b.note||'').toLowerCase().includes(ql))s=Math.max(s,30);return {b,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||Number(b.b.year)-Number(a.b.year)).map(x=>x.b);
+  else list=books.map(b=>{let s=0;const t=b.title.toLowerCase();if(t===ql)s=100;else if(t.startsWith(ql))s=80;else if(t.includes(ql))s=60;if(String(b.author||'').toLowerCase().includes(ql))s=Math.max(s,50);if(String(b.translator||'').toLowerCase().includes(ql))s=Math.max(s,48);if(b.tags.some(x=>x.toLowerCase().includes(ql)))s=Math.max(s,45);if(String(b.note||'').toLowerCase().includes(ql))s=Math.max(s,30);return {b,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||Number(b.b.year)-Number(a.b.year)).map(x=>x.b);
   searchHits=list.map(b=>b.id);searchSel=0;
   const box=$('results');
   if(!list.length){box.innerHTML=`<div class="none">書房裡沒有符合「${esc(q)}」的書。</div>`;return}
   box.innerHTML=(q?'':'<div class="hint" style="padding:6px 10px">最近讀的書</div>')+list.map((b,i)=>{
-    const sub=[b.author?hl(b.author,q):'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
+    const sub=[b.author?hl(b.author,q):'',b.translator?hl(b.translator,q)+' 譯':'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
     return `<button type="button" class="result ${i===0?'on':''}" data-id="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span style="min-width:0"><span class="rt" style="display:block">${b.favorite?'<svg viewBox="0 0 14 20" style="width:9px;height:12px;fill:var(--ribbon);margin-right:5px" aria-label="珍藏"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>':''}${hl(b.title,q)}</span><span class="rs" style="display:block">${sub||'&nbsp;'}</span></span><span class="rd">${esc(b.year)}・${monthNum(b.month)||esc(b.month)}月</span></button>`}).join('');
   box.querySelectorAll('.result').forEach(r=>r.onclick=()=>pickResult(r.dataset.id));
 }
@@ -1145,6 +1162,7 @@ function openEditor(b=null,opts={}){
   $('bookId').value=b?.id||'';
   $('bookTitle').value=b?.title||'';$('titleHint').hidden=true;
   $('bookAuthor').value=b?.author||'';
+  $('bookTranslator').value=b?.translator||'';
   const defMonth=b?b.month:(Number(currentYear)===NOW.getFullYear()?`${NOW.getMonth()+1}月`:'');
   $('bookMonthCustom').value='';setMonth(defMonth);
   editTags=[...(b?.tags||[])];renderTags();
@@ -1257,7 +1275,7 @@ $('editForm').onsubmit=async e=>{
   const btn=$('saveBtn');btn.disabled=true;
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
-  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
+  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
@@ -1329,10 +1347,10 @@ async function exportExcel(){
   if(!books.length){notify('沒有可以匯出的書','書房裡還沒有任何紀錄。');return}
   const btn=$('exportExcelBtn');btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='<b>正在製作 Excel…</b><span>封面越多會越久一點</span>';
   try{
-    const IMG_COL=10;
-    const rows=[['年份','月份','書名','作者','標籤','喜歡','閱讀筆記','封面裁切X','封面裁切Y','封面縮放','封面']];
+    const IMG_COL=11;
+    const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','閱讀筆記','封面裁切X','封面裁切Y','封面縮放','封面']];
     const sorted=[...books].sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||String(a.month).localeCompare(String(b.month),'zh-Hant',{numeric:true})||orderKey(a)-orderKey(b));
-    sorted.forEach(b=>rows.push([b.year,b.month,b.title,b.author||'',(b.tags||[]).join('、'),b.favorite?'是':'',b.note||'',Number(b.coverX??50),Number(b.coverY??50),Number(b.coverZoom??1),b.cover?'有':'']));
+    sorted.forEach(b=>rows.push([b.year,b.month,b.title,b.author||'',b.translator||'',(b.tags||[]).join('、'),b.favorite?'是':'',b.note||'',Number(b.coverX??50),Number(b.coverY??50),Number(b.coverZoom??1),b.cover?'有':'']));
     const zip=new JSZip();
     zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
     zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
@@ -1341,7 +1359,7 @@ async function exportExcel(){
     zip.folder('xl').file('styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE699"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0" applyFill="1"/></cellXfs></styleSheet>');
     const imageItems=[];for(let i=0;i<sorted.length;i++){const b=sorted[i];if(!b.cover)continue;let im=dataUrlBytes(b.cover);if(!im&&/^https?:/i.test(b.cover))im=await externalCoverBytes(b.cover);if(im)imageItems.push({row:i+2,...im})}
     let sheetRows='';for(let r=0;r<rows.length;r++){const vals=rows[r],rn=r+1;let cells='';for(let c=0;c<vals.length;c++){const ref=colRef(c+1)+rn,val=vals[c];const style=(r>0&&c===2&&sorted[r-1]?.favorite)?' s="1"':'';if(typeof val==='number'&&Number.isFinite(val))cells+=`<c r="${ref}"${style}><v>${val}</v></c>`;else cells+=`<c r="${ref}" t="inlineStr"${style}><is><t xml:space="preserve">${xesc(val)}</t></is></c>`}sheetRows+=`<row r="${rn}"${rn>1?' ht="82" customHeight="1"':''}>${cells}</row>`}
-    zip.folder('xl').folder('worksheets').file('sheet1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="10" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="4" width="20" customWidth="1"/><col min="5" max="5" width="18" customWidth="1"/><col min="6" max="6" width="8" customWidth="1"/><col min="7" max="7" width="45" customWidth="1"/><col min="8" max="10" width="12" customWidth="1"/><col min="11" max="11" width="18" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><drawing r:id="rId1"/></worksheet>`);
+    zip.folder('xl').folder('worksheets').file('sheet1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="10" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="5" width="18" customWidth="1"/><col min="6" max="6" width="18" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="45" customWidth="1"/><col min="9" max="11" width="12" customWidth="1"/><col min="12" max="12" width="18" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><drawing r:id="rId1"/></worksheet>`);
     zip.folder('xl').folder('worksheets').folder('_rels').file('sheet1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>');
     let anchors='',drawRels='';const media=zip.folder('xl').folder('media');
     for(let i=0;i<imageItems.length;i++){const im=imageItems[i],name=`image${i+1}.${im.ext}`,rid=`rId${i+1}`;media.file(name,im.bytes,{binary:true});drawRels+=`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${name}"/>`;anchors+=`<xdr:oneCellAnchor><xdr:from><xdr:col>${IMG_COL}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${im.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="760000" cy="1100000"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="封面 ${i+1}"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:embed="${rid}"/><a:stretch xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>`}
@@ -1360,7 +1378,7 @@ $('exportExcelBtn').onclick=exportExcel;
 function splitTags(v){return String(v||'').split(/[、,，;；\/#\s]+/).map(s=>s.trim()).filter(Boolean).slice(0,8)}
 function normalizeImported(raw){
   const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null;if(!arr)throw new Error('這不是書房的備份檔');
-  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
+  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),translator:String(b.translator||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
 }
 const bookKey=b=>`${Number(b.year)}|${String(b.month||'').trim()}|${normTitleKey(b.title)}`;
 async function writeImport(incoming,replace){
@@ -1375,6 +1393,7 @@ async function writeImport(incoming,replace){
       let ch=false;
       if(!cur.cover&&src.cover){cur.cover=src.cover;cur.coverX=src.coverX??50;cur.coverY=src.coverY??50;cur.coverZoom=src.coverZoom??1;if(src.coverTidied)cur.coverTidied=true;ch=true}
       if(!cur.author&&src.author){cur.author=src.author;ch=true}
+      if(!cur.translator&&src.translator){cur.translator=src.translator;ch=true}
       if(!cur.note&&src.note){cur.note=src.note;ch=true}
       if(!cur.tags?.length&&src.tags?.length){cur.tags=src.tags;ch=true}
       if(!cur.favorite&&src.favorite){cur.favorite=true;ch=true}
@@ -1417,9 +1436,9 @@ $('importPick').onclick=()=>{$('importBox').close();const f=$('importFile');f.va
 $('importBoxClose').onclick=()=>$('importBox').close();
 $('templateBtn').onclick=async()=>{
   if(!window.JSZip){notify('Excel 元件還沒載入','請確認網路連線後重新整理頁面。');return}
-  const rows=[['年份','月份','書名','作者','標籤','喜歡','閱讀筆記'],[2026,'3月','（範例）書名寫這裡','作者名','小說、日本','是','一句感想'],[2026,'4月','（範例）第二本書','','散文','','']];
+  const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','閱讀筆記'],[2026,'3月','（範例）書名寫這裡','作者名','譯者名','小說、日本','是','一句感想'],[2026,'4月','（範例）第二本書','','','散文','','']];
   const cell=(v,ref)=>typeof v==='number'?`<c r="${ref}"><v>${v}</v></c>`:`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
-  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="2" width="9" customWidth="1"/><col min="3" max="3" width="36" customWidth="1"/><col min="4" max="5" width="16" customWidth="1"/><col min="6" max="6" width="8" customWidth="1"/><col min="7" max="7" width="40" customWidth="1"/></cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,colRef(j+1)+(i+1))).join('')}</row>`).join('')}</sheetData></worksheet>`;
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="2" width="9" customWidth="1"/><col min="3" max="3" width="36" customWidth="1"/><col min="4" max="6" width="16" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="40" customWidth="1"/></cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,colRef(j+1)+(i+1))).join('')}</row>`).join('')}</sheetData></worksheet>`;
   const zip=new JSZip();
   zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
   zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
@@ -1473,14 +1492,14 @@ async function parseXlsx(file){
       if(Object.keys(cells).length)rows.push({r:rnum,cells})}
     sheetData[sh.name]={...sh,doc,rows};
   }
-  const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'];
+  const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],translatorHeads=['譯者','翻譯','translator'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'];
   const headMatch=(v,list)=>{const n=normHeader(v);return !!n&&list.some(h=>n===normHeader(h)||n.includes(normHeader(h)))};
   const records=[];let order=0;
   for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const defaultYear=yearFrom(sh.name);let headerRow=null,map={};
-    for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
+    for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,translatorHeads))tm.translator=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
     if(headerRow==null)continue;let carryYear=defaultYear;
     for(const row of sd.rows.filter(r=>r.r>headerRow)){const title=String(row.cells[map.title]?.v??'').trim();if(!title)continue;const yv=map.year!=null?yearFrom(row.cells[map.year]?.v):null;if(yv)carryYear=yv;const year=yv||carryYear||defaultYear;const month=map.month!=null?monthFrom(row.cells[map.month]?.v):'';if(!year||!month)continue;const favCell=map.favorite!=null?row.cells[map.favorite]:null;const favorite=(favCell?boolFrom(favCell.v):false)||styleLooksHighlighted(row.cells[map.title]?.style,styles);
-      records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
+      records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),translator:String(map.translator!=null?(row.cells[map.translator]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
   }
   if(!records.length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
   const images=[];
@@ -1564,6 +1583,25 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='r'||e.key==='R')drawOne();
   else if(e.key==='Escape')closeMenu();
 });
+
+/* ================= 安裝到主畫面 ================= */
+let installPrompt=null;
+const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function syncInstallItem(){$('mInstall').hidden=isStandalone()||(!installPrompt&&!isIOS&&!/android/i.test(navigator.userAgent))}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;syncInstallItem()});
+window.addEventListener('appinstalled',()=>{installPrompt=null;syncInstallItem();toast('拾頁書房已加到主畫面')});
+$('mInstall').onclick=async()=>{
+  closeMenu();
+  if(installPrompt){installPrompt.prompt();await installPrompt.userChoice.catch(()=>{});installPrompt=null;syncInstallItem();return}
+  if(isIOS)notify('加到 iPhone 主畫面','1. 用 Safari 打開書房。\n2. 按下方的「分享」按鈕（方框加向上箭頭）。\n3. 選「加入主畫面」，再按「新增」。\n\n注意：主畫面上的書房和 Safari 裡的書房是分開存放的。加好之後，請先在 Safari 匯出 JSON 備份，再到主畫面的書房匯入；有設定 GitHub 同步的話，在主畫面的書房重新連上同步也可以。');
+  else notify('加到主畫面','用 Chrome 打開書房，按右上角「⋮」選單，選「安裝應用程式」或「加到主畫面」。');
+};
+syncInstallItem();
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')&&!/claude|anthropic/.test(location.hostname)){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{})});
+  navigator.storage?.persist?.().catch(()=>{});
+}
 
 /* ================= 啟動 ================= */
 (async()=>{
