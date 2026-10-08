@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>我的閱讀書櫃</title>
+<style>
+:root{
+  --bg:#f5efe4; --panel:#fffaf2; --ink:#273a2d; --muted:#7e7a70;
+  --sage:#546f5b; --sage2:#dfe8dd; --wood:#9a6a43; --wood2:#68472f;
+  --line:#dfd5c6; --rose:#d78d83; --gold:#d9b761; --shadow:0 12px 28px rgba(66,49,34,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:linear-gradient(180deg,#f7f2e9,#efe5d7);color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:1440px;margin:auto;min-height:100vh;display:grid;grid-template-columns:220px minmax(0,1fr)}
+.sidebar{padding:28px 18px;background:rgba(255,250,242,.88);border-right:1px solid var(--line);position:sticky;top:0;height:100vh}
+.brand{font-family:serif;font-size:25px;font-weight:800;letter-spacing:.06em;margin-bottom:8px}
+.brand-sub{font-size:12px;color:var(--muted);margin-bottom:26px}
+.navbtn{width:100%;border:0;background:transparent;color:var(--ink);padding:12px 13px;border-radius:12px;text-align:left;margin:3px 0}
+.navbtn.active{background:var(--sage);color:white}
+.side-quote{position:absolute;left:20px;right:20px;bottom:28px;color:#766d61;font-family:serif;line-height:1.8;font-size:13px}
+.main{padding:24px 28px 50px;min-width:0}
+.topbar{display:flex;gap:20px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.title h1{font-family:serif;font-size:42px;line-height:1;margin:8px 0 10px;letter-spacing:.06em}
+.title p{margin:0;color:var(--muted)}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.segment{display:inline-flex;background:rgba(255,255,255,.7);border:1px solid var(--line);border-radius:999px;padding:4px}
+.segment button{border:0;background:transparent;padding:9px 16px;border-radius:999px;color:var(--ink)}
+.segment button.active{background:var(--sage);color:#fff}
+.search{min-width:240px;border:1px solid var(--line);background:rgba(255,255,255,.72);border-radius:999px;padding:11px 16px;outline:none}
+.utility{border:1px solid var(--line);background:#fffaf2;color:var(--ink);border-radius:999px;padding:10px 14px;white-space:nowrap}
+.utility:hover{background:#f2eadf}
+.utility:disabled{opacity:.58;cursor:wait}
+.cover-progress{display:none;margin:0 0 16px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,250,242,.9);font-size:13px;color:var(--muted)}
+.cover-progress.show{display:block}
+.cover-progress .bar{height:7px;margin-top:8px;border-radius:999px;background:#e8dfd3;overflow:hidden}
+.cover-progress .fill{height:100%;width:0;background:var(--sage);transition:width .2s ease}
+.yearbar{display:flex;align-items:center;justify-content:center;gap:9px;margin:20px 0 16px;flex-wrap:wrap}
+.yearbar button{border:1px solid var(--line);background:#fff9f0;border-radius:999px;min-width:46px;height:42px;color:var(--ink)}
+.yearbar .year-chip{padding:0 18px}
+.yearbar .year-chip.active{background:var(--sage);color:white;border-color:var(--sage)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.stat{background:rgba(255,250,242,.85);border:1px solid var(--line);border-radius:16px;padding:15px 18px}
+.stat small{display:block;color:var(--muted);margin-bottom:5px}
+.stat strong{font-family:serif;font-size:28px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+.workspace{min-width:0}
+.detail{position:sticky;top:18px;background:rgba(255,250,242,.94);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;min-height:360px}
+.detail.empty{display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted)}
+.cover-large{aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#dbe2d5,#eee0cf);max-width:170px;margin:0 auto 16px;box-shadow:0 10px 20px rgba(55,43,33,.15)}
+.cover-large img{width:100%;height:100%;object-fit:cover}
+.cover-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:serif;font-weight:700;line-height:1.45}
+.detail h2{font-family:serif;margin:10px 0 4px;font-size:25px}
+.meta{display:grid;grid-template-columns:72px 1fr;gap:9px;font-size:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.meta .k{color:var(--muted)}
+.note{margin-top:14px;padding:12px;border-radius:12px;background:#f5eee2;color:#5f5a50;white-space:pre-wrap;line-height:1.6}
+.actions{display:flex;gap:8px;margin-top:16px}
+.actions button,.primary{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fffaf2;color:var(--ink)}
+.actions .primary,.primary{background:var(--sage);color:white;border-color:var(--sage)}
+.month-card{background:rgba(255,250,242,.8);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:15px}
+.month-head{width:100%;border:0;background:transparent;color:var(--ink);padding:12px 15px;display:flex;justify-content:space-between;align-items:center}
+.month-head strong{font-family:serif;font-size:20px}
+.shelf{position:relative;padding:8px 15px 25px;background:linear-gradient(180deg,rgba(134,91,58,.08),rgba(134,91,58,.02))}
+.shelf:after{content:"";position:absolute;left:8px;right:8px;bottom:8px;height:12px;border-radius:4px;background:linear-gradient(#a8754f,#865936);box-shadow:0 4px 0 var(--wood2)}
+.books{display:flex;gap:12px;align-items:flex-end;min-height:160px;overflow-x:auto;padding:8px 2px 12px}
+.book{position:relative;flex:0 0 94px;width:94px;height:142px;border:0;padding:0;border-radius:5px 9px 9px 5px;overflow:hidden;background:#e8ddce;box-shadow:0 6px 13px rgba(48,36,27,.16);transition:.16s}
+.book img{width:100%;height:100%;object-fit:cover;display:block}
+.book .fallback{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-family:serif;font-size:12px;font-weight:700;line-height:1.35;background:
+linear-gradient(150deg,hsl(var(--h) 28% 86%),hsl(var(--h) 25% 72%));color:#423d35}
+.book .fav{position:absolute;top:0;right:10px;width:16px;height:27px;background:var(--rose);clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.book.selected{outline:3px solid var(--sage);outline-offset:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:16px}
+.grid .book{width:100%;height:auto;aspect-ratio:2/3;flex:none}
+.grid-card{min-width:0}
+.grid-card .caption{font-size:13px;margin-top:7px;line-height:1.4}
+.grid-card .sub{font-size:11px;color:var(--muted)}
+.empty-year{padding:45px;text-align:center;color:var(--muted)}
+.fab{position:fixed;right:24px;bottom:24px;width:58px;height:58px;border-radius:50%;border:0;background:var(--sage);color:white;font-size:30px;box-shadow:var(--shadow);z-index:10}
+dialog{border:0;border-radius:20px;padding:0;background:#fffaf2;color:var(--ink);width:min(520px,calc(100% - 28px));box-shadow:0 20px 70px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(25,25,20,.38)}
+.form{padding:20px}
+.form h3{font-family:serif;font-size:23px;margin:0}
+.form-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.close{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:white}
+.field{display:block;margin:12px 0}
+.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;background:#fffdf8;padding:11px;outline:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.checkline{display:flex;align-items:center;gap:9px;padding:10px 0}
+.preview-sm{width:84px;height:126px;border-radius:8px;overflow:hidden;background:#e5ddcf;border:1px dashed var(--line);margin-top:7px}
+.preview-sm img{width:100%;height:100%;object-fit:cover}
+.cover-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.cover-tools button{border:1px solid var(--line);background:#fffaf2;color:var(--ink);border-radius:10px;padding:9px 12px}.cover-tools button.primary{background:var(--sage);color:#fff;border-color:var(--sage)}.cover-status{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.form-actions button{border:1px solid var(--line);border-radius:11px;padding:10px 15px;background:white}
+.form-actions .save{background:var(--sage);color:white;border-color:var(--sage)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#263b2d;color:white;padding:10px 15px;border-radius:999px;opacity:0;pointer-events:none;transition:.2s;z-index:20}
+.toast.show{opacity:1}
+.mobile-tabs{display:none}
+@media(hover:hover) and (pointer:fine){.book:hover{transform:translateY(-7px)}}
+@media(max-width:980px){
+ .app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:18px 16px 90px}
+ .layout{grid-template-columns:1fr}.detail{position:static;display:none}
+ .detail.show{display:block}.title h1{font-size:34px}.stats{grid-template-columns:repeat(3,1fr)}
+ .mobile-tabs{display:flex;position:fixed;left:0;right:0;bottom:0;background:#fffaf4;border-top:1px solid var(--line);z-index:8;padding:7px 8px calc(7px + env(safe-area-inset-bottom));gap:4px}
+ .mobile-tabs button{flex:1;border:0;background:transparent;padding:8px 4px;color:var(--muted);font-size:12px}.mobile-tabs button.active{color:var(--sage);font-weight:700}
+ .fab{bottom:78px;right:18px}
+}
+@media(max-width:620px){
+ .main{padding:14px 12px 90px}.topbar{display:block}.title h1{font-size:31px}.title p{font-size:13px}
+ .controls{margin-top:15px}.segment{width:100%}.segment button{flex:1}.search{width:100%;min-width:0}.utility{flex:1;text-align:center}
+ .stats{grid-template-columns:repeat(3,1fr);gap:7px}.stat{padding:11px 9px}.stat strong{font-size:21px}.stat small{font-size:11px}
+ .yearbar{gap:5px;margin:14px 0}.yearbar button{height:39px;min-width:40px}.yearbar .year-chip{padding:0 12px}
+ .book{flex-basis:82px;width:82px;height:124px}.books{min-height:142px;gap:9px}
+ .row2{grid-template-columns:1fr}.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.grid-card .caption{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">我的閱讀書櫃</div>
+    <div class="brand-sub">My Reading Shelf</div>
+    <button class="navbtn active">⌂　書櫃首頁</button>
+    <button class="navbtn" id="navFav">♡　喜歡收藏</button>
+    <button class="navbtn" id="navAll">▤　全部書籍</button>
+    <button class="navbtn" id="navBackup">⇩　匯出備份</button>
+    <button class="navbtn" id="navImport">⇧　匯入備份</button>
+    <div class="side-quote">收藏閱讀過的時光，<br>也收藏慢慢變成自己的旅程。</div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title"><h1>我的閱讀書櫃</h1><p>把讀過的月份、喜歡的書，和一點點當時的自己一起留下。</p></div>
+      <div class="controls">
+        <div class="segment">
+          <button id="monthMode" class="active">月份書櫃</button>
+          <button id="yearMode">年度總覽</button>
+        </div>
+        <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
+        <button id="batchCovers" class="utility" type="button">✨ 補齊本年度封面</button>
+        <button id="topImport" class="utility" type="button">匯入</button>
+        <button id="topBackup" class="utility" type="button">匯出</button>
+      </div>
+    </header>
+
+    <div id="yearbar" class="yearbar"></div>
+    <div id="coverProgress" class="cover-progress" aria-live="polite"><span id="coverProgressText"></span><div class="bar"><div id="coverProgressFill" class="fill"></div></div></div>
+
+    <section class="stats">
+      <div class="stat"><small>這一年讀了</small><strong id="statTotal">0 本</strong></div>
+      <div class="stat"><small>最多閱讀月份</small><strong id="statMonth">—</strong></div>
+      <div class="stat"><small>喜歡收藏</small><strong id="statFav">0 本</strong></div>
+    </section>
+
+    <section class="layout">
+      <div id="workspace" class="workspace"></div>
+      <aside id="detail" class="detail empty">點一本書，就會在這裡打開它的閱讀紀錄。<br><br>手機版會直接在書櫃下方展開。</aside>
+    </section>
+  </main>
+</div>
+
+<input id="importFile" type="file" accept="application/json,.json" hidden>
+<button id="addBtn" class="fab" title="新增書籍" aria-label="新增書籍">＋</button>
+<div class="mobile-tabs">
+  <button class="active">⌂<br>書櫃</button>
+  <button id="mobileFav">♡<br>收藏</button>
+  <button id="mobileAll">▤<br>全部</button>
+  <button id="mobileAdd">＋<br>新增</button>
+</div>
+
+<dialog id="editor">
+<form id="editForm" class="form">
+  <div class="form-top"><h3 id="formTitle">新增書籍</h3><button type="button" class="close" id="closeEditor">×</button></div>
+  <input type="hidden" id="bookId">
+  <label class="field"><span>書名 *</span><input id="bookTitle" required maxlength="160"></label>
+  <div class="row2">
+    <label class="field"><span>年份 *</span><select id="bookYear"></select></label>
+    <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
+  </div>
+  <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
+  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">可用書名搜尋 Open Library；若找到封面與作者，也會協助補上作者。</div><div id="coverPreview" class="preview-sm"></div></label>
+  <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
+  <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
+  <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
+</form>
+</dialog>
+<div id="toast" class="toast">已儲存</div>
+
+<script>
+const SEED_BOOKS = [{"id": "b2", "year": 2023, "month": "1月", "title": "不便利的便利店", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b3", "year": 2023, "month": "1月", "title": "歡迎光臨夢境百貨 I", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b4", "year": 2023, "month": "7月", "title": "神明值日生執勤中", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b5", "year": 2023, "month": "8月", "title": "山茶花文具", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b6", "year": 2023, "month": "8月", "title": "52赫茲的鯨魚", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b7", "year": 2023, "month": "9月", "title": "鬼地方", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b8", "year": 2023, "month": "9月", "title": "沒有媽媽的超市", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b9", "year": 2023, "month": "10月", "title": "主力的思維", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b10", "year": 2023, "month": "10月", "title": "三千圓的用法：你的人生取決於你怎麼用這筆小錢", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b11", "year": 2023, "month": "11月", "title": "黑面之狐", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b12", "year": 2023, "month": "11月", "title": "小鎮醫生", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b13", "year": 2023, "month": "11月", "title": "化學課", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b14", "year": 2023, "month": "12月", "title": "明天別再來敲門", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b15", "year": 2023, "month": "12月", "title": "不便利的便利店2", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b16", "year": 2024, "month": "1月", "title": "炒股的智慧", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b17", "year": 2024, "month": "2月", "title": "給大人的童話心理學", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b18", "year": 2024, "month": "2月", "title": "我可能錯了", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b19", "year": 2024, "month": "2月", "title": "戀家的人: 五個獨居女子的溫暖家居生活", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b20", "year": 2024, "month": "3月", "title": "來小書廚房住一晚", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b21", "year": 2024, "month": "4月", "title": "第一次的…：直木賞名家╳日本樂壇傳奇YOASOBI，小說音樂化奇蹟之作！", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b22", "year": 2024, "month": "4月", "title": "燕食記", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b23", "year": 2024, "month": "5月", "title": "阿拉斯加韓醫院", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b24", "year": 2024, "month": "5月", "title": "誰叫她是笨女人", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b25", "year": 2024, "month": "6月", "title": "大地之歌──全世界最受歡迎的獸醫，充滿歡笑與淚水的行醫故事", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b26", "year": 2024, "month": "7月", "title": "靠近你的不是人，是愛情啊", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b27", "year": 2024, "month": "8月", "title": "一橋桐子(76歲)的犯罪日記", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b28", "year": 2024, "month": "8月", "title": "在那邊的鬼", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b29", "year": 2024, "month": "9月", "title": "水豚工讀生", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b30", "year": 2024, "month": "10月", "title": "一如既往", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b31", "year": 2024, "month": "10月", "title": "動物也有今生來世", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b32", "year": 2024, "month": "10月", "title": "別愛上陌生人", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b33", "year": 2024, "month": "10月", "title": "無用街盡的房子", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b34", "year": 2024, "month": "10月", "title": "每個人的花期不同：允許自己是那朵晚開的花", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b35", "year": 2024, "month": "11月", "title": "宙的暖心料理", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b36", "year": 2024, "month": "11月", "title": "別將手上的髒汙擦在那裡", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b37", "year": 2024, "month": "11月", "title": "九尾狐餐廳：牽絆的奶油料理", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b38", "year": 2024, "month": "12月", "title": "詭畫連篇", "favorite": true, "cover": "", "author": "", "note": ""}, {"id": "b39", "year": 2024, "month": "12月", "title": "小說家的一日", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b40", "year": 2025, "month": "1月", "title": "坡道上的家", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b41", "year": 2025, "month": "2-3月", "title": "渺小一生上冊", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b42", "year": 2025, "month": "2-3月", "title": "渺小一生下冊", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b43", "year": 2025, "month": "4月", "title": "陽光小姐", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b44", "year": 2025, "month": "4月", "title": "長安的荔枝", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b45", "year": 2025, "month": "5月", "title": "四十我就廢", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b46", "year": 2025, "month": "5月", "title": "當墨光閃耀", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b47", "year": 2025, "month": "5月", "title": "喜鵲的四季", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b48", "year": 2025, "month": "6月", "title": "千年鬼", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b49", "year": 2025, "month": "6月", "title": "朗夜", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b50", "year": 2025, "month": "6月", "title": "九尾狐餐廳2：約定的蔥薯料理", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b51", "year": 2025, "month": "6月", "title": "家庭代工的滋味", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b52", "year": 2025, "month": "6月", "title": "極光商會的執事們", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b53", "year": 2025, "month": "6月", "title": "小梅，好想詛咒", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b54", "year": 2025, "month": "7月", "title": "那一天我們跟在雞屁股後面尋路", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b55", "year": 2025, "month": "7月", "title": "情敵", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b56", "year": 2025, "month": "7月", "title": "美麗丘上不幸的幸福之家", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b57", "year": 2025, "month": "8月", "title": "我是男性，我請了一年育嬰假", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b58", "year": 2025, "month": "8月", "title": "鈴蘭書房", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b59", "year": 2025, "month": "8月", "title": "木曜日適合來杯可可亞", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b60", "year": 2025, "month": "8月", "title": "望遠洞兄弟", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b61", "year": 2025, "month": "9月", "title": "24小時神秘書店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b62", "year": 2025, "month": "9月", "title": "鐵道員", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b63", "year": 2025, "month": "9月", "title": "夏威夷的奶奶祭祀", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b64", "year": 2025, "month": "9月", "title": "掬星", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b65", "year": 2025, "month": "10月", "title": "亞伯丁連續殺人案", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b66", "year": 2025, "month": "10月", "title": "他的名字叫安地斯亞馬遜", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b67", "year": 2025, "month": "10月", "title": "我很高興我媽死了--原來，不原諒媽媽也沒關係", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b68", "year": 2025, "month": "11月", "title": "怪城少女", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b69", "year": 2025, "month": "11月", "title": "雞尾酒，愛情，喪屍", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b70", "year": 2025, "month": "11月", "title": "延南洞咕嚕咕嚕洗衣店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b71", "year": 2025, "month": "12月", "title": "巴黎墓園的秘密生活", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b72", "year": 2025, "month": "12月", "title": "真愛假說", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b73", "year": 2025, "month": "12月", "title": "小貓一隻一隻來", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b74", "year": 2025, "month": "12月", "title": "火鍋村：北國來的客人", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b75", "year": 2026, "month": "1月", "title": "尋找唐吉訶德", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b76", "year": 2026, "month": "1月", "title": "意外的訪客", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b77", "year": 2026, "month": "1月", "title": "在森崎書店的日子裡", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b78", "year": 2026, "month": "1月", "title": "續．在森崎書店的日子裡", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b79", "year": 2026, "month": "1月", "title": "真愛收信中", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b80", "year": 2026, "month": "2月", "title": "公平競爭的守門人", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b81", "year": 2026, "month": "2月", "title": "喜弒臨門", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b82", "year": 2026, "month": "2月", "title": "早餐店阿姨什麼都記得住：早安，今天的鬼故事加點洋蔥嗎？", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b83", "year": 2026, "month": "2月", "title": "貓咪處方箋", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b84", "year": 2026, "month": "3月", "title": "獨居女子的生活小犒賞", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b85", "year": 2026, "month": "3月", "title": "茶水間", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b86", "year": 2026, "month": "3月", "title": "世界盡頭的三間袖珍書店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b87", "year": 2026, "month": "3月", "title": "月亮升起的森林", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b88", "year": 2026, "month": "4月", "title": "我想為你推薦一本書：沒錯，這就是我最喜歡做的事", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b89", "year": 2026, "month": "4月", "title": "世界盡頭的咖啡館", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b90", "year": 2026, "month": "4月", "title": "到得了的地方", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b91", "year": 2026, "month": "5月", "title": "時間暫停的深夜和菓子店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b92", "year": 2026, "month": "5月", "title": "被財神爺喜歡到怕的方法", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b93", "year": 2026, "month": "5月", "title": "人生得遇蘇東坡", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b94", "year": 2026, "month": "5月", "title": "你好我是書店員", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b95", "year": 2026, "month": "5月", "title": "霧子與療癒心靈的咖啡館", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b96", "year": 2026, "month": "5月", "title": "錢先花光，還是命先沒了？——長照4個90歲老人的我，將如何面對老後生活？", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b97", "year": 2026, "month": "5月", "title": "刺蝟抱月亮", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b98", "year": 2026, "month": "6月", "title": "真幌站前多田便利軒", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b99", "year": 2026, "month": "6月", "title": "在舊書店重逢", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b100", "year": 2026, "month": "6月", "title": "記憶書店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b101", "year": 2026, "month": "6月", "title": "十月堂舊書事", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b102", "year": 2026, "month": "6月", "title": "鯨", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b103", "year": 2026, "month": "7月", "title": "冰點上冊", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b104", "year": 2026, "month": "7月", "title": "冰點下冊", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b105", "year": 2026, "month": "7月", "title": "串門貓阿飛", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b106", "year": 2026, "month": "7月", "title": "賣瓜的人", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b107", "year": 2026, "month": "8月", "title": "在舊書店重逢", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b108", "year": 2026, "month": "8月", "title": "歡迎光臨小林書店", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b109", "year": 2026, "month": "8月", "title": "毛毯貓出借中", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b110", "year": 2026, "month": "8月", "title": "寵物和城市：一位出診獸醫與她的貓狗客戶，以及他們的真實生活", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b111", "year": 2026, "month": "9月", "title": "月亮升起的森林", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b112", "year": 2026, "month": "9月", "title": "北歐時間", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b113", "year": 2026, "month": "9月", "title": "花錢有道：懂得花、捨得花、值得花，郝哥的39個富思維", "favorite": false, "cover": "", "author": "", "note": ""}, {"id": "b114", "year": 2026, "month": "9月", "title": "間諜海岸", "favorite": false, "cover": "", "author": "", "note": ""}];
+const DB_NAME='readingShelfDB'; const STORE='books'; let db;
+let books=[], currentYear=2026, mode='month', favoritesOnly=false, selectedId=null, pendingCover=null;
+
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);
+r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'})};
+r.onsuccess=()=>{db=r.result;resolve()};r.onerror=()=>reject(r.error)})}
+function tx(mode='readonly'){return db.transaction(STORE,mode).objectStore(STORE)}
+function getAll(){return new Promise((res,rej)=>{const r=tx().getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function putBook(b){return new Promise((res,rej)=>{const r=tx('readwrite').put(b);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+function delBook(id){return new Promise((res,rej)=>{const r=tx('readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function seed(){let all=await getAll(); if(all.length===0){for(const b of SEED_BOOKS) await putBook(b); all=await getAll()} books=all}
+
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hue(s){let h=0;for(const ch of s)h=(h*31+ch.charCodeAt(0))%360;return h}
+function monthNum(m){const x=String(m).match(/\d+/);return x?Number(x[0]):0}
+function coverHTML(b, cls=''){return b.cover?`<img src="${b.cover}" alt="${esc(b.title)}封面">`:`<div class="fallback" style="--h:${hue(b.title)}">${esc(b.title)}</div>`}
+function bookButton(b){return `<button class="book ${selectedId===b.id?'selected':''}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}">${coverHTML(b)}${b.favorite?'<span class="fav"></span>':''}</button>`}
+
+function filtered(){
+ const q=document.getElementById('search').value.trim().toLowerCase();
+ return books.filter(b=>b.year===currentYear && (!favoritesOnly||b.favorite) && (!q||[b.title,b.author,b.note].some(v=>String(v||'').toLowerCase().includes(q))));
+}
+function renderYears(){
+ const years=[...new Set(books.map(b=>Number(b.year)))].sort((a,b)=>a-b);
+ if(!years.includes(currentYear)) currentYear=years.at(-1)||new Date().getFullYear();
+ const i=years.indexOf(currentYear);
+ document.getElementById('yearbar').innerHTML=
+ `<button id="prevY" ${i<=0?'disabled':''}>‹</button>`+
+ years.map(y=>`<button class="year-chip ${y===currentYear?'active':''}" data-y="${y}">${y}</button>`).join('')+
+ `<button id="nextY" ${i<0||i>=years.length-1?'disabled':''}>›</button>`;
+ document.querySelectorAll('.year-chip').forEach(b=>b.onclick=()=>{currentYear=Number(b.dataset.y);selectedId=null;render()});
+ document.getElementById('prevY').onclick=()=>{if(i>0){currentYear=years[i-1];selectedId=null;render()}};
+ document.getElementById('nextY').onclick=()=>{if(i<years.length-1){currentYear=years[i+1];selectedId=null;render()}};
+}
+function renderStats(list){
+ const all=books.filter(b=>b.year===currentYear), counts={}; all.forEach(b=>counts[b.month]=(counts[b.month]||0)+1);
+ const best=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]||monthNum(a)-monthNum(b))[0];
+ document.getElementById('statTotal').textContent=`${all.length} 本`;
+ document.getElementById('statMonth').textContent=best||'—';
+ document.getElementById('statFav').textContent=`${all.filter(b=>b.favorite).length} 本`;
+}
+function renderWorkspace(list){
+ const ws=document.getElementById('workspace');
+ if(!list.length){ws.innerHTML='<div class="empty-year">這個條件下還沒有書。📖</div>';return}
+ if(mode==='year'){
+   const sorted=[...list].sort((a,b)=>monthNum(a.month)-monthNum(b.month));
+   ws.innerHTML=`<div class="grid">${sorted.map(b=>`<div class="grid-card">${bookButton(b)}<div class="caption">${esc(b.title)}</div><div class="sub">${esc(b.month)}</div></div>`).join('')}</div>`;
+ }else{
+   const groups={}; list.forEach(b=>(groups[b.month]??=[]).push(b));
+   const keys=Object.keys(groups).sort((a,b)=>monthNum(b)-monthNum(a));
+   ws.innerHTML=keys.map(m=>`<section class="month-card"><button class="month-head" data-month="${esc(m)}"><span><strong>${esc(m)}</strong>　<span style="color:var(--muted)">${groups[m].length} 本</span></span><span>⌄</span></button><div class="shelf"><div class="books">${groups[m].map(bookButton).join('')}</div></div></section>`).join('');
+   ws.querySelectorAll('.month-head').forEach(h=>h.onclick=()=>{const s=h.nextElementSibling;s.hidden=!s.hidden;h.lastElementChild.textContent=s.hidden?'›':'⌄'});
+ }
+ ws.querySelectorAll('.book').forEach(b=>b.onclick=()=>showDetail(b.dataset.id));
+}
+function showDetail(id){
+ selectedId=id; const b=books.find(x=>String(x.id)===String(id)); if(!b)return;
+ const d=document.getElementById('detail'); d.className='detail show';
+ d.innerHTML=`<div class="cover-large">${coverHTML(b)}</div><h2>${esc(b.title)}</h2>
+ <div class="meta"><div class="k">年份</div><div>${b.year}</div><div class="k">月份</div><div>${esc(b.month)}</div>
+ <div class="k">作者</div><div>${esc(b.author)||'—'}</div><div class="k">喜歡標記</div><div>${b.favorite?'♥ 喜歡':'—'}</div></div>
+ ${b.note?`<div class="note">${esc(b.note)}</div>`:''}
+ <div class="actions"><button class="primary" id="editCurrent">編輯紀錄</button><button id="deleteCurrent">刪除</button></div>`;
+ document.getElementById('editCurrent').onclick=()=>openEditor(b);
+ document.getElementById('deleteCurrent').onclick=async()=>{if(confirm(`確定刪除「${b.title}」？`)){await delBook(b.id);books=await getAll();selectedId=null;document.getElementById('detail').className='detail empty';document.getElementById('detail').innerHTML='點一本書，就會在這裡打開它的閱讀紀錄。';render()}};
+ renderWorkspace(filtered());
+}
+function render(){
+ renderYears(); const list=filtered();renderStats(list);renderWorkspace(list);
+ document.getElementById('monthMode').classList.toggle('active',mode==='month');
+ document.getElementById('yearMode').classList.toggle('active',mode==='year');
+}
+function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1500)}
+function yearsForForm(){const y=[...new Set([...books.map(b=>Number(b.year)),new Date().getFullYear()])].sort((a,b)=>b-a);document.getElementById('bookYear').innerHTML=y.map(v=>`<option value="${v}">${v}</option>`).join('')}
+function openEditor(b=null){
+ yearsForForm(); pendingCover=b?.cover||'';
+ document.getElementById('formTitle').textContent=b?'編輯閱讀紀錄':'新增書籍';
+ document.getElementById('bookId').value=b?.id||'';
+ document.getElementById('bookTitle').value=b?.title||'';
+ document.getElementById('bookYear').value=b?.year||currentYear;
+ document.getElementById('bookMonth').value=b?.month||'';
+ document.getElementById('bookAuthor').value=b?.author||'';
+ document.getElementById('bookFav').checked=!!b?.favorite;
+ document.getElementById('bookNote').value=b?.note||'';
+ document.getElementById('bookCoverFile').value='';
+ updatePreview();document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'可用書名搜尋 Open Library；若找到封面與作者，也會協助補上作者。';document.getElementById('editor').showModal();
+}
+function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
+async function compress(file){
+ return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=520;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.78))};img.src=fr.result};fr.readAsDataURL(file)})
+}
+document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.files[0];if(f){pendingCover=await compress(f);updatePreview();document.getElementById('coverStatus').textContent='已使用你上傳的封面。'}};
+function cleanSearchTitle(t){return String(t||'').replace(/[：:—–\-].*$/,'').replace(/[（(].*?[）)]/g,'').trim()||String(t||'').trim()}
+async function findCoverOnline(){
+ const title=document.getElementById('bookTitle').value.trim(), status=document.getElementById('coverStatus');
+ if(!title){status.textContent='請先輸入書名，再搜尋封面。';return}
+ status.textContent='正在網路搜尋封面…'; document.getElementById('findCover').disabled=true;
+ try{
+   const q=encodeURIComponent(cleanSearchTitle(title));
+   const url=`https://openlibrary.org/search.json?title=${q}&fields=title,author_name,cover_i,isbn&limit=8`;
+   const r=await fetch(url,{headers:{'Accept':'application/json'}}); if(!r.ok)throw new Error('搜尋服務暫時無法使用');
+   const j=await r.json(); const hit=(j.docs||[]).find(x=>x.cover_i) || (j.docs||[]).find(x=>Array.isArray(x.isbn)&&x.isbn.length);
+   if(!hit){status.textContent='目前沒有找到可用封面，可以改用手動上傳。';return}
+   pendingCover=hit.cover_i?`https://covers.openlibrary.org/b/id/${hit.cover_i}-L.jpg?default=false`:`https://covers.openlibrary.org/b/isbn/${encodeURIComponent(hit.isbn[0])}-L.jpg?default=false`;
+   if(!document.getElementById('bookAuthor').value.trim() && hit.author_name?.[0]) document.getElementById('bookAuthor').value=hit.author_name[0];
+   updatePreview(); status.textContent=`已找到「${hit.title||title}」的封面。請確認版本是否正確；若不對可再手動上傳。`;
+ }catch(err){status.textContent='封面搜尋失敗：'+err.message+'。仍可使用手動上傳。'}
+ finally{document.getElementById('findCover').disabled=false}
+}
+
+async function searchCoverForBook(book){
+ const q=encodeURIComponent(cleanSearchTitle(book.title));
+ const url=`https://openlibrary.org/search.json?title=${q}&fields=title,author_name,cover_i,isbn&limit=8`;
+ const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),10000);
+ try{
+   const r=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
+   if(!r.ok) throw new Error('HTTP '+r.status);
+   const j=await r.json();
+   const docs=j.docs||[];
+   const exact=docs.find(x=>x.cover_i && String(x.title||'').trim().toLowerCase()===cleanSearchTitle(book.title).toLowerCase());
+   const hit=exact || docs.find(x=>x.cover_i) || docs.find(x=>Array.isArray(x.isbn)&&x.isbn.length);
+   if(!hit) return null;
+   const cover=hit.cover_i?`https://covers.openlibrary.org/b/id/${hit.cover_i}-L.jpg?default=false`:`https://covers.openlibrary.org/b/isbn/${encodeURIComponent(hit.isbn[0])}-L.jpg?default=false`;
+   return {cover,author:(!book.author && hit.author_name?.[0])?hit.author_name[0]:book.author};
+ }finally{clearTimeout(timer)}
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function batchFillCurrentYearCovers(){
+ const btn=document.getElementById('batchCovers');
+ const progress=document.getElementById('coverProgress'),text=document.getElementById('coverProgressText'),fill=document.getElementById('coverProgressFill');
+ const targets=books.filter(b=>Number(b.year)===Number(currentYear) && !b.cover);
+ if(!targets.length){toast(`${currentYear} 年的書都有封面了`);return}
+ if(!confirm(`要替 ${currentYear} 年目前沒有封面的 ${targets.length} 本書自動搜尋封面嗎？\n\n會依書名逐本搜尋；抓錯的封面之後仍可個別更換。`))return;
+ btn.disabled=true; progress.classList.add('show'); let found=0,failed=0;
+ try{
+   for(let i=0;i<targets.length;i++){
+     const b=targets[i];
+     text.textContent=`正在補封面 ${i+1} / ${targets.length}：${b.title}`;
+     fill.style.width=`${Math.round((i/targets.length)*100)}%`;
+     try{
+       const hit=await searchCoverForBook(b);
+       if(hit){b.cover=hit.cover;b.author=hit.author||b.author||'';await putBook(b);found++;}
+       else failed++;
+     }catch(err){console.warn('cover search failed',b.title,err);failed++;}
+     // 保守一點，避免連續大量請求被公開服務限制。
+     if(i<targets.length-1)await sleep(700);
+   }
+   books=await getAll(); render();
+   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。`;
+   toast(`已補上 ${found} 本封面`);
+   setTimeout(()=>progress.classList.remove('show'),4500);
+ }finally{btn.disabled=false}
+}
+document.getElementById('batchCovers').onclick=batchFillCurrentYearCovers;
+
+document.getElementById('findCover').onclick=findCoverOnline;
+document.getElementById('clearCover').onclick=()=>{pendingCover='';updatePreview();document.getElementById('coverStatus').textContent='已移除封面。'};
+document.getElementById('editForm').onsubmit=async e=>{
+ e.preventDefault();const old=books.find(x=>String(x.id)===document.getElementById('bookId').value);
+ const b={id:old?.id||('b'+Date.now()),title:document.getElementById('bookTitle').value.trim(),year:Number(document.getElementById('bookYear').value),month:document.getElementById('bookMonth').value.trim(),author:document.getElementById('bookAuthor').value.trim(),favorite:document.getElementById('bookFav').checked,note:document.getElementById('bookNote').value.trim(),cover:pendingCover||''};
+ await putBook(b);books=await getAll();currentYear=b.year;selectedId=b.id;document.getElementById('editor').close();render();showDetail(b.id);toast('已儲存');
+};
+document.getElementById('addBtn').onclick=()=>openEditor();
+document.getElementById('mobileAdd').onclick=()=>openEditor();
+document.getElementById('closeEditor').onclick=()=>document.getElementById('editor').close();
+document.getElementById('cancelEditor').onclick=()=>document.getElementById('editor').close();
+document.getElementById('monthMode').onclick=()=>{mode='month';render()};
+document.getElementById('yearMode').onclick=()=>{mode='year';render()};
+document.getElementById('search').oninput=()=>render();
+function setFav(v){favoritesOnly=v;render();document.getElementById('navFav').classList.toggle('active',v);document.getElementById('navAll').classList.toggle('active',!v)}
+document.getElementById('navFav').onclick=()=>setFav(true);
+document.getElementById('mobileFav').onclick=()=>setFav(!favoritesOnly);
+document.getElementById('navAll').onclick=()=>setFav(false);
+document.getElementById('mobileAll').onclick=()=>setFav(false);
+function backup(){
+ const payload={format:'my-reading-shelf',version:2,exportedAt:new Date().toISOString(),books};
+ const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='我的閱讀書櫃備份.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('備份已匯出')
+}
+function normalizeImported(raw){
+ const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null; if(!arr)throw new Error('不是可辨識的閱讀書櫃備份檔');
+ return arr.map((b,i)=>({id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),favorite:!!b.favorite,note:String(b.note||''),cover:String(b.cover||'')})).filter(b=>b.title&&Number.isFinite(b.year)&&b.month)
+}
+async function importBackup(file){
+ const text=await file.text(); let raw; try{raw=JSON.parse(text)}catch{throw new Error('JSON 檔案格式錯誤')}
+ const incoming=normalizeImported(raw); if(!incoming.length)throw new Error('備份檔中沒有有效書籍紀錄');
+ const replace=confirm(`讀到 ${incoming.length} 筆書籍。\n\n按「確定」＝取代目前書櫃\n按「取消」＝合併到目前書櫃`);
+ if(replace){
+   await new Promise((res,rej)=>{const r=tx('readwrite').clear();r.onsuccess=()=>res();r.onerror=()=>rej(r.error)});
+   for(const b of incoming)await putBook(b);
+ }else{
+   const existing=new Map(books.map(b=>[`${b.year}|${b.month}|${b.title}`.toLowerCase(),b]));
+   let n=0; for(const b of incoming){const key=`${b.year}|${b.month}|${b.title}`.toLowerCase(); if(!existing.has(key)){b.id='b'+Date.now()+'-'+n++;await putBook(b)}}
+ }
+ books=await getAll(); currentYear=Math.max(...books.map(b=>Number(b.year))); selectedId=null; favoritesOnly=false; render(); toast('匯入完成');
+}
+function chooseImport(){const f=document.getElementById('importFile');f.value='';f.click()}
+document.getElementById('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{await importBackup(file)}catch(err){alert('匯入失敗：'+err.message)}};
+document.getElementById('navBackup').onclick=backup;
+document.getElementById('topBackup').onclick=backup;
+document.getElementById('navImport').onclick=chooseImport;
+document.getElementById('topImport').onclick=chooseImport;
+(async()=>{await openDB();await seed();currentYear=Math.max(...books.map(b=>Number(b.year)));render()})().catch(err=>{document.getElementById('workspace').innerHTML='<div class="empty-year">資料庫開啟失敗：'+esc(err.message)+'</div>'});
+</script>
+</body>
+</html>
