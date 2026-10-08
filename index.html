@@ -142,7 +142,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
           <button id="yearMode">年度總覽</button>
         </div>
         <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
-        <button id="batchCovers" class="utility" type="button">✨ 補齊本年度封面</button>
+        <button id="batchCovers" class="utility" type="button" title="安全模式：批次自動寫入已停用">✨ 批次封面（安全模式）</button>
         <button id="restoreOnlineCovers" class="utility" type="button">↩ 復原搜尋資料</button>
         <button id="topImport" class="utility" type="button">匯入</button>
         <button id="topBackup" class="utility" type="button">匯出</button>
@@ -279,7 +279,7 @@ function openEditor(b=null){
  document.getElementById('bookFav').checked=!!b?.favorite;
  document.getElementById('bookNote').value=b?.note||'';
  document.getElementById('bookCoverFile').value='';
- updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。';document.getElementById('editor').showModal();
+ updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。搜尋結果不會自動覆蓋。':'安全搜尋：Google Books＋Apple Books 只提供候選，請確認後再儲存。';document.getElementById('editor').showModal();
 }
 function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
 async function compress(file){
@@ -289,106 +289,101 @@ document.getElementById('bookCoverFile').onchange=async e=>{const f=e.target.fil
 function cleanSearchTitle(t){return String(t||'').replace(/[（(].*?[）)]/g,'').trim()||String(t||'').trim()}
 function shortSearchTitle(t){return cleanSearchTitle(t).replace(/[：:—–\-].*$/,'').trim()||cleanSearchTitle(t)}
 function normalizeTitle(t){return cleanSearchTitle(t).replace(/[\s·・，。！？、:：()（）《》〈〉「」『』【】\-—–]/g,'').toLowerCase()}
-function appleArtworkLarge(url){return String(url||'').replace(/^http:/,'https:').replace(/100x100[^/]*\.(jpg|jpeg|png)$/i,'600x600bb.$1').replace('100x100','600x600')}
-function appleBooksSearch(title,timeoutMs=12000){
- return new Promise((resolve,reject)=>{
-   const cb='__bookcb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-   const script=document.createElement('script');
-   const timer=setTimeout(()=>cleanup(new Error('搜尋逾時')),timeoutMs);
-   function cleanup(err,data){clearTimeout(timer);try{delete window[cb]}catch{};script.remove();err?reject(err):resolve(data)}
-   window[cb]=(data)=>cleanup(null,data);
-   script.onerror=()=>cleanup(new Error('無法連線 Apple Books 搜尋服務'));
-   const q=encodeURIComponent(title);
-   script.src=`https://itunes.apple.com/search?term=${q}&country=tw&media=ebook&entity=ebook&limit=25&callback=${cb}`;
-   document.head.appendChild(script);
- });
-}
 function titleScore(targetTitle,resultTitle){
  const a=normalizeTitle(targetTitle),b=normalizeTitle(resultTitle);
  if(!a||!b)return 0;
  if(a===b)return 100;
  if(a.includes(b)||b.includes(a)){
    const ratio=Math.min(a.length,b.length)/Math.max(a.length,b.length);
-   if(Math.min(a.length,b.length)>=3 && ratio>=0.58)return Math.round(82+18*ratio);
+   if(Math.min(a.length,b.length)>=3 && ratio>=0.62)return Math.round(84+16*ratio);
  }
  return 0;
 }
+function googleCoverLarge(url){
+ return String(url||'').replace(/^http:/,'https:').replace(/&edge=curl/g,'').replace(/zoom=1/g,'zoom=2');
+}
+async function googleBooksSearch(title,timeoutMs=12000){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+   const q=encodeURIComponent('intitle:'+title);
+   const url=`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=20&printType=books`;
+   const r=await fetch(url,{headers:{'Accept':'application/json'},signal:controller.signal});
+   if(!r.ok)throw new Error('Google Books HTTP '+r.status);
+   return await r.json();
+ }finally{clearTimeout(timer)}
+}
+function googleCandidates(title,data,minScore=82){
+ const rows=(data&&data.items)||[];
+ return rows.map(item=>{
+   const v=item.volumeInfo||{};
+   const image=v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail);
+   return {source:'Google Books',id:item.id,title:v.title||'',author:(v.authors||[]).join('、'),image:googleCoverLarge(image),score:titleScore(title,v.title||'')};
+ }).filter(r=>r.score>=minScore&&r.image).sort((a,b)=>b.score-a.score);
+}
+function appleArtworkLarge(url){return String(url||'').replace(/^http:/,'https:').replace(/100x100[^/]*\.(jpg|jpeg|png)$/i,'600x600bb.$1').replace('100x100','600x600')}
+function appleBooksSearch(title,timeoutMs=12000){
+ return new Promise((resolve,reject)=>{
+   const cb='__bookcb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+   const script=document.createElement('script');
+   const timer=setTimeout(()=>cleanup(new Error('Apple Books 搜尋逾時')),timeoutMs);
+   function cleanup(err,data){clearTimeout(timer);try{delete window[cb]}catch{};script.remove();err?reject(err):resolve(data)}
+   window[cb]=(data)=>cleanup(null,data);
+   script.onerror=()=>cleanup(new Error('無法連線 Apple Books 搜尋服務'));
+   script.src=`https://itunes.apple.com/search?term=${encodeURIComponent(title)}&country=tw&media=ebook&entity=ebook&limit=25&callback=${cb}`;
+   document.head.appendChild(script);
+ });
+}
 function appleCandidates(title,data,minScore=82){
  const rows=(data&&data.results)||[];
- return rows.map(x=>({x,score:titleScore(title,x.trackName||x.collectionName||'')}))
-   .filter(r=>r.score>=minScore && (r.x.artworkUrl100||r.x.artworkUrl60))
-   .sort((a,b)=>b.score-a.score)
-   .filter((r,i,arr)=>arr.findIndex(z=>(z.x.trackId||z.x.trackName)===(r.x.trackId||r.x.trackName))===i);
+ return rows.map(x=>({source:'Apple Books',id:String(x.trackId||x.collectionId||x.trackName),title:x.trackName||x.collectionName||'',author:x.artistName||'',image:appleArtworkLarge(x.artworkUrl100||x.artworkUrl60),score:titleScore(title,x.trackName||x.collectionName||'')}))
+   .filter(r=>r.score>=minScore&&r.image).sort((a,b)=>b.score-a.score);
 }
-async function searchAppleCandidates(title){
- let data=await appleBooksSearch(cleanSearchTitle(title));
- let list=appleCandidates(title,data,82);
- if(!list.length && shortSearchTitle(title)!==cleanSearchTitle(title)){
-   data=await appleBooksSearch(shortSearchTitle(title));
-   list=appleCandidates(title,data,82);
+async function searchSafeCandidates(title){
+ const queries=[cleanSearchTitle(title)];
+ const short=shortSearchTitle(title); if(short&&short!==queries[0])queries.push(short);
+ let all=[];
+ for(const q of queries){
+   const results=await Promise.allSettled([googleBooksSearch(q),appleBooksSearch(q)]);
+   if(results[0].status==='fulfilled')all.push(...googleCandidates(title,results[0].value,82));
+   if(results[1].status==='fulfilled')all.push(...appleCandidates(title,results[1].value,82));
+   if(all.some(x=>x.score>=96))break;
  }
- return list;
+ const seen=new Set();
+ return all.sort((a,b)=>b.score-a.score).filter(x=>{
+   const key=(normalizeTitle(x.title)+'|'+x.image).toLowerCase();
+   if(seen.has(key))return false;seen.add(key);return true;
+ });
 }
 function renderCoverCandidates(list){
- const box=document.getElementById('coverCandidates');
- box.innerHTML='';
- list.slice(0,6).forEach(({x,score})=>{
+ const box=document.getElementById('coverCandidates');box.innerHTML='';
+ list.slice(0,8).forEach(x=>{
    const btn=document.createElement('button');btn.type='button';btn.className='cover-choice';
-   const img=appleArtworkLarge(x.artworkUrl100||x.artworkUrl60);
-   btn.innerHTML=`<img src="${img}" alt=""><span>${escapeHtml(x.trackName||x.collectionName||'')}</span><small>${escapeHtml(x.artistName||'')} · ${score}%</small>`;
+   btn.innerHTML=`<img src="${escapeHtml(x.image)}" alt="${escapeHtml(x.title)}封面"><span>${escapeHtml(x.title)}</span><small>${escapeHtml(x.source)} · ${x.score}%${x.author?' · '+escapeHtml(x.author):''}</small>`;
+   const img=btn.querySelector('img');
+   img.addEventListener('error',()=>{btn.remove();if(!box.children.length)document.getElementById('coverStatus').textContent='候選結果有回傳，但圖片本身無法載入。請改用手動上傳。';});
    btn.addEventListener('click',()=>{
-     pendingCover=img;
-     if(!document.getElementById('bookAuthor').value.trim()&&x.artistName)document.getElementById('bookAuthor').value=x.artistName;
-     updatePreview();
-     document.getElementById('coverStatus').textContent=`已選擇「${x.trackName||x.collectionName||''}」封面。儲存後才會套用。`;
+     pendingCover=x.image;updatePreview();
+     document.getElementById('coverStatus').textContent=`已暫選「${x.title}」封面（${x.source}）。只有按下「儲存」後才會寫入，作者不會被自動修改。`;
      box.querySelectorAll('.cover-choice').forEach(b=>b.style.outline='');btn.style.outline='2px solid #5d765f';
-   });box.appendChild(btn);
+   });
+   box.appendChild(btn);
  });
 }
 async function findCoverOnline(){
  const title=document.getElementById('bookTitle').value.trim(),status=document.getElementById('coverStatus'),box=document.getElementById('coverCandidates');
  if(!title){status.textContent='請先輸入書名，再搜尋封面。';return}
- status.textContent='正在比對 Apple Books 書名與封面…';box.innerHTML='';document.getElementById('findCover').disabled=true;
+ status.textContent='正在用 Google Books＋Apple Books 搜尋，結果不會自動寫入…';box.innerHTML='';document.getElementById('findCover').disabled=true;
  try{
-   const list=await searchAppleCandidates(title);
-   if(!list.length){status.textContent='沒有找到書名足夠吻合的封面。為避免配錯書，這次不自動套用；你仍可手動上傳。';return}
+   const list=await searchSafeCandidates(title);
+   if(!list.length){status.textContent='兩個來源都沒有找到書名足夠吻合、且有封面的結果。這次不會動你的資料，可改用手動上傳。';return}
    renderCoverCandidates(list);
-   status.textContent=`找到 ${Math.min(list.length,6)} 個較吻合的候選封面，請點選正確版本。`;
- }catch(err){status.textContent='封面搜尋失敗：'+err.message+'。仍可使用手動上傳。'}
+   status.textContent=`找到 ${Math.min(list.length,8)} 個候選。請先核對書名與封面，再點選；未按「儲存」前不會寫進書櫃。`;
+ }catch(err){status.textContent='封面搜尋失敗：'+err.message+'。你的原資料完全不會被修改。'}
  finally{document.getElementById('findCover').disabled=false}
 }
-async function searchCoverForBook(book){
- const list=await searchAppleCandidates(book.title);
- const strict=list.find(r=>r.score>=96);
- if(!strict)return null;
- const hit=strict.x;
- return {cover:appleArtworkLarge(hit.artworkUrl100||hit.artworkUrl60),author:(!book.author&&hit.artistName)?hit.artistName:book.author};
-}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 async function batchFillCurrentYearCovers(){
- const btn=document.getElementById('batchCovers');
- const progress=document.getElementById('coverProgress'),text=document.getElementById('coverProgressText'),fill=document.getElementById('coverProgressFill');
- const targets=books.filter(b=>Number(b.year)===Number(currentYear) && !b.cover);
- if(!targets.length){toast(`${currentYear} 年的書都有封面了`);return}
- if(!confirm(`要替 ${currentYear} 年目前沒有封面的 ${targets.length} 本書自動搜尋封面嗎？\n\n會使用 Apple Books 台灣商店逐本搜尋，速度會比較慢；抓錯的封面之後仍可個別更換。`))return;
- btn.disabled=true; progress.classList.add('show'); let found=0,failed=0;
- try{
-   for(let i=0;i<targets.length;i++){
-     const b=targets[i];
-     text.textContent=`正在補封面 ${i+1} / ${targets.length}：${b.title}`;
-     fill.style.width=`${Math.round((i/targets.length)*100)}%`;
-     try{
-       const hit=await searchCoverForBook(b);
-       if(hit){b.cover=hit.cover;await putBook(b);found++;}
-       else failed++;
-     }catch(err){console.warn('cover search failed',b.title,err);failed++;}
-     if(i<targets.length-1)await sleep(3200);
-   }
-   books=await getAll(); render();
-   fill.style.width='100%'; text.textContent=`完成：找到 ${found} 本封面，${failed} 本暫時沒找到。`;
-   toast(`已補上 ${found} 本封面`);
-   setTimeout(()=>progress.classList.remove('show'),5000);
- }finally{btn.disabled=false}
+ toast('安全模式下已停用批次自動寫入。請逐本搜尋、確認候選封面後再儲存。');
 }
 function isRemoteCover(v){return /^https?:\/\//i.test(String(v||''))}
 async function restoreOnlineSearchData(){
