@@ -478,6 +478,8 @@ a.btn.primary{color:var(--accent-ink)}
     <button type="button" id="mBatch">逐本補上封面<span id="mBatchCount"></span></button>
     <button type="button" id="mTidy">整理全部封面<span>去白邊、書背</span></button>
     <button type="button" id="mRestore">移除網路搜尋的封面</button>
+    <hr>
+    <button type="button" id="mClear" style="color:var(--ribbon)">清空這台裝置的書房</button>
   </div>
 </header>
 
@@ -683,6 +685,25 @@ a.btn.primary{color:var(--accent-ink)}
       <button type="button" class="export-opt" id="exportJsonBtn"><b>完整備份（JSON）</b><span>保留封面、裁切位置、標籤、喜歡與筆記。換裝置或還原時用這個。</span></button>
       <button type="button" class="export-opt" id="exportExcelBtn"><b>Excel 試算表（.xlsx）</b><span>年份、月份、書名、作者、標籤、喜歡、筆記，並嵌入封面。可以再匯回來。</span></button>
     </div>
+  </div>
+</dialog>
+
+<!-- 匯入說明 -->
+<dialog id="importBox" class="bottom">
+  <div class="sheet">
+    <div class="sheet-head"><div style="flex:1"><h3>匯入資料</h3><p>可以匯入 Excel 書單，或之前匯出的 JSON 備份。</p></div><button type="button" class="x" id="importBoxClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <div class="howto" style="margin:0"><b>Excel 書單的格式</b>
+        <ol>
+          <li>第一列放欄位名稱，至少要有「書名」「年份」「月份」。</li>
+          <li>可以再加「作者」「標籤」「喜歡」「閱讀筆記」。「喜歡」填「是」，或把書名那格塗上底色都可以。</li>
+          <li>封面圖可以直接貼在 Excel 裡同一列的格子上。</li>
+          <li>如果每個年份分一個工作表，工作表名稱寫年份（例如 2025），就可以不用「年份」欄。</li>
+        </ol>
+      </div>
+      <p class="hint" style="margin-top:12px">匯入前會先顯示預覽，可以選擇合併或取代目前的書房。</p>
+    </div>
+    <div class="sheet-foot"><button type="button" class="btn" id="templateBtn">下載 Excel 範本</button><button type="button" class="btn primary" id="importPick">選擇檔案</button></div>
   </div>
 </dialog>
 
@@ -1350,7 +1371,34 @@ async function importBackup(file){
   const n=await writeImport(incoming,choice==='replace');toast(choice==='replace'?`已還原 ${n} 本書`:`合併了 ${n} 本新書（重複的略過）`);
 }
 let pendingExcelImport=null;
-function chooseImport(){closeMenu();const f=$('importFile');f.value='';f.click()}
+function chooseImport(){closeMenu();$('importBox').showModal()}
+$('importPick').onclick=()=>{$('importBox').close();const f=$('importFile');f.value='';f.click()};
+$('importBoxClose').onclick=()=>$('importBox').close();
+$('templateBtn').onclick=async()=>{
+  if(!window.JSZip){notify('Excel 元件還沒載入','請確認網路連線後重新整理頁面。');return}
+  const rows=[['年份','月份','書名','作者','標籤','喜歡','閱讀筆記'],[2026,'3月','（範例）書名寫這裡','作者名','小說、日本','是','一句感想'],[2026,'4月','（範例）第二本書','','散文','','']];
+  const cell=(v,ref)=>typeof v==='number'?`<c r="${ref}"><v>${v}</v></c>`:`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="2" width="9" customWidth="1"/><col min="3" max="3" width="36" customWidth="1"/><col min="4" max="5" width="16" customWidth="1"/><col min="6" max="6" width="8" customWidth="1"/><col min="7" max="7" width="40" customWidth="1"/></cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,colRef(j+1)+(i+1))).join('')}</row>`).join('')}</sheetData></worksheet>`;
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+  zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+  zip.folder('xl').file('workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="閱讀紀錄" sheetId="1" r:id="rId1"/></sheets></workbook>');
+  zip.folder('xl').folder('_rels').file('workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
+  zip.folder('xl').folder('worksheets').file('sheet1.xml',sheet);
+  download(await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'拾頁書房-匯入範本.xlsx');
+  toast('範本已下載，刪掉範例那兩列再填自己的書');
+};
+/* 清空這台裝置 */
+$('mClear').onclick=async()=>{
+  closeMenu();
+  const synced=!!syncCfg();
+  const ok=await ask({title:'清空這台裝置的書房？',body:`這台裝置上的 ${books.length} 本書會全部刪除，無法復原。建議先匯出備份。`+(synced?'\n這台裝置的同步也會一併中斷，GitHub 上的資料不會被刪除。':''),buttons:[{label:'取消',value:false},{label:'全部清空',value:true,cls:'danger solid'}]});
+  if(!ok)return;
+  clearTimeout(syncState.timer);
+  await clearAll();
+  for(const k of ['shelf-deleted','sync-last','sync-cfg','shelf-dirty','tidy-dismissed','shelf-last-export'])ls.set(k,'');
+  await reload();currentYear=NOW.getFullYear();setSyncStatus('off');render();toast('書房已清空');
+};
 function normHeader(v){return String(v??'').trim().toLowerCase().replace(/[\s　:_：()（）]/g,'')}
 function colIndexFromRef(ref){const m=String(ref||'').match(/^([A-Z]+)/i);if(!m)return -1;let n=0;for(const ch of m[1].toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n-1}
 function yearFrom(v){const m=String(v??'').match(/(?:19|20)\d{2}/);return m?Number(m[0]):null}
