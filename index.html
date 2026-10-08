@@ -239,7 +239,8 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .hint{font-size:12px;color:var(--ink-soft);line-height:1.5}
 .hint.warn{color:var(--brass)}
 .hint.err{color:var(--ribbon)}
-.row{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px}
+.row{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px}
+#bookYearCustom{margin-top:6px}
 .mchips{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
 .mchips button{height:36px;border-radius:8px;border:1px solid var(--rule);font-size:13px;font-variant-numeric:tabular-nums}
 .mchips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -535,6 +536,7 @@ a.btn.primary{color:var(--accent-ink)}
         <div class="field">
           <label for="bookYear">讀完的年份</label>
           <select id="bookYear"></select>
+          <input id="bookYearCustom" type="number" min="1900" max="2200" step="1" inputmode="numeric" placeholder="輸入年份，例如 2031" aria-label="自訂年份" hidden>
         </div>
         <div class="field">
           <span class="lab">月份</span>
@@ -1073,10 +1075,16 @@ $('bookTitle').addEventListener('input',()=>{
 });
 
 function yearsForForm(sel){
-  const ys=yearsList(),cy=NOW.getFullYear(),min=Math.min(ys[0],cy-5),max=Math.max(ys.at(-1),cy+1);
+  const ys=yearsList(),cy=NOW.getFullYear(),min=Math.min(ys[0],cy-10),max=Math.max(ys.at(-1),cy+5);
   const opts=[];for(let y=max;y>=min;y--)opts.push(`<option value="${y}">${y} 年</option>`);
-  $('bookYear').innerHTML=opts.join('');$('bookYear').value=String(sel);
+  opts.push('<option value="other">其他年份…</option>');
+  $('bookYear').innerHTML=opts.join('');
+  sel=Number(sel);
+  if(sel>=min&&sel<=max){$('bookYear').value=String(sel);$('bookYearCustom').hidden=true;$('bookYearCustom').value=''}
+  else{$('bookYear').value='other';$('bookYearCustom').hidden=false;$('bookYearCustom').value=String(sel)}
 }
+$('bookYear').addEventListener('change',()=>{const o=$('bookYear').value==='other';$('bookYearCustom').hidden=!o;if(o){$('bookYearCustom').value=$('bookYearCustom').value||String(NOW.getFullYear()+6);$('bookYearCustom').focus()}});
+function formYear(){if($('bookYear').value!=='other')return Number($('bookYear').value);const y=Math.round(Number($('bookYearCustom').value));return y>=1900&&y<=2200?y:NaN}
 function openEditor(b=null,opts={}){
   editFromView=!!opts.fromView;
   yearsForForm(b?.year||currentYear);
@@ -1261,12 +1269,13 @@ $('editForm').onsubmit=async e=>{
   e.preventDefault();
   const title=$('bookTitle').value.trim(),month=$('bookMonth').value.trim(),err=$('formErr');
   if(!title||!month){err.hidden=false;err.textContent=!title?'請填寫書名。':'請選一個月份，或在「其他」裡寫下月份。';(!title?$('bookTitle'):$('monthChips')).scrollIntoView({block:'center'});return}
+  if(!Number.isFinite(formYear())){err.hidden=false;err.textContent='年份請填 1900 到 2200 之間的數字。';$('bookYearCustom').focus();return}
   if($('tagInput').value.trim())addTag($('tagInput').value);
   const old=byId($('bookId').value), isNew=!old;
   const btn=$('saveBtn');btn.disabled=true;
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
-  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:Number($('bookYear').value),month,author:$('bookAuthor').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
+  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
