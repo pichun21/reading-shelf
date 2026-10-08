@@ -51,7 +51,7 @@ button{cursor:pointer}
 .detail{position:sticky;top:18px;background:rgba(255,250,242,.94);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;min-height:360px}
 .detail.empty{display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted)}
 .cover-large{aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#dbe2d5,#eee0cf);max-width:170px;margin:0 auto 16px;box-shadow:0 10px 20px rgba(55,43,33,.15)}
-.cover-large img{width:100%;height:100%;object-fit:cover}
+.cover-large img{width:100%;height:100%;object-fit:contain;background:#f7f0e5}
 .cover-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;font-family:serif;font-weight:700;line-height:1.45}
 .detail h2{font-family:serif;margin:10px 0 4px;font-size:25px}
 .meta{display:grid;grid-template-columns:72px 1fr;gap:9px;font-size:14px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
@@ -72,6 +72,17 @@ button{cursor:pointer}
 linear-gradient(150deg,hsl(var(--h) 28% 86%),hsl(var(--h) 25% 72%));color:#423d35}
 .book .fav{position:absolute;top:0;right:10px;width:16px;height:27px;background:var(--rose);clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
 .book.selected{outline:3px solid var(--sage);outline-offset:3px}
+.book.spine{flex-basis:64px;width:64px;height:142px;background:transparent;box-shadow:none;overflow:visible;border-radius:3px}
+.book.spine .spine-body{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:3px 7px 7px 3px;background:linear-gradient(165deg,hsl(var(--h) 28% 84%),hsl(var(--h) 24% 67%));border-left:5px solid hsla(var(--h),28%,42%,.55);box-shadow:0 6px 12px rgba(48,36,27,.15),inset -3px 0 0 rgba(255,255,255,.22);padding:9px 7px}
+.book.spine .spine-title{writing-mode:vertical-rl;text-orientation:mixed;max-height:118px;overflow:hidden;font-family:serif;font-size:12px;font-weight:800;line-height:1.35;letter-spacing:.05em;color:#3f3a33}
+.book.spine .fav{right:6px;top:-4px;width:13px;height:24px}
+.book.cover-card{padding:6px;background:#f7f0e5;border:1px solid #e4d9ca;box-shadow:0 6px 13px rgba(48,36,27,.13);border-radius:8px}
+.book.cover-card .cover-mat{width:100%;height:100%;display:block;overflow:hidden;border-radius:5px;background:#efe7da}
+.book.cover-card .cover-mat img{width:100%;height:100%;object-fit:contain;background:#f7f0e5}
+.book.cover-card .cover-mat .fallback{height:100%}
+.grid-card .book.spine{width:68px;height:142px;margin:0 auto}
+.grid-card .book.cover-card{width:100%;height:auto;aspect-ratio:2/3}
+.visual-label{font-size:12px;color:var(--muted);align-self:center;margin-left:2px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:16px}
 .grid .book{width:100%;height:auto;aspect-ratio:2/3;flex:none}
 .grid-card{min-width:0}
@@ -113,7 +124,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
  .controls{margin-top:15px}.segment{width:100%}.segment button{flex:1}.search{width:100%;min-width:0}.utility{flex:1;text-align:center}
  .stats{grid-template-columns:repeat(3,1fr);gap:7px}.stat{padding:11px 9px}.stat strong{font-size:21px}.stat small{font-size:11px}
  .yearbar{gap:5px;margin:14px 0}.yearbar button{height:39px;min-width:40px}.yearbar .year-chip{padding:0 12px}
- .book{flex-basis:82px;width:82px;height:124px}.books{min-height:142px;gap:9px}
+ .book{flex-basis:82px;width:82px;height:124px}.book.spine{flex-basis:58px;width:58px;height:124px}.book.spine .spine-title{max-height:102px;font-size:11px}.books{min-height:142px;gap:9px}
  .row2{grid-template-columns:1fr}.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.grid-card .caption{font-size:11px}
 }
 
@@ -140,6 +151,10 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
         <div class="segment">
           <button id="monthMode" class="active">月份書櫃</button>
           <button id="yearMode">年度總覽</button>
+        </div>
+        <div class="segment" aria-label="書籍顯示方式">
+          <button id="spineView" class="active">書背</button>
+          <button id="coverView">封面</button>
         </div>
         <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
         <button id="batchCovers" class="utility" type="button" title="逐本搜尋候選封面，由你確認後才儲存">✨ 批次封面（安全模式）</button>
@@ -209,6 +224,7 @@ async function migrateExcelCovers(){
 
 const DB_NAME='readingShelfDB'; const STORE='books'; let db;
 let books=[], currentYear=2026, mode='month', favoritesOnly=false, selectedId=null, pendingCover=null;
+let visualMode=localStorage.getItem('readingShelfVisualMode')||'spine';
 
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);
 r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'})};
@@ -223,7 +239,12 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function hue(s){let h=0;for(const ch of s)h=(h*31+ch.charCodeAt(0))%360;return h}
 function monthNum(m){const x=String(m).match(/\d+/);return x?Number(x[0]):0}
 function coverHTML(b, cls=''){return b.cover?`<img src="${b.cover}" alt="${esc(b.title)}封面">`:`<div class="fallback" style="--h:${hue(b.title)}">${esc(b.title)}</div>`}
-function bookButton(b){return `<button class="book ${selectedId===b.id?'selected':''}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}">${coverHTML(b)}${b.favorite?'<span class="fav"></span>':''}</button>`}
+function bookButton(b){
+ const selected=selectedId===b.id?'selected':'';
+ const fav=b.favorite?'<span class="fav"></span>':'';
+ if(visualMode==='spine') return `<button class="book spine ${selected}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}"><span class="spine-body" style="--h:${hue(b.title)}"><span class="spine-title">${esc(b.title)}</span></span>${fav}</button>`;
+ return `<button class="book cover-card ${selected}" data-id="${esc(b.id)}" aria-label="${esc(b.title)}"><span class="cover-mat">${coverHTML(b)}</span>${fav}</button>`;
+}
 
 function filtered(){
  const q=document.getElementById('search').value.trim().toLowerCase();
@@ -278,6 +299,8 @@ function render(){
  renderYears(); const list=filtered();renderStats(list);renderWorkspace(list);
  document.getElementById('monthMode').classList.toggle('active',mode==='month');
  document.getElementById('yearMode').classList.toggle('active',mode==='year');
+ document.getElementById('spineView').classList.toggle('active',visualMode==='spine');
+ document.getElementById('coverView').classList.toggle('active',visualMode==='cover');
 }
 function toast(t){const x=document.getElementById('toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1500)}
 function yearsForForm(){const y=[...new Set([...books.map(b=>Number(b.year)),new Date().getFullYear()])].sort((a,b)=>b-a);document.getElementById('bookYear').innerHTML=y.map(v=>`<option value="${v}">${v}</option>`).join('')}
@@ -479,6 +502,8 @@ document.getElementById('closeEditor').onclick=()=>{document.getElementById('edi
 document.getElementById('cancelEditor').onclick=()=>{document.getElementById('editor').close();stopBatch()};
 document.getElementById('monthMode').onclick=()=>{mode='month';render()};
 document.getElementById('yearMode').onclick=()=>{mode='year';render()};
+document.getElementById('spineView').onclick=()=>{visualMode='spine';localStorage.setItem('readingShelfVisualMode',visualMode);render()};
+document.getElementById('coverView').onclick=()=>{visualMode='cover';localStorage.setItem('readingShelfVisualMode',visualMode);render()};
 document.getElementById('search').oninput=()=>render();
 function setFav(v){favoritesOnly=v;render();document.getElementById('navFav').classList.toggle('active',v);document.getElementById('navAll').classList.toggle('active',!v)}
 document.getElementById('navFav').onclick=()=>setFav(true);
