@@ -143,6 +143,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
         </div>
         <input id="search" class="search" placeholder="搜尋書名、作者或筆記…">
         <button id="batchCovers" class="utility" type="button">✨ 補齊本年度封面</button>
+        <button id="restoreOnlineCovers" class="utility" type="button">↩ 復原搜尋資料</button>
         <button id="topImport" class="utility" type="button">匯入</button>
         <button id="topBackup" class="utility" type="button">匯出</button>
       </div>
@@ -183,7 +184,7 @@ dialog::backdrop{background:rgba(25,25,20,.38)}
     <label class="field"><span>月份 *</span><input id="bookMonth" required placeholder="例如：9月、2-3月"></label>
   </div>
   <label class="field"><span>作者</span><input id="bookAuthor" maxlength="80"></label>
-  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">使用 Apple Books 台灣商店搜尋；會先比對書名，再讓你確認候選封面。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverPreview" class="preview-sm"></div></label>
+  <label class="field"><span>書本封面</span><input id="bookCoverFile" type="file" accept="image/*"><div class="cover-tools"><button type="button" class="primary" id="findCover">🔎 網路找封面</button><button type="button" id="clearCover">移除封面</button></div><div id="coverStatus" class="cover-status">網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。</div><div id="coverCandidates" class="cover-candidates"></div><div id="coverPreview" class="preview-sm"></div></label>
   <label class="checkline"><input id="bookFav" type="checkbox"> <span>這本是我喜歡的書</span></label>
   <label class="field"><span>閱讀筆記</span><textarea id="bookNote" rows="4" maxlength="1000" placeholder="可以留一句當時的感想。"></textarea></label>
   <div class="form-actions"><button type="button" id="cancelEditor">取消</button><button type="submit" class="save">儲存紀錄</button></div>
@@ -278,7 +279,7 @@ function openEditor(b=null){
  document.getElementById('bookFav').checked=!!b?.favorite;
  document.getElementById('bookNote').value=b?.note||'';
  document.getElementById('bookCoverFile').value='';
- updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'使用 Apple Books 台灣商店搜尋；會先比對書名，再讓你確認候選封面。';document.getElementById('editor').showModal();
+ updatePreview();document.getElementById('coverCandidates').innerHTML='';document.getElementById('coverStatus').textContent=b?.cover?'目前已有封面；可重新搜尋或手動更換。':'網路封面搜尋目前仍屬測試功能；請確認候選書名後再套用。';document.getElementById('editor').showModal();
 }
 function updatePreview(){document.getElementById('coverPreview').innerHTML=pendingCover?`<img src="${pendingCover}" alt="封面預覽">`:''}
 async function compress(file){
@@ -378,7 +379,7 @@ async function batchFillCurrentYearCovers(){
      fill.style.width=`${Math.round((i/targets.length)*100)}%`;
      try{
        const hit=await searchCoverForBook(b);
-       if(hit){b.cover=hit.cover;b.author=hit.author||b.author||'';await putBook(b);found++;}
+       if(hit){b.cover=hit.cover;await putBook(b);found++;}
        else failed++;
      }catch(err){console.warn('cover search failed',b.title,err);failed++;}
      if(i<targets.length-1)await sleep(3200);
@@ -389,6 +390,28 @@ async function batchFillCurrentYearCovers(){
    setTimeout(()=>progress.classList.remove('show'),5000);
  }finally{btn.disabled=false}
 }
+function isRemoteCover(v){return /^https?:\/\//i.test(String(v||''))}
+async function restoreOnlineSearchData(){
+ const affected=books.filter(b=>isRemoteCover(b.cover));
+ if(!affected.length){toast('目前沒有需要復原的網路封面');return}
+ const seedMap=new Map(SEED_BOOKS.map(b=>[String(b.id),b]));
+ const ok=confirm(`找到 ${affected.length} 本由網路搜尋寫入的封面。\n\n按「確定」會：\n• 移除這些網路封面\n• 原始書單中被自動帶入的作者一併還原\n• 保留書名、年份、月份、喜歡標記與閱讀筆記\n• 不會刪除你手動上傳的封面`);
+ if(!ok)return;
+ let restored=0;
+ for(const b of affected){
+   b.cover='';
+   const seed=seedMap.get(String(b.id));
+   if(seed)b.author=seed.author||'';
+   await putBook(b);restored++;
+ }
+ books=await getAll();
+ selectedId=null;
+ render();
+ document.getElementById('detail').className='detail empty';
+ document.getElementById('detail').innerHTML='已復原網路搜尋寫入的封面資料。點一本書可重新查看紀錄。';
+ toast(`已復原 ${restored} 本書`);
+}
+document.getElementById('restoreOnlineCovers').onclick=restoreOnlineSearchData;
 document.getElementById('batchCovers').onclick=batchFillCurrentYearCovers;
 
 document.getElementById('findCover').onclick=findCoverOnline;
