@@ -1311,9 +1311,25 @@ function updateBackupUI(){
 function stamp(){const d=new Date();return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`}
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function exported(){ls.set('shelf-last-export',String(Date.now()));ls.set('shelf-dirty','0');updateBackupUI()}
-function backup(){
-  const payload={format:'my-reading-shelf',version:3,app:'拾頁書房',exportedAt:new Date().toISOString(),books:books.map(({coverOriginal,...b})=>b)};
-  download(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),`拾頁書房備份-${stamp()}.json`);exported();toast('備份已匯出');
+async function backup(){
+  const btn=$('exportJsonBtn');btn.disabled=true;
+  try{
+    const out=[];let embedded=0,linkOnly=0,fixed=0;
+    for(const {coverOriginal,...b} of books){
+      const o={...b};
+      if(isRemoteCover(o.cover)){
+        // 封面只存了網址：先抓下來存成圖片本身，備份才完整
+        const d=await localizeCover(o.cover);
+        if(/^data:image/.test(d)){o.cover=d;fixed++;const cur=byId(b.id);if(cur){cur.cover=d;await putBook(cur)}}else linkOnly++;
+      }
+      if(/^data:image/.test(o.cover||''))embedded++;
+      out.push(o);
+    }
+    const payload={format:'my-reading-shelf',version:3,app:'拾頁書房',exportedAt:new Date().toISOString(),books:out};
+    download(new Blob([JSON.stringify(payload)],{type:'application/json'}),`拾頁書房備份-${stamp()}.json`);exported();
+    const noCover=out.length-embedded-linkOnly;
+    notify('備份已匯出',`共 ${out.length} 本書，其中 ${embedded} 本的封面圖片已一起存進檔案。`+(noCover?`\n${noCover} 本本來就沒有封面。`:'')+(linkOnly?`\n有 ${linkOnly} 本的封面只能存成網址（來源網站不允許下載），換裝置後可能無法顯示，建議重新貼上這幾本的封面。`:'')+(fixed?`\n另外有 ${fixed} 本原本只存網址的封面，已順便轉存成圖片。`:''));
+  }finally{btn.disabled=false}
 }
 function xesc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 function colRef(n){let s='';while(n>0){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26)}return s}
@@ -1348,7 +1364,7 @@ async function exportExcel(){
 }
 $('mExport').onclick=()=>{closeMenu();$('exportDialog').showModal()};
 $('closeExportDialog').onclick=()=>$('exportDialog').close();
-$('exportJsonBtn').onclick=()=>{backup();$('exportDialog').close()};
+$('exportJsonBtn').onclick=async()=>{$('exportDialog').close();await backup()};
 $('exportExcelBtn').onclick=exportExcel;
 
 /* ================= 匯入 ================= */
@@ -1357,18 +1373,54 @@ function normalizeImported(raw){
   const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null;if(!arr)throw new Error('這不是書房的備份檔');
   return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
 }
+const bookKey=b=>`${Number(b.year)}|${String(b.month||'').trim()}|${normTitleKey(b.title)}`;
 async function writeImport(incoming,replace){
-  let added=0;
+  let added=0,filled=0;
   if(replace){const keep=new Set(incoming.map(b=>String(b.id)));for(const old of books)if(!keep.has(String(old.id)))await removeBook(old.id);for(const b of incoming){await saveBook(b);added++}}
-  else{const existing=new Set(books.map(b=>`${b.year}|${b.month}|${b.title}`.toLowerCase()));let n=0;for(const src of incoming){const key=`${src.year}|${src.month}|${src.title}`.toLowerCase();if(!existing.has(key)){await saveBook({...src,id:'b'+Date.now()+'-'+n++});existing.add(key);added++}}}
-  markDirty();await reload();currentYear=Math.max(...yearsList());render();return added;
+  else{
+    const existing=new Map(books.map(b=>[bookKey(b),b]));let n=0;
+    for(const src of incoming){
+      const key=bookKey(src),cur=existing.get(key);
+      if(!cur){await saveBook({...src,id:'b'+Date.now()+'-'+n++});existing.set(key,src);added++;continue}
+      // 已經有這本：只補上缺少的封面和空白欄位，不覆蓋你改過的內容
+      let ch=false;
+      if(!cur.cover&&src.cover){cur.cover=src.cover;cur.coverX=src.coverX??50;cur.coverY=src.coverY??50;cur.coverZoom=src.coverZoom??1;if(src.coverTidied)cur.coverTidied=true;ch=true}
+      if(!cur.author&&src.author){cur.author=src.author;ch=true}
+      if(!cur.note&&src.note){cur.note=src.note;ch=true}
+      if(!cur.tags?.length&&src.tags?.length){cur.tags=src.tags;ch=true}
+      if(!cur.favorite&&src.favorite){cur.favorite=true;ch=true}
+      if(ch){await saveBook(cur);filled++}
+    }
+  }
+  markDirty();await reload();currentYear=Math.max(...yearsList());render();return {added,filled};
+}
+/* 封面補回檔：只替書房裡「沒有封面」的書補上封面，不新增書 */
+async function applyCoverPack(list){
+  const byYT=new Map(),byT=new Map();
+  for(const c of list){if(!c.cover)continue;const t=normTitleKey(c.title);byYT.set(`${Number(c.year)}|${t}`,c);byT.set(t,byT.has(t)?null:c)}
+  let n=0;
+  for(const b of books){
+    if(b.cover)continue;const t=normTitleKey(b.title);
+    const c=byYT.get(`${Number(b.year)}|${t}`)||byT.get(t);if(!c)continue;
+    b.cover=c.cover;b.coverX=50;b.coverY=50;b.coverZoom=1;b.coverTidied=true;await saveBook(b);n++;
+  }
+  markDirty();await reload();render(false);return n;
 }
 async function importBackup(file){
   const text=await file.text();let raw;try{raw=JSON.parse(text)}catch{throw new Error('JSON 檔案格式不正確')}
+  if(raw&&raw.coversOnly&&Array.isArray(raw.books)){
+    const missing=books.filter(b=>!b.cover).length;
+    const n=await applyCoverPack(raw.books);
+    notify(n?`補回了 ${n} 張封面`:'沒有需要補的封面',n?`書房裡原本有 ${missing} 本沒有封面，現在補上了 ${n} 本。${missing-n>0?`其餘 ${missing-n} 本在補回檔裡找不到同名的書，需要另外找封面。`:''}`:(missing?`書房裡有 ${missing} 本沒有封面，但補回檔裡沒有同名的書。`:'書房裡的書都已經有封面了。'));
+    return;
+  }
   const incoming=normalizeImported(raw);if(!incoming.length)throw new Error('備份檔裡沒有可用的書籍紀錄');
-  const choice=await ask({title:`讀到 ${incoming.length} 本書`,body:'要合併進現在的書房，還是用這份備份取代整個書房？\n取代會清掉目前所有紀錄。',buttons:[{label:'取消',value:null},{label:'取代整個書房',value:'replace',cls:'danger'},{label:'合併',value:'merge',cls:'primary'}]});
+  const wc=incoming.filter(b=>/^data:image/.test(b.cover)).length,remote=incoming.filter(b=>/^https?:/.test(b.cover)).length;
+  const coverLine=wc||remote?`其中 ${wc} 本附有封面圖${remote?`，${remote} 本的封面是網址連結`:''}。`:'注意：這份檔案裡沒有任何封面圖。';
+  const choice=await ask({title:`讀到 ${incoming.length} 本書`,body:`${coverLine}\n\n・合併：新的書加進來；已經有的書只補上缺少的封面、作者、筆記和標籤。\n・取代：清掉目前所有紀錄，改用這份備份。`,buttons:[{label:'取消',value:null},{label:'取代整個書房',value:'replace',cls:'danger'},{label:'合併',value:'merge',cls:'primary'}]});
   if(!choice)return;
-  const n=await writeImport(incoming,choice==='replace');toast(choice==='replace'?`已還原 ${n} 本書`:`合併了 ${n} 本新書（重複的略過）`);
+  const r=await writeImport(incoming,choice==='replace');
+  toast(choice==='replace'?`已還原 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`);
 }
 let pendingExcelImport=null;
 function chooseImport(){closeMenu();$('importBox').showModal()}
@@ -1460,7 +1512,7 @@ function showExcelPreview(file,result){
 async function applyExcelImport(replace){
   if(!pendingExcelImport?.length)return;
   if(replace){const ok=await ask({title:'取代整個書房？',body:`目前的 ${books.length} 本紀錄會被清空，換成這份 Excel 的 ${pendingExcelImport.length} 本。建議先匯出一份備份。`,buttons:[{label:'取消',value:false},{label:'清空並取代',value:true,cls:'danger solid'}]});if(!ok)return}
-  const n=await writeImport(pendingExcelImport,replace);$('importPreview').close();pendingExcelImport=null;toast(replace?`已匯入 ${n} 本書`:`合併了 ${n} 本新書（重複的略過）`);
+  const r=await writeImport(pendingExcelImport,replace);$('importPreview').close();pendingExcelImport=null;toast(replace?`已匯入 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`);
 }
 $('closeImportPreview').onclick=()=>$('importPreview').close();$('cancelExcelImport').onclick=()=>$('importPreview').close();
 $('mergeExcelImport').onclick=()=>applyExcelImport(false);$('replaceExcelImport').onclick=()=>applyExcelImport(true);
