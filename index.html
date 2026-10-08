@@ -591,7 +591,7 @@ a.btn.primary{color:var(--accent-ink)}
               <button type="button" class="btn sm" id="skipBatch" hidden>跳過這本 →</button>
             </div>
             <p class="hint" id="coverStatus" style="margin:8px 0 0">選好封面後，可以直接拖曳左邊的圖調整位置。</p>
-            <p class="paste-tip">在博客來的封面上按右鍵「複製圖片」，回到這裡按 <kbd>Ctrl</kbd>＋<kbd>V</kbd>（Mac 按 <kbd>⌘</kbd>＋<kbd>V</kbd>）就能貼上。也可以把圖片直接拖到左邊的框裡。</p>
+            <p class="paste-tip"><b>怎麼把封面貼過來：</b>博客來不能按右鍵複製圖片，請用螢幕剪取框選封面：<br>Windows 按 <kbd>Win</kbd>＋<kbd>Shift</kbd>＋<kbd>S</kbd>，Mac 按 <kbd>⌘</kbd>＋<kbd>Ctrl</kbd>＋<kbd>Shift</kbd>＋<kbd>4</kbd>。框好後回到這裡按 <kbd>Ctrl</kbd>＋<kbd>V</kbd>（Mac 按 <kbd>⌘</kbd>＋<kbd>V</kbd>）。多框到的白邊會自動修掉。<br>手機可以先截圖，再按「上傳圖片」選那張截圖，用左邊的框拖曳、縮放對準封面。</p>
           </div>
         </div>
       </div>
@@ -1153,7 +1153,7 @@ function openEditor(b=null,opts={}){
   $('bookNote').value=b?.note||'';
   $('bookCoverFile').value='';$('formErr').hidden=true;
   updatePreview();$('skipBatch').hidden=!batchModeActive;
-  $('coverStatus').textContent=b?.cover?'已有封面，可以拖曳左邊的圖重新調整位置，或換一張。':'到博客來找到封面後，複製圖片回來貼上，最準確。';
+  $('coverStatus').textContent=b?.cover?'已有封面，可以拖曳左邊的圖重新調整位置，或換一張。':'到博客來找到封面後，用螢幕剪取框選封面，回來按 Ctrl＋V 貼上。';
   syncCoverButtons();updateBooksLink();
   const d=$('editor');if(!d.open)d.showModal();
   if(!b)setTimeout(()=>$('bookTitle').focus(),50);
@@ -1162,7 +1162,7 @@ function updatePreview(){
   const stage=$('coverCropStage');$('coverZoom').value=String(pendingCrop.zoom||1);
   stage.classList.toggle('empty',!pendingCover);
   stage.innerHTML=pendingCover?`<img src="${esc(pendingCover)}" alt="封面裁切預覽" style="${cropTransform(pendingCrop)}">`:'';
-  stage.querySelector('img')?.addEventListener('error',()=>{$('coverStatus').textContent='這張圖片載入不了（來源網站可能不讓其他網頁直接顯示）。請改用「複製圖片」再貼上，或另存後上傳。'});
+  stage.querySelector('img')?.addEventListener('error',()=>{$('coverStatus').textContent='這張圖片載入不了（來源網站可能不讓其他網頁直接顯示）。請改用螢幕剪取框選封面再貼上，或另存後上傳。'});
 }
 function resetPendingCrop(){pendingCrop={x:50,y:50,zoom:1};updatePreview()}
 let cropDrag=null;const cropStage=$('coverCropStage');
@@ -1233,7 +1233,7 @@ async function openBatchBook(){
   if(!batchModeActive)return;
   if(batchIndex>=batchQueue.length){batchModeActive=false;$('skipBatch').hidden=true;if($('editor').open)$('editor').close();toast(`${currentYear} 年的封面都檢查完了`);return}
   const b=byId(batchQueue[batchIndex]);if(!b){batchIndex++;return openBatchBook()}
-  openEditor(b);$('skipBatch').hidden=false;setTimeout(()=>$('coverCropStage').scrollIntoView({block:'center'}),80);$('coverStatus').textContent=`還沒有封面。按「到博客來找封面」，複製圖片回來貼上；不想補可以按「跳過這本」。`;
+  openEditor(b);$('skipBatch').hidden=false;setTimeout(()=>$('coverCropStage').scrollIntoView({block:'center'}),80);$('coverStatus').textContent=`還沒有封面。按「到博客來找封面」，用螢幕剪取框選封面後回來貼上；不想補可以按「跳過這本」。`;
 }
 async function batchFillCurrentYearCovers(){
   closeMenu();
@@ -1498,7 +1498,11 @@ async function parseXlsx(file){
   for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const draw=[...sd.doc.getElementsByTagNameNS('*','drawing')][0];if(!draw)continue;const rid=[...draw.attributes].find(a=>a.localName==='id')?.value;if(!rid)continue;const rf=zip.file(resolveZipPath(sh.path,`_rels/${sh.path.split('/').pop()}.rels`));if(!rf)continue;const rd=parser.parseFromString(await rf.async('text'),'application/xml'),rm={};[...rd.getElementsByTagNameNS('*','Relationship')].forEach(r=>rm[r.getAttribute('Id')]=r.getAttribute('Target'));const drawPath=resolveZipPath(sh.path,rm[rid]);const df=zip.file(drawPath);if(!df)continue;const dd=parser.parseFromString(await df.async('text'),'application/xml');const drf=zip.file(resolveZipPath(drawPath,`_rels/${drawPath.split('/').pop()}.rels`)),drm={};if(drf){const drd=parser.parseFromString(await drf.async('text'),'application/xml');[...drd.getElementsByTagNameNS('*','Relationship')].forEach(r=>drm[r.getAttribute('Id')]=r.getAttribute('Target'))}
     for(const anc of [...dd.documentElement.children].filter(n=>['oneCellAnchor','twoCellAnchor','absoluteAnchor'].includes(n.localName))){const from=[...anc.children].find(n=>n.localName==='from');const row=Number([...from?.children||[]].find(n=>n.localName==='row')?.textContent||0)+1,col=Number([...from?.children||[]].find(n=>n.localName==='col')?.textContent||0)+1;const blip=[...anc.getElementsByTagNameNS('*','blip')][0];const er=blip?[...blip.attributes].find(a=>a.localName==='embed')?.value:null;if(!er||!drm[er])continue;const mediaPath=resolveZipPath(drawPath,drm[er]),mf=zip.file(mediaPath);if(!mf)continue;const ext=mediaPath.split('.').pop().toLowerCase(),mime=ext==='png'?'image/png':ext==='webp'?'image/webp':'image/jpeg';try{const data=await resizeExcelImage(await mf.async('blob').then(b=>new Blob([b],{type:mime})));images.push({sheet:sh.name,row,col,data})}catch{}}
   }
-  const used=new Set();for(const rec of records){const c=images.map((im,i)=>({...im,i})).filter(x=>x.sheet===rec._sheet&&!used.has(x.i)).sort((a,b)=>Math.abs(a.row-rec._row)-Math.abs(b.row-rec._row));if(c[0]&&Math.abs(c[0].row-rec._row)<=2){rec.cover=c[0].data;used.add(c[0].i)}}
+  // 1) 同一工作表、同一列：精準對應
+  const used=new Set();const recAt=new Map();for(const r of records)recAt.set(r._sheet+'|'+r._row,r);
+  images.forEach((im,i)=>{const r=recAt.get(im.sheet+'|'+im.row);if(r&&!r.cover){r.cover=im.data;used.add(i)}});
+  // 2) 圖片沒有落在任何書的那一列（例如稍微放歪了）：找最近、而且還沒有封面的書，最多差 2 列
+  images.forEach((im,i)=>{if(used.has(i))return;const c=records.filter(r=>r._sheet===im.sheet&&!r.cover&&Math.abs(r._row-im.row)<=2).sort((a,b)=>Math.abs(a._row-im.row)-Math.abs(b._row-im.row));if(c[0]){c[0].cover=im.data;used.add(i)}});
   for(const y of [...new Set(records.map(r=>r.year))]){const ims=images.map((im,i)=>({...im,i})).filter(x=>!used.has(x.i)&&yearFrom(x.sheet)===y).sort((a,b)=>a.row-b.row||a.col-b.col);const recs=records.filter(r=>r.year===y&&!r.cover).sort((a,b)=>a._order-b._order);for(let i=0;i<Math.min(ims.length,recs.length);i++){recs[i].cover=ims[i].data;used.add(ims[i].i)}}
   records.forEach(r=>{delete r._sheet;delete r._row;delete r._order});return {records,imageCount:images.length,mappedCount:records.filter(r=>r.cover).length};
 }
