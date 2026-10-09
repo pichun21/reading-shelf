@@ -360,6 +360,12 @@ a.btn.primary{color:var(--accent-ink)}
 .cover-choice.weak{opacity:.75}
 
 /* 同步 */
+.gpane{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;height:50px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);font-size:16px;font-weight:500;color:var(--ink)}
+.gbtn:hover{border-color:var(--ink-soft)}
+.gbtn svg{width:20px;height:20px}
+.gnotes{margin:0;padding-left:18px;font-size:13px;color:var(--ink-soft);display:flex;flex-direction:column;gap:6px;line-height:1.6}
+.sync-btn[data-state="auth"] .sdot{background:var(--brass)}
 .sync-btn .sdot{position:absolute;top:9px;left:24px;width:7px;height:7px;border-radius:50%;background:transparent;box-shadow:0 0 0 2px var(--wall)}
 .sync-btn[data-state="ok"] .sdot{background:var(--accent)}
 .sync-btn[data-state="pending"] .sdot{background:var(--brass)}
@@ -482,7 +488,7 @@ a.btn.primary{color:var(--accent-ink)}
   <div class="menu" id="menu" hidden>
     <div class="backup-note" id="backupNote"></div>
     <button type="button" id="mInstall" hidden>安裝到主畫面<span>像 App 一樣開啟</span></button>
-    <button type="button" id="mSync">跨裝置同步<span>GitHub</span></button>
+    <button type="button" id="mSync">保存與同步<span>Google 帳號</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel</span></button>
     <hr>
@@ -520,6 +526,7 @@ a.btn.primary{color:var(--accent-ink)}
     <button type="button" class="draw" id="drawBtn"><svg><use href="#i-dice"/></svg>隨手抽一本</button>
   </nav>
 
+  <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
   <main id="stage" aria-live="polite"></main>
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
@@ -659,29 +666,37 @@ a.btn.primary{color:var(--accent-ink)}
 
 <!-- 跨裝置同步 -->
 <dialog id="syncBox" class="bottom">
-  <form class="sheet" id="syncForm" style="width:min(560px,calc(100vw - 32px))" novalidate>
-    <div class="sheet-head"><div style="flex:1;min-width:0"><h3>跨裝置同步</h3><p>把書房存到你 GitHub 上的私人儲存庫，手機和電腦都連上同一個，就會自動保持一致。</p></div><button type="button" class="x" id="syncClose" aria-label="關閉">×</button></div>
+  <div class="sheet" style="width:min(560px,calc(100vw - 32px))">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3>保存與同步</h3><p>登入後，書會存到雲端。換瀏覽器、換手機，登入同一個帳號就會回來。</p></div><button type="button" class="x" id="syncClose" aria-label="關閉">×</button></div>
     <div class="sheet-body">
-      <p class="hint" id="syncInfo" style="margin:0 0 14px"></p>
-      <details class="howto"><summary>第一次設定：建立儲存庫和權杖（約 5 分鐘）</summary>
-        <ol>
-          <li>到 <a href="https://github.com/new" target="_blank" rel="noopener">GitHub 新增儲存庫</a>，名稱填 <code>reading-shelf-data</code>，選 <b>Private</b>，勾選「Add a README file」，按 Create repository。</li>
-          <li>到 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">建立 Fine-grained 權杖</a>：名稱隨意，到期日依需要設定。</li>
-          <li>「Repository access」選 <b>Only select repositories</b>，只勾 <code>reading-shelf-data</code>。</li>
-          <li>「Permissions」裡的 <b>Contents</b> 設為 <b>Read and write</b>，其他不用動，按 Generate token。</li>
-          <li>複製產生的權杖（<code>github_pat_</code> 開頭），貼到下面。每台裝置都貼同一組即可。</li>
-        </ol>
-      </details>
-      <div class="row" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
-        <div class="field"><label for="syncOwner">GitHub 帳號</label><input id="syncOwner" autocomplete="off" spellcheck="false" placeholder="例如 pichun21"></div>
-        <div class="field"><label for="syncRepo">儲存庫名稱</label><input id="syncRepo" autocomplete="off" spellcheck="false" placeholder="reading-shelf-data"></div>
+      <p class="hint" id="syncInfo" style="margin:0 0 14px" hidden></p>
+      <div id="gPane" class="gpane">
+        <button type="button" class="gbtn" id="gLogin"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>用 Google 帳號登入</button>
+        <button type="button" class="btn primary" id="syncReauth" hidden>重新連線 Google</button>
+        <ul class="gnotes">
+          <li>書和封面會存在<b>你自己的 Google 雲端硬碟</b>裡一個 App 專用的隱藏資料夾，只有頁間日子讀得到，不會佔用或動到你其他的檔案。</li>
+          <li id="gNoteLocal">不登入也能照常使用，書只會存在這個瀏覽器裡。</li>
+        </ul>
       </div>
-      <div class="field"><label for="syncToken">權杖</label><input id="syncToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
-      <p class="hint">權杖只存在這台裝置的瀏覽器裡。它只能存取你指定的那一個儲存庫；不用時可以隨時到 GitHub 刪掉。</p>
-      <p class="hint err" id="syncErr" hidden></p>
+      <details class="howto" id="ghDetails"><summary>進階：改用 GitHub 私人儲存庫同步</summary>
+        <form id="syncForm" novalidate style="margin-top:12px">
+          <ol>
+            <li>到 <a href="https://github.com/new" target="_blank" rel="noopener">GitHub 新增儲存庫</a>，名稱填 <code>reading-shelf-data</code>，選 <b>Private</b>，勾選「Add a README file」。</li>
+            <li>到 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">建立 Fine-grained 權杖</a>，「Repository access」只選這個儲存庫，「Contents」設為 <b>Read and write</b>。</li>
+            <li>把權杖（<code>github_pat_</code> 開頭）貼到下面。</li>
+          </ol>
+          <div class="row2" style="margin-top:12px">
+            <div class="field"><label for="syncOwner">GitHub 帳號</label><input id="syncOwner" autocomplete="off" spellcheck="false" placeholder="例如 pichun21"></div>
+            <div class="field"><label for="syncRepo">儲存庫名稱</label><input id="syncRepo" autocomplete="off" spellcheck="false" placeholder="reading-shelf-data"></div>
+          </div>
+          <div class="field"><label for="syncToken">權杖</label><input id="syncToken" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></div>
+          <p class="hint err" id="syncErr" hidden></p>
+          <button type="submit" class="btn" id="syncSave">連線並同步</button>
+        </form>
+      </details>
     </div>
-    <div class="sheet-foot"><button type="button" class="btn danger" id="syncOff" hidden>中斷同步</button><span style="flex:1"></span><button type="button" class="btn" id="syncNow" hidden>立即同步</button><button type="submit" class="btn primary" id="syncSave">連線並同步</button></div>
-  </form>
+    <div class="sheet-foot"><button type="button" class="btn danger" id="syncOff" hidden>登出</button><span style="flex:1"></span><button type="button" class="btn primary" id="syncNow" hidden>立即同步</button></div>
+  </div>
 </dialog>
 
 <!-- 確認 -->
@@ -881,7 +896,7 @@ function ask({title,body='',buttons}){
 const notify=(title,body)=>ask({title,body});
 
 /* ================= 主畫面 ================= */
-function render(animateBars=true){renderIntro(animateBars);renderStage();updateBackupUI();updateTidyBanner()}
+function render(animateBars=true){renderIntro(animateBars);renderStage();updateBackupUI();updateTidyBanner();updateLoginBanner()}
 function renderIntro(animateBars){
   const years=yearsList();
   if(!years.includes(currentYear))currentYear=years.at(-1);
@@ -920,7 +935,7 @@ function renderStage(){
   if(view==='treasure'){renderTreasure(st);return}
   const groups=groupByMonth(yearBooks());
   stageCtx=groups.flatMap(g=>g.items.map(b=>b.id));
-  if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button><button type="button" class="btn" id="wSync">從其他裝置同步</button><button type="button" class="btn" id="wImport">匯入備份檔</button></div></div>`;$('wAdd').onclick=()=>openEditor();$('wSync').onclick=()=>openSyncBox();$('wImport').onclick=()=>chooseImport();return}
+  if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button><button type="button" class="btn" id="wSync">${googleReady()?'用 Google 帳號登入':'從其他裝置同步'}</button><button type="button" class="btn" id="wImport">匯入備份檔</button></div></div>`;$('wAdd').onclick=()=>openEditor();$('wSync').onclick=()=>googleReady()?startGoogleLogin():openSyncBox();$('wImport').onclick=()=>chooseImport();return}
   if(!groups.length){st.innerHTML=`<div class="empty">${currentYear} 年的書架還空著。<br><button type="button" class="btn primary" id="emptyAdd">放上第一本書</button></div>`;$('emptyAdd').onclick=()=>openEditor();return}
   if(view==='wall'){
     st.innerHTML=groups.map(g=>`<section class="wall-month" data-mnum="${monthNum(g.month)}"><h3>${esc(monthLabel(g.month))}<small>${g.items.length} 本</small></h3><div class="wall">${g.items.map(b=>tileEl(b,b.author||monthLabel(b.month))).join('')}</div></section>`).join('');
@@ -1308,7 +1323,7 @@ function updateBackupUI(){
   const warn=!synced&&dirty>0&&(!last||days>=30);
   const note=$('backupNote');
   note.textContent=last?`上次匯出備份：${new Date(last).toLocaleDateString('zh-TW')}（${days?days+' 天前':'今天'}）${dirty?`，之後改了 ${dirty} 次`:''}`:`還沒有匯出過備份。書房的資料只存在這個瀏覽器裡。`;
-  if(synced)note.textContent=`已同步到 GitHub（${new Date(Number(ls.get('sync-last'))).toLocaleString('zh-TW',{hour12:false})}）。匯出備份可以再多留一份。`;
+  if(synced)note.textContent=`已同步到${syncCfg().type==='google'?' Google 雲端硬碟':' GitHub'}（${new Date(Number(ls.get('sync-last'))).toLocaleString('zh-TW',{hour12:false})}）。匯出備份可以再多留一份。`;
   note.className='backup-note'+(warn?' warn':'');
   $('backupDot').hidden=!warn;
   const miss=yearBooks().filter(b=>!b.cover).length;$('mBatchCount').textContent=miss?`${miss} 本沒封面`:'都有封面';
@@ -1452,11 +1467,11 @@ $('templateBtn').onclick=async()=>{
 $('mClear').onclick=async()=>{
   closeMenu();
   const synced=!!syncCfg();
-  const ok=await ask({title:'清空這台裝置的書房？',body:`這台裝置上的 ${books.length} 本書會全部刪除，無法復原。建議先匯出備份。`+(synced?'\n這台裝置的同步也會一併中斷，GitHub 上的資料不會被刪除。':''),buttons:[{label:'取消',value:false},{label:'全部清空',value:true,cls:'danger solid'}]});
+  const ok=await ask({title:'清空這台裝置的書房？',body:`這台裝置上的 ${books.length} 本書會全部刪除，無法復原。建議先匯出備份。`+(synced?'\n這台裝置也會登出、停止同步，雲端上的資料不會被刪除。':''),buttons:[{label:'取消',value:false},{label:'全部清空',value:true,cls:'danger solid'}]});
   if(!ok)return;
   clearTimeout(syncState.timer);
   await clearAll();
-  for(const k of ['shelf-deleted','sync-last','sync-cfg','shelf-dirty','tidy-dismissed','shelf-last-export'])ls.set(k,'');
+  for(const k of ['shelf-deleted','sync-last','sync-cfg','g-token','shelf-dirty','tidy-dismissed','shelf-last-export','login-dismissed'])ls.set(k,'');
   await reload();currentYear=NOW.getFullYear();setSyncStatus('off');render();toast('書房已清空');
 };
 function normHeader(v){return String(v??'').trim().toLowerCase().replace(/[\s　:_：()（）]/g,'')}
@@ -1617,14 +1632,28 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   if(syncCfg()){setSyncStatus('pending');runSync()}else setSyncStatus('off');
 })().catch(err=>{$('stage').innerHTML=`<div class="empty">書房打不開：${esc(err.message)}</div>`});
 
-/* ================= 跨裝置同步（GitHub 私人儲存庫） =================
-   儲存庫內容：
-   shelf.json          書籍資料（不含封面圖）＋刪除紀錄
-   covers/<雜湊>.jpg   封面圖片，同一張圖只存一次
+/* ================= 跨裝置同步 =================
+   主要：用 Google 帳號登入，資料存在使用者自己 Google 雲端硬碟的「App 專用資料夾」
+         （使用者在雲端硬碟裡看不到，其他程式也讀不到）。
+   進階：GitHub 私人儲存庫。
+   兩種都存成：shelf.json（書籍資料，不含封面圖）＋ 每張封面一個檔案（同一張圖只存一次）。
 */
+/* ▼▼▼ 網站管理者設定：貼上 Google Cloud 的「OAuth 用戶端 ID」（xxxx.apps.googleusercontent.com）▼▼▼ */
+const GOOGLE_CLIENT_ID='330656430235-1hln7rdro9vgbqgv547g2nggvbeen4d6.apps.googleusercontent.com';
+/* ▲▲▲ 留空的話，書房不會顯示 Google 登入 ▲▲▲ */
+
 const SYNC_FILE='shelf.json', COVER_DIR='covers';
+const G_SCOPE='https://www.googleapis.com/auth/drive.appdata openid email';
 let syncState={busy:false,timer:null,again:false,status:'off',msg:''};
-function syncCfg(){try{const c=JSON.parse(ls.get('sync-cfg')||'null');return c&&c.owner&&c.repo&&c.token?c:null}catch{return null}}
+function syncCfg(){
+  try{
+    const c=JSON.parse(ls.get('sync-cfg')||'null');if(!c)return null;
+    if(c.type==='google')return GOOGLE_CLIENT_ID?c:null;
+    if(c.owner&&c.repo&&c.token)return {...c,type:'github'};
+    return null;
+  }catch{return null}
+}
+const googleReady=()=>!!GOOGLE_CLIENT_ID;
 function tombstones(){try{return JSON.parse(ls.get('shelf-deleted')||'{}')||{}}catch{return {}}}
 function setTombstones(t){ls.set('shelf-deleted',JSON.stringify(t))}
 
@@ -1637,7 +1666,11 @@ function bytesFromB64(b64){const bin=atob(String(b64).replace(/\s/g,''));const u
 const utf8ToB64=s=>b64FromBytes(new TextEncoder().encode(s));
 const b64ToUtf8=b=>new TextDecoder().decode(bytesFromB64(b));
 async function sha(s){const h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].slice(0,10).map(x=>x.toString(16).padStart(2,'0')).join('')}
+const conflictErr=()=>{const e=new Error('conflict');e.conflict=true;return e};
+const authErr=()=>{const e=new Error('需要重新登入 Google');e.needAuth=true;return e};
+function blobToDataUrl(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>rej(fr.error);fr.readAsDataURL(blob)})}
 
+/* ---------------- GitHub ---------------- */
 async function gh(cfg,path,opts={}){
   const url=`https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}${path}`;
   let r;
@@ -1647,7 +1680,7 @@ async function gh(cfg,path,opts={}){
   if(r.status===401)throw new Error('權杖無效或已過期，請到同步設定換一組新的');
   if(r.status===403)throw new Error('權杖沒有這個儲存庫的寫入權限（Contents 要設為 Read and write）');
   if(r.status===404)throw new Error(`找不到儲存庫 ${cfg.owner}/${cfg.repo}，或權杖沒有被授權存取它`);
-  if(r.status===409||r.status===422){const e=new Error('conflict');e.conflict=true;throw e}
+  if(r.status===409||r.status===422)throw conflictErr();
   if(!r.ok)throw new Error('GitHub 回應錯誤 '+r.status);
   return r.status===204?null:r.json();
 }
@@ -1656,24 +1689,105 @@ async function testSync(cfg){
   if(!repo.permissions?.push)throw new Error('權杖只能讀不能寫，請把 Contents 權限設為 Read and write');
   return repo;
 }
+function githubBackend(cfg){
+  return {
+    name:'GitHub',
+    async readShelf(){const f=await gh(cfg,`/contents/${SYNC_FILE}`,{allow404:true});if(!f)return {data:null,ver:null};try{return {data:JSON.parse(b64ToUtf8(f.content)),ver:f.sha}}catch{throw new Error('GitHub 上的 shelf.json 格式損壞')}},
+    async listCovers(){const d=await gh(cfg,`/contents/${COVER_DIR}`,{allow404:true});return new Set((d||[]).map(f=>f.name.replace(/\.jpg$/,'')))},
+    async readCover(h){const f=await gh(cfg,`/contents/${COVER_DIR}/${h}.jpg`,{allow404:true});return f&&f.content?'data:image/jpeg;base64,'+String(f.content).replace(/\s/g,''):null},
+    async writeCover(h,bytes,title){try{await gh(cfg,`/contents/${COVER_DIR}/${h}.jpg`,{method:'PUT',body:JSON.stringify({message:`封面：${title}`,content:b64FromBytes(bytes)})})}catch(e){if(!e.conflict)throw e}},
+    async writeShelf(payload,ver){await gh(cfg,`/contents/${SYNC_FILE}`,{method:'PUT',body:JSON.stringify({message:`同步書房（${payload.books.length} 本）`,content:utf8ToB64(JSON.stringify(payload,null,1)),...(ver?{sha:ver}:{})})})}
+  };
+}
 
+/* ---------------- Google 雲端硬碟 ---------------- */
+let gTokenClient=null,gsiLoading=null;
+function gToken(){try{const t=JSON.parse(ls.get('g-token')||'null');return t&&t.exp>Date.now()+60000?t.t:null}catch{return null}}
+function loadGsi(){
+  if(window.google?.accounts?.oauth2)return Promise.resolve();
+  if(gsiLoading)return gsiLoading;
+  gsiLoading=new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>res();s.onerror=()=>{gsiLoading=null;rej(new Error('連不上 Google 登入服務，請確認網路'))};document.head.appendChild(s)});
+  return gsiLoading;
+}
+/* 只能在使用者點擊時呼叫（瀏覽器會擋自動跳出的登入視窗） */
+async function googleSignIn(hint){
+  await loadGsi();
+  return new Promise((resolve,reject)=>{
+    gTokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:G_SCOPE,
+      callback:r=>{if(r.error){reject(new Error(r.error==='access_denied'?'你取消了登入，或沒有勾選允許存取雲端硬碟':'Google 登入失敗：'+r.error));return}
+        if(!google.accounts.oauth2.hasGrantedAllScopes(r,'https://www.googleapis.com/auth/drive.appdata')){reject(new Error('需要勾選「查看及管理這個應用程式在 Google 雲端硬碟中的設定資料」才能同步'));return}
+        ls.set('g-token',JSON.stringify({t:r.access_token,exp:Date.now()+(Number(r.expires_in)||3600)*1000}));resolve(r.access_token)},
+      error_callback:e=>reject(new Error(e?.type==='popup_closed'?'登入視窗被關閉了':e?.type==='popup_failed_to_open'?'登入視窗被瀏覽器擋住了，請允許彈出視窗後再試一次':'Google 登入沒有完成'))});
+    gTokenClient.requestAccessToken(hint?{prompt:'',login_hint:hint}:{prompt:'select_account'});
+  });
+}
+async function gfetch(url,opts={}){
+  const t=gToken();if(!t)throw authErr();
+  let r;
+  try{r=await fetch(url,{...opts,cache:'no-store',headers:{...(opts.headers||{}),Authorization:'Bearer '+t}})}catch{throw new Error('連不上 Google 雲端硬碟，請確認網路')}
+  if(r.status===401){ls.set('g-token','');throw authErr()}
+  if(r.status===403){let m='';try{m=(await r.json()).error?.message||''}catch{};if(/insufficient|scope/i.test(m)){ls.set('g-token','');throw authErr()}throw new Error(/quota|limit/i.test(m)?'Google 雲端硬碟暫時拒絕存取（使用量達上限），稍後再試':'Google 雲端硬碟拒絕存取：'+m)}
+  if(r.status===404&&opts.allow404)return null;
+  if(r.status===507)throw new Error('你的 Google 雲端硬碟空間已滿');
+  if(!r.ok)throw new Error('Google 雲端硬碟回應錯誤 '+r.status);
+  return r;
+}
+const DRIVE='https://www.googleapis.com/drive/v3/files',UPLOAD='https://www.googleapis.com/upload/drive/v3/files';
+function multipart(meta,body,mime){const b='pbd'+Math.random().toString(36).slice(2);return {body:new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: ${mime}\r\n\r\n`,body,`\r\n--${b}--`]),type:`multipart/related; boundary=${b}`}}
+function googleBackend(cfg){
+  let files=null;
+  async function list(){
+    if(files)return files;files=[];let page='';
+    do{const r=await gfetch(`${DRIVE}?spaces=appDataFolder&pageSize=1000&fields=nextPageToken,files(id,name,version)${page?'&pageToken='+encodeURIComponent(page):''}`);const j=await r.json();files.push(...(j.files||[]));page=j.nextPageToken||''}while(page);
+    return files;
+  }
+  const shelfFile=async()=>(await list()).filter(f=>f.name===SYNC_FILE).sort((a,b)=>Number(b.version)-Number(a.version))[0]||null;
+  return {
+    name:'Google 雲端硬碟',
+    async readShelf(){const f=await shelfFile();if(!f)return {data:null,ver:null};const r=await gfetch(`${DRIVE}/${f.id}?alt=media`);try{return {data:await r.json(),ver:f.version,id:f.id}}catch{throw new Error('雲端上的書房資料格式損壞')}},
+    async listCovers(){return new Set((await list()).filter(f=>/^cover-/.test(f.name)).map(f=>f.name.replace(/^cover-|\.jpg$/g,'')))},
+    async readCover(h){const f=(await list()).find(x=>x.name===`cover-${h}.jpg`);if(!f)return null;const r=await gfetch(`${DRIVE}/${f.id}?alt=media`,{allow404:true});return r?blobToDataUrl(new Blob([await r.arrayBuffer()],{type:'image/jpeg'})):null},
+    async writeCover(h,bytes){const m=multipart({name:`cover-${h}.jpg`,parents:['appDataFolder']},bytes,'image/jpeg');await gfetch(`${UPLOAD}?uploadType=multipart&fields=id`,{method:'POST',headers:{'Content-Type':m.type},body:m.body})},
+    async writeShelf(payload,ver){
+      const f=await shelfFile();const json=JSON.stringify(payload);
+      if(f){
+        const cur=await (await gfetch(`${DRIVE}/${f.id}?fields=version`)).json();
+        if(ver&&String(cur.version)!==String(ver)){files=null;throw conflictErr()}
+        await gfetch(`${UPLOAD}/${f.id}?uploadType=media`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:json});
+      }else{
+        if(ver){files=null;throw conflictErr()}
+        const m=multipart({name:SYNC_FILE,parents:['appDataFolder']},json,'application/json');
+        await gfetch(`${UPLOAD}?uploadType=multipart&fields=id`,{method:'POST',headers:{'Content-Type':m.type},body:m.body});
+      }
+      files=null;
+    }
+  };
+}
+const backendFor=cfg=>cfg.type==='google'?googleBackend(cfg):githubBackend(cfg);
+
+/* ---------------- 狀態顯示 ---------------- */
 function setSyncStatus(status,msg=''){
   syncState.status=status;syncState.msg=msg;
   const btn=$('syncBtn');if(!btn)return;
   btn.dataset.state=status;
-  const lbl={off:'同步',ok:'已同步',busy:'同步中',err:'同步失敗',pending:'待同步'}[status]||'同步';
+  const cfg=syncCfg();
+  const lbl={off:googleReady()?'登入':'同步',ok:'已同步',busy:'同步中',err:'同步失敗',pending:'待同步',auth:'重新連線'}[status]||'同步';
   $('syncLbl').textContent=lbl;
   btn.title=msg||lbl;
-  const last=Number(ls.get('sync-last'))||0;
-  $('syncInfo').textContent=!syncCfg()?'尚未設定。設定後，這台裝置的書房會和 GitHub 上的資料保持一致。'
-    :status==='err'?`上次同步失敗：${msg}`
-    :status==='busy'?(msg||'同步中…')
-    :last?`已連到 ${syncCfg().owner}/${syncCfg().repo}，上次同步：${new Date(last).toLocaleString('zh-TW',{hour12:false})}`:`已連到 ${syncCfg().owner}/${syncCfg().repo}`;
+  const last=Number(ls.get('sync-last'))||0,lastTxt=last?`，上次同步：${new Date(last).toLocaleString('zh-TW',{hour12:false})}`:'';
+  const where=!cfg?'':cfg.type==='google'?`已用 ${cfg.email||'Google 帳號'} 登入，書存在你的 Google 雲端硬碟`:`已連到 GitHub：${cfg.owner}/${cfg.repo}`;
+  $('syncInfo').textContent=!cfg?'':status==='err'?`${where}。上次同步失敗：${msg}`:status==='auth'?`${where}。登入已過期，按下方「重新連線」就會繼續同步。`:status==='busy'?(msg||'同步中…'):where+lastTxt;
   $('syncInfo').className='hint'+(status==='err'?' err':'');
-  updateBackupUI();
+  $('syncInfo').hidden=!cfg;
+  updateBackupUI();updateLoginBanner();
+}
+function updateLoginBanner(){
+  const el=$('loginBanner');if(!el)return;
+  el.hidden=!googleReady()||!!syncCfg()||!books.length||ls.get('login-dismissed')==='1';
 }
 function scheduleSync(delay=3500){
   if(!syncCfg())return;
+  if(syncState.status==='auth')return;
   if(syncState.status!=='busy')setSyncStatus('pending');
   clearTimeout(syncState.timer);syncState.timer=setTimeout(()=>runSync(),delay);
 }
@@ -1681,44 +1795,42 @@ async function runSync({manual=false,replace=false}={}){
   const cfg=syncCfg();if(!cfg){setSyncStatus('off');return false}
   if(syncState.busy){syncState.again=true;return false}
   if(!navigator.onLine){setSyncStatus('pending','目前離線，連上網路後會自動同步');return false}
+  if(cfg.type==='google'&&!gToken()){setSyncStatus('auth');return false}
   syncState.busy=true;setSyncStatus('busy');
   try{
-    let tries=0;
-    while(true){try{await syncOnce(cfg,{replace});break}catch(e){if(e.conflict&&tries++<2)continue;throw e}}
+    let tries=0;const be=backendFor(cfg);
+    while(true){try{await syncOnce(be,{replace});break}catch(e){if(e.conflict&&tries++<2)continue;throw e}}
     ls.set('sync-last',String(Date.now()));setSyncStatus('ok');
     if(manual)toast('已同步');
     return true;
-  }catch(e){setSyncStatus('err',e.message);if(manual)toast('同步失敗：'+e.message);return false}
+  }catch(e){
+    if(e.needAuth){setSyncStatus('auth');if(manual)toast('Google 登入已過期，請重新連線');return false}
+    setSyncStatus('err',e.message);if(manual)toast('同步失敗：'+e.message);return false;
+  }
   finally{syncState.busy=false;if(syncState.again){syncState.again=false;scheduleSync(800)}}
 }
-async function syncOnce(cfg,{replace=false}={}){
-  // 1. 讀遠端
-  const file=await gh(cfg,`/contents/${SYNC_FILE}`,{allow404:true});
-  let remote={books:[],deleted:{}},remoteSha=null;
-  if(file){remoteSha=file.sha;try{remote=JSON.parse(b64ToUtf8(file.content))}catch{throw new Error('GitHub 上的 shelf.json 格式損壞')}}
-  const dir=await gh(cfg,`/contents/${COVER_DIR}`,{allow404:true});
-  const remoteCovers=new Set((dir||[]).map(f=>f.name));
-  // 2. 合併刪除紀錄
+
+/* ---------------- 合併：每本書比修改時間，新的贏；刪除也會同步 ---------------- */
+async function syncOnce(be,{replace=false}={}){
+  const {data:remoteData,ver}=await be.readShelf();
+  const remote=remoteData||{books:[],deleted:{}};
+  const remoteCovers=await be.listCovers();
   const del={...(remote.deleted||{})};for(const [id,t] of Object.entries(tombstones()))del[id]=Math.max(del[id]||0,t);
-  // 3. 本機封面算出雜湊
   const local=(await getAll()).map(normalizeBook);
   const localMap=new Map(local.map(b=>[String(b.id),b]));
   const remoteMap=new Map((remote.books||[]).map(b=>[String(b.id),b]));
   for(const b of local){if(/^data:image/.test(b.cover||'')){const h=await sha(b.cover);if(b.coverRef!==h){b.coverRef=h;b._refChanged=true}}else if(b.coverRef){delete b.coverRef;b._refChanged=true}}
-  // 4. 逐本比對，新的贏
   const ids=new Set([...localMap.keys(),...remoteMap.keys()]);
   const outBooks=[];let localChanged=0;const toUpload=[];const toDownload=[];
   for(const id of ids){
     const L=localMap.get(id),R=remoteMap.get(id);
     const lt=L?.updatedAt||0, rt=R?.updatedAt||0, dt=del[id]||0;
-    const newest=Math.max(lt,rt);
-    if(dt&&dt>=newest){if(L){await delBook(id);localChanged++}continue}
-    if(replace&&file&&L&&!R){await delBook(id);localChanged++;continue}
-    // 時間相同時以 GitHub 上的為準（多半是兩邊都沒改過）
+    if(dt&&dt>=Math.max(lt,rt)){if(L){await delBook(id);localChanged++}continue}
+    if(replace&&remoteData&&L&&!R){await delBook(id);localChanged++;continue}
     const win=(L&&(!R||lt>rt))?'L':'R';
     if(win==='L'){
       outBooks.push(toRemote(L));
-      if(L.coverRef&&!remoteCovers.has(L.coverRef+'.jpg'))toUpload.push(L);
+      if(L.coverRef&&!remoteCovers.has(L.coverRef))toUpload.push(L);
       if(L._refChanged){delete L._refChanged;await putBook(L)}
     }else{
       outBooks.push(R);
@@ -1728,36 +1840,29 @@ async function syncOnce(cfg,{replace=false}={}){
         if(R.coverRef){if(L&&L.coverRef===R.coverRef&&L.cover){nb.cover=L.cover;nb.coverRef=R.coverRef}else toDownload.push(nb)}
         else{nb.cover=R.coverUrl||'';delete nb.coverOriginal}
         if(L&&L.coverOriginal&&nb.coverRef===L.coverRef)nb.coverOriginal=L.coverOriginal;else delete nb.coverOriginal;
-        delete nb.coverUrl;nb.tags=Array.isArray(nb.tags)?nb.tags:[];
+        delete nb.coverUrl;delete nb._refChanged;nb.tags=Array.isArray(nb.tags)?nb.tags:[];
         nb._pending=true;localMap.set(id,nb);
       }
     }
   }
-  // 5. 下載缺少的封面
   let n=0;
   for(const nb of toDownload){
     setSyncStatus('busy',`下載封面 ${++n} / ${toDownload.length}`);
     const ref=remoteMap.get(String(nb.id)).coverRef;
-    try{const f=await gh(cfg,`/contents/${COVER_DIR}/${ref}.jpg`,{allow404:true});if(f&&f.content){nb.cover='data:'+(f.name.endsWith('.png')?'image/png':'image/jpeg')+';base64,'+String(f.content).replace(/\s/g,'');nb.coverRef=ref}else nb.cover=nb.cover||''}catch(e){if(e.conflict)throw e;throw e}
+    const d=await be.readCover(ref);if(d){nb.cover=d;nb.coverRef=ref}else nb.cover=nb.cover||'';
   }
   for(const nb of localMap.values())if(nb._pending){delete nb._pending;await putBook(nb);localChanged++}
-  // 6. 上傳新封面
   n=0;
   for(const b of toUpload){
+    if(remoteCovers.has(b.coverRef))continue;
     setSyncStatus('busy',`上傳封面 ${++n} / ${toUpload.length}`);
     const bytes=await coverBytes(b.cover);if(!bytes)continue;
-    try{await gh(cfg,`/contents/${COVER_DIR}/${b.coverRef}.jpg`,{method:'PUT',body:JSON.stringify({message:`封面：${b.title}`,content:b64FromBytes(bytes)})})}
-    catch(e){if(!e.conflict)throw e}/* 已存在就算了 */
-    remoteCovers.add(b.coverRef+'.jpg');
+    await be.writeCover(b.coverRef,bytes,b.title);remoteCovers.add(b.coverRef);
   }
-  // 7. 寫回遠端（有差異才寫）
   outBooks.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
-  const payload={format:'pages-kept-sync',version:1,books:outBooks,deleted:pruneTombstones(del)};
-  const same=file&&JSON.stringify({b:sortBooks(remote.books||[]),d:remote.deleted||{}})===JSON.stringify({b:outBooks,d:payload.deleted});
-  if(!same){
-    payload.updatedAt=new Date().toISOString();
-    await gh(cfg,`/contents/${SYNC_FILE}`,{method:'PUT',body:JSON.stringify({message:`同步書房（${outBooks.length} 本）`,content:utf8ToB64(JSON.stringify(payload,null,1)),...(remoteSha?{sha:remoteSha}:{})})});
-  }
+  const payload={format:'pages-between-days-sync',version:1,books:outBooks,deleted:pruneTombstones(del)};
+  const same=remoteData&&JSON.stringify({b:sortBooks(remote.books||[]),d:remote.deleted||{}})===JSON.stringify({b:outBooks,d:payload.deleted});
+  if(!same){payload.updatedAt=new Date().toISOString();await be.writeShelf(payload,ver)}
   setTombstones(payload.deleted);
   if(localChanged){await reload();render(false)}
 }
@@ -1773,45 +1878,87 @@ function stripLocal(r){const {...x}=r;return JSON.parse(JSON.stringify(x))}
 async function coverBytes(dataUrl){
   const m=String(dataUrl).match(/^data:(image\/[\w+]+);base64,(.+)$/);if(!m)return null;
   if(m[1]==='image/jpeg')return bytesFromB64(m[2]);
-  // webp/png 轉成 jpg，所有裝置都能顯示
   try{const im=await loadImg(dataUrl);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return bytesFromB64(c.toDataURL('image/jpeg',.88).split(',')[1])}catch{return bytesFromB64(m[2])}
 }
 
-/* ---- 設定畫面 ---- */
-function openSyncBox(){
-  closeMenu();const c=syncCfg()||{};
-  $('syncOwner').value=c.owner||'';$('syncRepo').value=c.repo||'reading-shelf-data';$('syncToken').value=c.token||'';
-  $('syncErr').hidden=true;$('syncNow').hidden=!syncCfg();$('syncOff').hidden=!syncCfg();
-  setSyncStatus(syncState.status==='off'&&syncCfg()?'ok':syncState.status,syncState.msg);
-  $('syncBox').showModal();
+/* ---------------- 第一次連上：問要合併還是以雲端為準 ---------------- */
+async function firstSyncChoice(be,label){
+  const sp=/[A-Za-z]/.test(label)?' ':'';
+  if(Number(ls.get('sync-last'))||!books.length)return false;
+  const {data}=await be.readShelf();
+  if(!data||!(data.books||[]).length)return false;
+  const choice=await ask({title:`${label}${sp}上已經有你的書`,body:`這台裝置上也有 ${books.length} 本書。\n・合併：兩邊的書都保留，同一本以較新的為準。\n・以${sp}${label}${sp}為準：這台裝置上${sp}${label}${sp}沒有的書會被移除。`,buttons:[{label:'取消',value:null},{label:`以${sp}${label}${sp}為準`,value:'replace'},{label:'合併',value:'merge',cls:'primary'}]});
+  if(!choice)throw Object.assign(new Error('已取消'),{cancel:true});
+  return choice==='replace';
 }
-$('syncBtn').onclick=openSyncBox;$('mSync').onclick=openSyncBox;
+
+/* ---------------- 登入／設定畫面 ---------------- */
+async function startGoogleLogin(){
+  if(!googleReady()){notify('還不能用 Google 登入','網站管理者還沒有完成 Google 登入的設定。');return}
+  const cfg=syncCfg();
+  try{
+    setSyncStatus('busy','正在登入 Google…');
+    const hint=cfg?.type==='google'?cfg.email:'';
+    await googleSignIn(hint);
+    let email=cfg?.email||'';
+    try{const r=await gfetch('https://www.googleapis.com/oauth2/v3/userinfo');email=(await r.json()).email||email}catch{}
+    const next={type:'google',email};
+    let replace=false;
+    if(!cfg||cfg.type!=='google'){replace=await firstSyncChoice(googleBackend(next),'雲端')}
+    ls.set('sync-cfg',JSON.stringify(next));
+    const ok=await runSync({replace});
+    if(ok){$('syncBox').open&&$('syncBox').close();toast(cfg?'已重新連線並同步':`已登入 ${email}，書會自動同步到雲端`)}
+  }catch(e){
+    if(e.cancel){setSyncStatus(syncCfg()?'ok':'off');return}
+    setSyncStatus(syncCfg()?'err':'off',e.message);notify('Google 登入沒有完成',e.message);
+  }
+}
+function renderSyncBox(){
+  const cfg=syncCfg();
+  $('gPane').hidden=!googleReady()||cfg?.type==='github';
+  $('gLogin').hidden=!!cfg;
+  $('ghDetails').hidden=cfg?.type==='google';
+  if(cfg?.type==='github'||!googleReady())$('ghDetails').open=true;
+  $('gNoteLocal').hidden=!!cfg;
+  $('syncNow').hidden=!cfg;$('syncOff').hidden=!cfg;
+  $('syncOff').textContent=cfg?.type==='google'?'登出 Google':'中斷同步';
+  $('syncReauth').hidden=!(cfg?.type==='google'&&syncState.status==='auth');
+  const c=cfg?.type==='github'?cfg:{};
+  $('syncOwner').value=c.owner||'';$('syncRepo').value=c.repo||'reading-shelf-data';$('syncToken').value=c.token||'';
+  $('syncErr').hidden=true;
+  setSyncStatus(syncState.status==='off'&&cfg?'ok':syncState.status,syncState.msg);
+}
+function openSyncBox(){closeMenu();renderSyncBox();$('syncBox').showModal()}
+$('syncBtn').onclick=()=>{if(syncCfg()?.type==='google'&&syncState.status==='auth'){startGoogleLogin();return}openSyncBox()};
+$('mSync').onclick=openSyncBox;
+$('gLogin').onclick=startGoogleLogin;$('syncReauth').onclick=startGoogleLogin;
+$('loginGo').onclick=startGoogleLogin;
+$('loginX').onclick=()=>{ls.set('login-dismissed','1');updateLoginBanner()};
 $('syncClose').onclick=()=>$('syncBox').close();
-$('syncNow').onclick=async()=>{$('syncNow').disabled=true;await runSync({manual:true});$('syncNow').disabled=false};
-$('syncOff').onclick=async()=>{const ok=await ask({title:'中斷這台裝置的同步？',body:'這台裝置上的書房資料會保留，GitHub 上的資料也不會被刪除，只是之後不再自動同步。',buttons:[{label:'取消',value:false},{label:'中斷同步',value:true,cls:'danger'}]});if(!ok)return;ls.set('sync-cfg','');setSyncStatus('off');$('syncBox').close();toast('已中斷同步')};
+$('syncNow').onclick=async()=>{if(syncCfg()?.type==='google'&&!gToken()){await startGoogleLogin();renderSyncBox();return}$('syncNow').disabled=true;await runSync({manual:true});$('syncNow').disabled=false;renderSyncBox()};
+$('syncOff').onclick=async()=>{
+  const g=syncCfg()?.type==='google';
+  const ok=await ask({title:g?'登出 Google？':'中斷這台裝置的同步？',body:g?'這台裝置上的書會保留，雲端上的資料也不會被刪除。之後再登入同一個帳號就會繼續同步。':'這台裝置上的書房資料會保留，GitHub 上的資料也不會被刪除，只是之後不再自動同步。',buttons:[{label:'取消',value:false},{label:g?'登出':'中斷同步',value:true,cls:'danger'}]});
+  if(!ok)return;
+  if(g){const t=gToken();if(t&&window.google?.accounts?.oauth2)try{google.accounts.oauth2.revoke(t,()=>{})}catch{}}
+  ls.set('sync-cfg','');ls.set('g-token','');ls.set('sync-last','');setSyncStatus('off');$('syncBox').close();toast(g?'已登出':'已中斷同步');
+};
 $('syncForm').onsubmit=async e=>{
   e.preventDefault();
-  const cfg={owner:$('syncOwner').value.trim().replace(/^@/,'').replace(/^https?:\/\/github\.com\//,'').split('/')[0],repo:$('syncRepo').value.trim(),token:$('syncToken').value.trim()};
+  const cfg={type:'github',owner:$('syncOwner').value.trim().replace(/^@/,'').replace(/^https?:\/\/github\.com\//,'').split('/')[0],repo:$('syncRepo').value.trim(),token:$('syncToken').value.trim()};
   const err=$('syncErr');err.hidden=true;
   if(!cfg.owner||!cfg.repo||!cfg.token){err.hidden=false;err.textContent='三個欄位都要填。';return}
   const btn=$('syncSave');btn.disabled=true;btn.textContent='連線測試中…';
   try{
     const repo=await testSync(cfg);
     if(!repo.private){const ok=await ask({title:'這個儲存庫是公開的',body:'公開儲存庫裡的閱讀紀錄任何人都看得到。建議到 GitHub 把它改成 Private，或另建一個私人儲存庫。\n仍然要用這個儲存庫同步嗎？',buttons:[{label:'取消',value:false},{label:'仍然使用',value:true,cls:'danger'}]});if(!ok)return}
-    let replace=false;
-    if(!Number(ls.get('sync-last'))){
-      const remoteFile=await gh(cfg,`/contents/${SYNC_FILE}`,{allow404:true});
-      if(remoteFile){
-        const choice=await ask({title:'GitHub 上已經有書房資料',body:'這台裝置是第一次同步。\n・以 GitHub 為準：這台裝置上 GitHub 沒有的書會被移除，適合新裝置。\n・合併：兩邊的書都保留，同一本以較新的為準。',buttons:[{label:'取消',value:null},{label:'合併',value:'merge'},{label:'以 GitHub 為準',value:'replace',cls:'primary'}]});
-        if(!choice)return;replace=choice==='replace';
-      }
-    }
+    const replace=await firstSyncChoice(githubBackend(cfg),'GitHub');
     ls.set('sync-cfg',JSON.stringify(cfg));
     btn.textContent='同步中…';
     const ok=await runSync({replace});
-    if(ok){$('syncNow').hidden=false;$('syncOff').hidden=false;toast('同步完成，這台裝置已連上');$('syncBox').close()}
+    if(ok){toast('同步完成，這台裝置已連上');$('syncBox').close()}
     else{err.hidden=false;err.textContent=syncState.msg}
-  }catch(ex){err.hidden=false;err.textContent=ex.message}
+  }catch(ex){if(!ex.cancel){err.hidden=false;err.textContent=ex.message}}
   finally{btn.disabled=false;btn.textContent='連線並同步'}
 };
 window.addEventListener('online',()=>scheduleSync(500));
