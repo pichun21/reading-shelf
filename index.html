@@ -339,6 +339,17 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .slide .tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .slide .tags span{font-family:var(--f-display);border:1px solid rgba(241,233,216,.3);border-radius:999px;padding:4px 14px;font-size:calc(14px + var(--w) * 10px)}
 .slide .btn{background:#f1e9d8;color:#0d1112;border-color:#f1e9d8}
+.review .rvideo{position:absolute;top:calc(34px + env(safe-area-inset-top,0px));left:12px;z-index:4;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(241,233,216,.3);color:#f1e9d8;font-size:13px;background:rgba(13,17,18,.4)}
+.review .rvideo svg{width:18px;height:18px}
+.review .rvideo:hover{background:rgba(241,233,216,.12)}
+.vsheet{width:min(460px,calc(100vw - 32px))}
+.vstage{position:relative;width:min(240px,52vw);aspect-ratio:9/16;margin:0 auto 14px;border-radius:12px;overflow:hidden;background:#0d1112;box-shadow:0 14px 30px var(--shadow)}
+.vstage canvas,.vstage video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover}
+.vprog{display:flex;flex-direction:column;gap:8px;align-items:center;font-size:13px;color:var(--ink-soft);margin-bottom:6px}
+.vbar{width:100%;height:6px;border-radius:3px;background:var(--wall-2);overflow:hidden}
+.vbar b{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.vacts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:6px 0 4px}
+.vnote{font-size:12px;color:var(--ink-soft);text-align:center;margin:10px 0 0;line-height:1.6}
 
 /* 整理封面 */
 .tidy-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 20px;padding:10px 10px 10px 16px;border:1px solid var(--rule);border-radius:12px;background:var(--paper);font-size:14px}
@@ -649,9 +660,26 @@ a.btn.primary{color:var(--accent-ink)}
   <div class="review" id="review">
     <div class="progress" id="rvProgress"></div>
     <button type="button" class="rclose" id="rvClose" aria-label="關閉回顧">×</button>
+    <button type="button" class="rvideo" id="rvVideo" aria-label="把回顧存成影片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg><span>存成影片</span></button>
     <button type="button" class="tap l" id="rvPrev" aria-label="上一頁"></button>
     <button type="button" class="tap r" id="rvNext" aria-label="下一頁"></button>
     <div id="rvSlide"></div>
+  </div>
+</dialog>
+
+<!-- 回顧影片 -->
+<dialog id="videoBox" class="bottom" aria-label="把回顧存成影片">
+  <div class="sheet vsheet">
+    <div class="sheet-head"><div style="flex:1"><h3>把回顧存成影片</h3><p id="vSub">9:16 直式影片，可以直接發到 IG 限時動態或 Reels。</p></div><button type="button" class="x" id="vClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <div class="vstage"><canvas id="vCanvas" width="1080" height="1920"></canvas><video id="vPlayer" playsinline muted loop hidden></video></div>
+      <div class="vprog" id="vProg"><div class="vbar"><b id="vFill"></b></div><span id="vStatus">準備中…</span></div>
+      <div class="vacts" id="vActs" hidden>
+        <button type="button" class="btn primary" id="vShare">分享或存到相簿</button>
+        <a class="btn" id="vDownload" download>下載影片</a>
+      </div>
+      <p class="vnote" id="vNote">影片沒有聲音，發佈時可以在 IG 裡挑一首配樂。</p>
+    </div>
   </div>
 </dialog>
 
@@ -1080,24 +1108,36 @@ $('drawBtn').onclick=drawOne;$('drawTop').onclick=drawOne;
 /* ================= 年度回顧 ================= */
 let rvSlides=[], rvIdx=0, rvTimer=null;
 const RV_DUR=6500;
-function buildReview(y){
+function reviewData(y){
   const list=yearBooks(y).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||sortInMonth(a,b));
   const n=list.length, favs=list.filter(b=>b.favorite);
-  if(!n)return [`<div class="k">${y} 年度閱讀回顧</div><h2>這一年的書架還空著</h2><p>讀完一本，就放上來吧。</p><button type="button" class="btn" data-act="close">回到書房</button>`];
-  const s=[];
+  if(!n)return null;
+  const S=[];
   const years=yearsList();let delta='';
   if(years.includes(y-1)){const p=yearBooks(y-1).length,d=n-p;delta=d>0?`比 ${y-1} 年多讀了 ${d} 本。`:d<0?`比 ${y-1} 年少了 ${-d} 本，慢慢讀也很好。`:`和 ${y-1} 年讀得一樣多。`}
-  s.push(`<div class="k">${y} 年度閱讀回顧</div><div class="huge">${n}</div><h2>這一年，你讀完了 ${n} 本書</h2><p>${delta||'每一本都被好好地放上了書架。'}</p>`);
+  S.push({type:'count',k:`${y} 年度閱讀回顧`,n,h:`這一年，你讀完了 ${n} 本書`,p:delta||'每一本都被好好地放上了書架。'});
   const c=Array(13).fill(0);list.forEach(b=>{const m=monthNum(b.month);if(m>=1&&m<=12)c[m]++});
-  let best=1;for(let m=1;m<=12;m++)if(c[m]>c[best])best=m;const mx=Math.max(1,...c.slice(1));
+  let best=1;for(let m=1;m<=12;m++)if(c[m]>c[best])best=m;
   const active=c.slice(1).filter(Boolean).length;
-  s.push(`<div class="k">閱讀的節奏</div><h2>${best} 月是你讀得最起勁的時候</h2><div class="rbars">${c.slice(1).map((v,i)=>`<div class="${i+1===best?'top':''}" style="--h:${Math.max(3,v/mx*100)}%;animation-delay:${i*50}ms"></div>`).join('')}</div><div class="rmon">${Array.from({length:12},(_,i)=>`<span>${i+1}</span>`).join('')}</div><p>那個月讀了 ${c[best]} 本。一整年裡，有 ${active} 個月都有書陪著你。</p>`);
-  if(n>=2){const a=list[0],z=list[n-1];s.push(`<div class="k">從這本開始，到這本為止</div><div class="pair"><figure><div class="cover">${coverInner(a)}</div><figcaption>${esc(monthLabel(a.month))}的第一本<b>${esc(a.title)}</b></figcaption></figure><figure><div class="cover">${coverInner(z)}</div><figcaption>最近讀完的<b>${esc(z.title)}</b></figcaption></figure></div>`)}
-  if(favs.length){const show=favs.slice(0,7),k=show.length;s.push(`<div class="k">特別喜歡的</div><div class="fan">${show.map((b,i)=>`<div class="cover" style="--a:${k===1?0:(-26+52*i/(k-1)).toFixed(1)}deg;z-index:${i};animation-delay:${i*70}ms">${coverInner(b)}</div>`).join('')}</div><h2>其中 ${favs.length} 本，你放進了珍藏</h2><p>${esc(favs.slice(0,3).map(b=>'《'+b.title+'》').join('、'))}${favs.length>3?' 等等':''}</p>`)}
-  const tc={};list.forEach(b=>b.tags.forEach(t=>tc[t]=(tc[t]||0)+1));const tags=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  if(tags.length){const tm=tags[0][1];s.push(`<div class="k">讀了哪些類型</div><h2>你最常翻開的是「${esc(tags[0][0])}」</h2><div class="tags">${tags.map(([t,v])=>`<span style="--w:${(v/tm).toFixed(2)}">${esc(t)} ${v}</span>`).join('')}</div>`)}
-  s.push(`<div class="k">${y}</div><h2>下一本，會是哪一本呢？</h2><p>翻過的每一頁都收在這裡了。</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="btn" data-act="close">回到書房</button><button type="button" class="btn" data-act="add">放一本新書</button></div>`);
-  return s;
+  S.push({type:'bars',k:'閱讀的節奏',h:`${best} 月是你讀得最起勁的時候`,c:c.slice(1),best,p:`那個月讀了 ${c[best]} 本。一整年裡，有 ${active} 個月都有書陪著你。`});
+  if(n>=2){const a=list[0],z=list[n-1];S.push({type:'pair',k:'從這本開始，到這本為止',a,z,ca:`${monthLabel(a.month)}的第一本`,cz:'最近讀完的'})}
+  if(favs.length)S.push({type:'fan',k:'特別喜歡的',books:favs.slice(0,7),h:`其中 ${favs.length} 本，你放進了珍藏`,p:favs.slice(0,3).map(b=>'《'+b.title+'》').join('、')+(favs.length>3?' 等等':'')});
+  const tc={};list.forEach(b=>(b.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));const tags=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(tags.length)S.push({type:'tags',k:'讀了哪些類型',h:`你最常翻開的是「${tags[0][0]}」`,tags});
+  S.push({type:'end',k:String(y),h:'下一本，會是哪一本呢？',p:'翻過的每一頁都收在這裡了。'});
+  return S;
+}
+function buildReview(y){
+  const D=reviewData(y);
+  if(!D)return [`<div class="k">${y} 年度閱讀回顧</div><h2>這一年的書架還空著</h2><p>讀完一本，就放上來吧。</p><button type="button" class="btn" data-act="close">回到書房</button>`];
+  return D.map(d=>{
+    if(d.type==='count')return `<div class="k">${esc(d.k)}</div><div class="huge">${d.n}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`;
+    if(d.type==='bars'){const mx=Math.max(1,...d.c);return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><div class="rbars">${d.c.map((v,i)=>`<div class="${i+1===d.best?'top':''}" style="--h:${Math.max(3,v/mx*100)}%;animation-delay:${i*50}ms"></div>`).join('')}</div><div class="rmon">${Array.from({length:12},(_,i)=>`<span>${i+1}</span>`).join('')}</div><p>${esc(d.p)}</p>`}
+    if(d.type==='pair')return `<div class="k">${esc(d.k)}</div><div class="pair"><figure><div class="cover">${coverInner(d.a)}</div><figcaption>${esc(d.ca)}<b>${esc(d.a.title)}</b></figcaption></figure><figure><div class="cover">${coverInner(d.z)}</div><figcaption>${esc(d.cz)}<b>${esc(d.z.title)}</b></figcaption></figure></div>`;
+    if(d.type==='fan'){const k=d.books.length;return `<div class="k">${esc(d.k)}</div><div class="fan">${d.books.map((b,i)=>`<div class="cover" style="--a:${k===1?0:(-26+52*i/(k-1)).toFixed(1)}deg;z-index:${i};animation-delay:${i*70}ms">${coverInner(b)}</div>`).join('')}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`}
+    if(d.type==='tags'){const tm=d.tags[0][1];return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><div class="tags">${d.tags.map(([t,v])=>`<span style="--w:${(v/tm).toFixed(2)}">${esc(t)} ${v}</span>`).join('')}</div>`}
+    return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="btn" data-act="video">存成影片</button><button type="button" class="btn" data-act="close">回到書房</button><button type="button" class="btn" data-act="add">放一本新書</button></div>`;
+  });
 }
 function openReview(){
   rvSlides=buildReview(currentYear);rvIdx=0;
@@ -1111,7 +1151,7 @@ function showSlide(){
   $('rvProgress').querySelectorAll('i').forEach((el,i)=>{el.className=i<rvIdx?'done':'';el.style.setProperty('--dur',RV_DUR+'ms')});
   const cur=$('rvProgress').children[rvIdx];void cur.offsetWidth;
   if(rvIdx<rvSlides.length-1){cur.className='run';rvTimer=setTimeout(()=>rvGo(1),RV_DUR)}else cur.className='done';
-  $('rvSlide').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{$('reviewBox').close();if(b.dataset.act==='add')openEditor()});
+  $('rvSlide').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{if(b.dataset.act==='video'){openReviewVideo();return}$('reviewBox').close();if(b.dataset.act==='add')openEditor()});
 }
 function rvGo(d){const n=rvIdx+d;if(n<0)return;if(n>=rvSlides.length){$('reviewBox').close();return}rvIdx=n;showSlide()}
 $('rvPrev').onclick=()=>rvGo(-1);$('rvNext').onclick=()=>rvGo(1);$('rvClose').onclick=()=>$('reviewBox').close();
@@ -1631,6 +1671,303 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   if(restored)toast(`已從原始 Excel 補回 ${restored} 張封面`);
   if(syncCfg()){setSyncStatus('pending');runSync()}else setSyncStatus('off');
 })().catch(err=>{$('stage').innerHTML=`<div class="empty">書房打不開：${esc(err.message)}</div>`});
+
+/* ================= 回顧影片（IG 9:16） ================= */
+const VW=1080, VH=1920, VFPS=30;
+const VC={bg:'#0d1112',ink:'#f1e9d8',soft:'rgba(241,233,216,.72)',mute:'rgba(241,233,216,.5)',faint:'rgba(241,233,216,.22)',acc:'#86c0b6'};
+const VF={d:'"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif',b:'"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',n:'"Cormorant Garamond",Georgia,serif'};
+const V_SLIDE=3.8, V_LAST=4.6, V_IN=.7, V_OUT=.4;
+const vClamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const vEase=t=>1-Math.pow(1-vClamp(t),3);
+
+function vLoadImg(src){return new Promise(r=>{if(!src)return r(null);const i=new Image();i.decoding='async';i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
+
+/* 斷行：中文逐字、英數成詞；句首不放標點；行長平均 */
+const V_NOHEAD='，。、；：！？」』）》〉…,.;:!?)';
+function vTokens(t){return String(t).match(/[A-Za-z0-9][A-Za-z0-9.'’\-]*|\s+|./gu)||[]}
+function vWrapRaw(ctx,text,maxW){
+  const lines=[];let cur='';
+  for(const tk of vTokens(text)){
+    const tryS=cur+tk;
+    if(cur&&ctx.measureText(tryS.trimEnd()).width>maxW&&!(V_NOHEAD.includes(tk[0]))){lines.push(cur.trimEnd());cur=tk.trimStart()}
+    else cur=tryS;
+  }
+  if(cur.trim())lines.push(cur.trimEnd());
+  return lines;
+}
+function vWrap(ctx,text,maxW){
+  const base=vWrapRaw(ctx,text,maxW);if(base.length<2)return base;
+  /* 有逗號、冒號就優先在那裡換行 */
+  const segs=String(text).match(/[^，、：:；]+[，、：:；]?/g)||[];
+  if(segs.length>1&&segs.length<=base.length+1){
+    const ls=[];let cur='';segs.forEach(sg=>{if(cur&&ctx.measureText(cur+sg).width>maxW){ls.push(cur);cur=sg}else cur+=sg});if(cur)ls.push(cur);
+    if(ls.length<=base.length&&ls.every(l=>ctx.measureText(l).width<=maxW))return ls.map(l=>l.trim());
+  }
+  let lo=maxW*.45,hi=maxW;
+  for(let i=0;i<14;i++){const mid=(lo+hi)/2;if(vWrapRaw(ctx,text,mid).length>base.length)lo=mid;else hi=mid}
+  return vWrapRaw(ctx,text,hi);
+}
+function vSpaced(ctx,text,cx,y,sp){
+  const ch=[...text],ws=ch.map(c=>ctx.measureText(c).width),tot=ws.reduce((a,b)=>a+b,0)+sp*(ch.length-1);
+  let x=cx-tot/2;ctx.textAlign='left';ch.forEach((c,i)=>{ctx.fillText(c,x,y);x+=ws[i]+sp});ctx.textAlign='center';
+}
+function vRound(ctx,x,y,w,h,r){
+  const [tl,tr,br,bl]=Array.isArray(r)?r:[r,r,r,r];
+  ctx.beginPath();ctx.moveTo(x+tl,y);ctx.lineTo(x+w-tr,y);ctx.quadraticCurveTo(x+w,y,x+w,y+tr);ctx.lineTo(x+w,y+h-br);ctx.quadraticCurveTo(x+w,y+h,x+w-br,y+h);ctx.lineTo(x+bl,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-bl);ctx.lineTo(x,y+tl);ctx.quadraticCurveTo(x,y,x+tl,y);ctx.closePath();
+}
+
+/* 封面：跟書架一樣的裁切位置；沒有封面就畫一本素色書 */
+function vCover(ctx,b,img,x,y,w,h){
+  const r=[w*.02,w*.05,w*.05,w*.02];
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=w*.18;ctx.shadowOffsetY=w*.1;
+  vRound(ctx,x,y,w,h,r);ctx.fillStyle='#222';ctx.fill();
+  ctx.restore();
+  ctx.save();vRound(ctx,x,y,w,h,r);ctx.clip();
+  if(img){
+    const c=cropOf(b),z=Math.max(1,Number(c.zoom)||1),ms=((z-1)*50)/z;
+    const tx=((50-(Number(c.x)||50))/50)*ms/100*w, ty=((50-(Number(c.y)||50))/50)*ms/100*h;
+    const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),iw=img.naturalWidth*s,ih=img.naturalHeight*s;
+    ctx.translate(x+w/2+tx,y+h/2+ty);ctx.scale(z,z);
+    ctx.drawImage(img,-iw/2,-ih/2,iw,ih);
+  }else{
+    const hu=hue(b.title);
+    ctx.fillStyle=`hsl(${hu} 30% 34%)`;ctx.fillRect(x,y,w,h);
+    const g=ctx.createRadialGradient(x+w*.3,y+h*.1,0,x+w*.3,y+h*.1,w*1.1);g.addColorStop(0,'rgba(255,255,255,.12)');g.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+    const px=x+w*.11,pw=w*.78;ctx.fillStyle='#f6eedc';ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.globalAlpha=.7;ctx.font=`italic 500 ${w*.09}px ${VF.n}`;ctx.fillText(String(b.year||''),px,y+h*.08);
+    ctx.globalAlpha=1;ctx.font=`700 ${w*.1}px ${VF.d}`;
+    const ls=vWrapRaw(ctx,b.title,pw).slice(0,5),lh=w*.135,ty0=y+h*.5-ls.length*lh/2;
+    ctx.strokeStyle='rgba(246,238,220,.55)';ctx.lineWidth=Math.max(1,w*.006);
+    ctx.beginPath();ctx.moveTo(px,ty0-lh*.35);ctx.lineTo(px+pw,ty0-lh*.35);ctx.moveTo(px,ty0+ls.length*lh+lh*.15);ctx.lineTo(px+pw,ty0+ls.length*lh+lh*.15);ctx.stroke();
+    ls.forEach((l,i)=>ctx.fillText(l,px,ty0+i*lh));
+    if(b.author){ctx.globalAlpha=.75;ctx.font=`400 ${w*.07}px ${VF.b}`;ctx.fillText(vWrapRaw(ctx,b.author,pw)[0],px,y+h*.84)}
+    ctx.globalAlpha=1;ctx.textBaseline='alphabetic';ctx.textAlign='center';
+  }
+  ctx.restore();
+}
+
+/* 每張投影片拆成一疊「區塊」，由上往下排、依序淡入 */
+function vSlideItems(ctx,d,imgs){
+  const it=[];
+  const kItem=t=>({h:44,draw:(y)=>{ctx.font=`400 34px ${VF.b}`;ctx.fillStyle=VC.mute;vSpaced(ctx,t,VW/2,y+34,10)}});
+  const textItem=(t,size,font,color,maxW,lh)=>{ctx.font=`${font==='d'?700:400} ${size}px ${VF[font]}`;const ls=vWrap(ctx,t,maxW);return {h:ls.length*size*lh,draw:(y)=>{ctx.font=`${font==='d'?700:400} ${size}px ${VF[font]}`;ctx.fillStyle=color;ls.forEach((l,i)=>ctx.fillText(l,VW/2,y+size*(lh/2+.36)+i*size*lh))}}};
+  const hItem=(t,size=74)=>textItem(t,size,'d',VC.ink,960,1.4);
+  const pItem=t=>textItem(t,38,'b',VC.soft,820,1.65);
+  it.push({...kItem(d.k),gap:34});
+  if(d.type==='count'){
+    it.push({h:400,gap:30,draw:(y,lt)=>{const v=Math.round(d.n*vEase(lt/1.3));ctx.font=`italic 500 460px ${VF.n}`;ctx.fillStyle=VC.acc;ctx.fillText(String(v),VW/2,y+350)}});
+    it.push({...hItem(d.h),gap:30});it.push(pItem(d.p));
+  }else if(d.type==='bars'){
+    it.push({...hItem(d.h),gap:60});
+    const mx=Math.max(1,...d.c),bw=56,gp=16,tw=12*bw+11*gp,x0=(VW-tw)/2,H=440;
+    it.push({h:H+70,gap:50,draw:(y,lt)=>{
+      d.c.forEach((v,i)=>{const p=vEase((lt-.15-i*.05)/.9),bh=Math.max(H*.03,v/mx*H)*p,x=x0+i*(bw+gp);
+        ctx.fillStyle=i+1===d.best?VC.acc:'rgba(241,233,216,.25)';vRound(ctx,x,y+H-bh,bw,bh,[6,6,0,0]);ctx.fill();
+        ctx.font=`400 28px ${VF.b}`;ctx.fillStyle=VC.mute;ctx.fillText(String(i+1),x+bw/2,y+H+50)});
+    }});
+    it.push(pItem(d.p));
+  }else if(d.type==='pair'){
+    const cw=340,ch=510,gp=100,cap=(t,s,f,c)=>{ctx.font=`${f==='d'?700:400} ${s}px ${VF[f]}`;return vWrap(ctx,t,420).slice(0,2)};
+    const ta=cap(d.a.title,44,'d'),tz=cap(d.z.title,44,'d'),tl=Math.max(ta.length,tz.length);
+    it.push({h:ch+40+44+tl*60,draw:(y,lt)=>{
+      [[d.a,d.ca,ta,0],[d.z,d.cz,tz,1]].forEach(([b,c,tt,k])=>{
+        const p=vEase((lt-.1-k*.18)/.8),cx=VW/2+(k?1:-1)*(cw+gp)/2;
+        ctx.save();ctx.globalAlpha*=p;ctx.translate(0,(1-p)*50);
+        vCover(ctx,b,imgs.get(b.id),cx-cw/2,y,cw,ch);
+        ctx.font=`400 32px ${VF.b}`;ctx.fillStyle=VC.mute;ctx.fillText(c,cx,y+ch+64);
+        ctx.font=`700 44px ${VF.d}`;ctx.fillStyle=VC.ink;tt.forEach((l,i)=>ctx.fillText(l,cx,y+ch+128+i*60));
+        ctx.restore()});
+    }});
+  }else if(d.type==='fan'){
+    const k=d.books.length,cw=k>4?230:270,ch=cw*1.5;
+    it.push({h:ch+150,gap:50,draw:(y,lt)=>{
+      d.books.forEach((b,i)=>{const a=k===1?0:(-26+52*i/(k-1))*Math.PI/180,p=vEase((lt-.1-i*.07)/.8);
+        ctx.save();ctx.globalAlpha*=vClamp(p*2);const ox=VW/2,oy=y+150+ch*1.4;ctx.translate(ox,oy);ctx.rotate(a*p);
+        vCover(ctx,b,imgs.get(b.id),-cw/2,-ch*1.4,cw,ch);ctx.restore()});
+    }});
+    it.push({...hItem(d.h),gap:30});it.push(pItem(d.p));
+  }else if(d.type==='tags'){
+    it.push({...hItem(d.h),gap:60});
+    const tm=d.tags[0][1],chips=d.tags.map(([t,v])=>{const s=36+(v/tm)*26;ctx.font=`700 ${s}px ${VF.d}`;return {t:`${t} ${v}`,s,w:ctx.measureText(`${t} ${v}`).width+s*1.6,h:s*1.75}});
+    const rows=[];let row=[],rw=0;chips.forEach(c=>{if(row.length&&rw+c.w+20>900){rows.push(row);row=[];rw=0}row.push(c);rw+=c.w+20});if(row.length)rows.push(row);
+    const rh=rows.map(r=>Math.max(...r.map(c=>c.h)));
+    it.push({h:rh.reduce((a,b)=>a+b+22,-22),draw:(y,lt)=>{let yy=y,n=0;
+      rows.forEach((r,ri)=>{const tw=r.reduce((a,c)=>a+c.w,0)+20*(r.length-1);let x=(VW-tw)/2;
+        r.forEach(c=>{const p=vEase((lt-.2-n++*.06)/.6);ctx.save();ctx.globalAlpha*=p;const cy=yy+rh[ri]/2;
+          ctx.strokeStyle='rgba(241,233,216,.35)';ctx.lineWidth=2;vRound(ctx,x,cy-c.h/2,c.w,c.h,c.h/2);ctx.stroke();
+          ctx.font=`700 ${c.s}px ${VF.d}`;ctx.fillStyle=VC.ink;ctx.fillText(c.t,x+c.w/2,cy+c.s*.36);ctx.restore();x+=c.w+20});
+        yy+=rh[ri]+22});
+    }});
+  }else{
+    it.push({...hItem(d.h,88),gap:34});it.push({...pItem(d.p),gap:70});
+    it.push({h:60,draw:(y)=>{ctx.font=`500 34px ${VF.b}`;ctx.fillStyle=VC.acc;vSpaced(ctx,'pichun21.github.io/reading-shelf',VW/2,y+42,2)}});
+  }
+  return it;
+}
+
+function vChrome(ctx,assets,slides,t){
+  /* 頂端：限時動態式進度條 */
+  const n=slides.length,x0=48,tw=VW-96,gp=10,w=(tw-gp*(n-1))/n;
+  slides.forEach((s,i)=>{const x=x0+i*(w+gp);ctx.fillStyle=VC.faint;vRound(ctx,x,52,w,6,3);ctx.fill();
+    const p=vClamp((t-s.t0)/s.dur);if(p>0){ctx.fillStyle=VC.ink;vRound(ctx,x,52,Math.max(6,w*p),6,3);ctx.fill()}});
+  /* 品牌 LOGO */
+  const {icon,word}=assets,ih=132,iw=icon?ih*icon.naturalWidth/icon.naturalHeight:0,wh=96,ww=word?word.width*wh/word.height:0,gap=icon&&word?26:0,tot=iw+gap+ww;
+  let x=(VW-tot)/2;const top=118;
+  if(icon){ctx.drawImage(icon,x,top,iw,ih);x+=iw+gap}
+  if(word)ctx.drawImage(word,x,top+(ih-wh)/2+4,ww,wh);
+  /* 底部網址 */
+  ctx.font=`400 28px ${VF.b}`;ctx.fillStyle=VC.mute;vSpaced(ctx,'頁間日子 · Pages Between Days',VW/2,VH-80,4);
+}
+
+function vLayout(ctx,data,imgs){
+  let t=0;
+  return data.map((d,i)=>{const dur=i===data.length-1?V_LAST:V_SLIDE;const items=vSlideItems(ctx,d,imgs);
+    const H=items.reduce((a,b,j)=>a+b.h+(j<items.length-1?(b.gap??40):0),0);
+    const s={d,items,H,t0:t,dur};t+=dur;return s});
+}
+function vDraw(ctx,assets,slides,t){
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillStyle=VC.bg;ctx.fillRect(0,0,VW,VH);
+  const g=ctx.createRadialGradient(VW/2,VH*.42,0,VW/2,VH*.42,VH*.6);g.addColorStop(0,'rgba(134,192,182,.10)');g.addColorStop(1,'rgba(134,192,182,0)');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
+  const si=Math.max(0,slides.findIndex(s=>t<s.t0+s.dur));const s=si<0?slides[slides.length-1]:slides[si];
+  const lt=t-s.t0,last=s===slides[slides.length-1];
+  const out=last?1:1-vEase((lt-(s.dur-V_OUT))/V_OUT);
+  const CT=330,CB=VH-170;let y=CT+(CB-CT-s.H)/2;
+  s.items.forEach((it,j)=>{const p=vEase((lt-j*.12)/V_IN);
+    ctx.save();ctx.globalAlpha=p*out;ctx.translate(0,(1-p)*40);it.draw(y,lt-j*.12);ctx.restore();
+    y+=it.h+(it.gap??40)});
+  ctx.globalAlpha=1;vChrome(ctx,assets,slides,t);
+}
+
+async function vAssets(data){
+  const iconEl=document.querySelector('.logo-icon'),wordEl=document.querySelector('.logo-word');
+  const icon=await vLoadImg(iconEl&&iconEl.src);
+  let word=null;const m=wordEl&&(wordEl.style.webkitMaskImage||wordEl.style.maskImage||'').match(/url\(["']?(.*?)["']?\)$/);
+  const wi=m&&await vLoadImg(m[1]);
+  if(wi){word=document.createElement('canvas');word.width=wi.naturalWidth*2;word.height=wi.naturalHeight*2;const c=word.getContext('2d');c.drawImage(wi,0,0,word.width,word.height);c.globalCompositeOperation='source-in';c.fillStyle=VC.ink;c.fillRect(0,0,word.width,word.height)}
+  const imgs=new Map();const bs=new Map();
+  data.forEach(d=>{if(d.a)bs.set(d.a.id,d.a);if(d.z)bs.set(d.z.id,d.z);(d.books||[]).forEach(b=>bs.set(b.id,b))});
+  await Promise.all([...bs.values()].map(async b=>{if(b.cover)imgs.set(b.id,await vLoadImg(b.cover))}));
+  /* 先把會用到的字載入，畫布才不會用到備用字型 */
+  const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags})))+'0123456789頁間日子·PagesBetweenDayspichun21.github.io/reading-shelf';
+  try{await Promise.race([Promise.all([`700 80px ${VF.d}`,`400 40px ${VF.b}`,`500 40px ${VF.b}`,`italic 500 200px ${VF.n}`].map(f=>document.fonts.load(f,txt))),new Promise(r=>setTimeout(r,6000))])}catch(e){}
+  return {icon,word,imgs};
+}
+
+/* ---------- MP4 封裝（H.264，單軌） ---------- */
+function vMux(width,height,fps,avcC,samples){
+  const TS=90000,dur=TS/fps,N=samples.length;
+  const u8=a=>new Uint8Array(a),u32=n=>u8([n>>>24&255,n>>>16&255,n>>>8&255,n&255]),u16=n=>u8([n>>8&255,n&255]);
+  const str=s=>u8([...s].map(c=>c.charCodeAt(0)));
+  const cat=(...a)=>{const n=a.reduce((s,x)=>s+x.length,0),o=new Uint8Array(n);let p=0;a.forEach(x=>{o.set(x,p);p+=x.length});return o};
+  const box=(type,...p)=>{const b=cat(...p);return cat(u32(b.length+8),str(type),b)};
+  const full=(type,v,f,...p)=>box(type,u8([v,f>>16&255,f>>8&255,f&255]),...p);
+  const matrix=cat(u32(0x10000),u32(0),u32(0),u32(0),u32(0x10000),u32(0),u32(0),u32(0),u32(0x40000000));
+  const totMs=Math.round(N*1000/fps),tot=N*dur;
+  const build=off=>{
+    const stsd=full('stsd',0,0,u32(1),box('avc1',u8(6),u16(1),u8(16),u16(width),u16(height),u32(0x480000),u32(0x480000),u32(0),u16(1),u8(32),u16(0x18),u16(0xffff),box('avcC',avcC)));
+    const stts=full('stts',0,0,u32(1),u32(N),u32(dur));
+    const keys=samples.map((s,i)=>s.key?i+1:0).filter(Boolean);
+    const stss=full('stss',0,0,u32(keys.length),...keys.map(u32));
+    const stsc=full('stsc',0,0,u32(1),u32(1),u32(N),u32(1));
+    const stsz=full('stsz',0,0,u32(0),u32(N),...samples.map(s=>u32(s.data.length)));
+    const stco=full('stco',0,0,u32(1),u32(off));
+    const minf=box('minf',full('vmhd',0,1,u16(0),u16(0),u16(0),u16(0)),box('dinf',full('dref',0,0,u32(1),full('url ',0,1))),box('stbl',stsd,stts,stss,stsc,stsz,stco));
+    const mdia=box('mdia',full('mdhd',0,0,u32(0),u32(0),u32(TS),u32(tot),u16(0x55c4),u16(0)),full('hdlr',0,0,u32(0),str('vide'),u8(12),str('VideoHandler'),u8(1)),minf);
+    const tkhd=full('tkhd',0,3,u32(0),u32(0),u32(1),u32(0),u32(totMs),u8(8),u16(0),u16(0),u16(0),u16(0),matrix,u32(width<<16),u32(height<<16));
+    const mvhd=full('mvhd',0,0,u32(0),u32(0),u32(1000),u32(totMs),u32(0x10000),u16(0x100),u8(10),matrix,u8(24),u32(2));
+    return box('moov',mvhd,box('trak',tkhd,mdia));
+  };
+  const ftyp=box('ftyp',str('isom'),u32(512),str('isom'),str('iso2'),str('avc1'),str('mp41'));
+  const moov0=build(0),off=ftyp.length+moov0.length+8;
+  const size=samples.reduce((a,s)=>a+s.data.length,0);
+  return new Blob([ftyp,build(off),u32(size+8),str('mdat'),...samples.map(s=>s.data)],{type:'video/mp4'});
+}
+
+async function vEncodeWebCodecs(canvas,ctx,draw,frames,onProg){
+  if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined')return null;
+  let cfg=null;
+  for(const codec of ['avc1.42e028','avc1.4d0028','avc1.640028','avc1.640033']){
+    const c={codec,width:VW,height:VH,bitrate:9_000_000,framerate:VFPS,avc:{format:'avc'},latencyMode:'quality'};
+    try{if((await VideoEncoder.isConfigSupported(c)).supported){cfg=c;break}}catch(e){}
+  }
+  if(!cfg)return null;
+  const samples=[];let avcC=null,err=null;
+  const enc=new VideoEncoder({output:(chunk,meta)=>{if(meta&&meta.decoderConfig&&meta.decoderConfig.description&&!avcC){const d=meta.decoderConfig.description;avcC=new Uint8Array(d.buffer?d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength):d)}const b=new Uint8Array(chunk.byteLength);chunk.copyTo(b);samples.push({data:b,key:chunk.type==='key'})},error:e=>{err=e}});
+  enc.configure(cfg);
+  for(let i=0;i<frames;i++){
+    if(err)throw err;
+    draw(i/VFPS);
+    const f=new VideoFrame(canvas,{timestamp:Math.round(i*1e6/VFPS),duration:Math.round(1e6/VFPS)});
+    enc.encode(f,{keyFrame:i%(VFPS*2)===0});f.close();
+    while(enc.encodeQueueSize>6)await new Promise(r=>setTimeout(r,5));
+    if(i%6===0){onProg(i/frames);await new Promise(r=>setTimeout(r,0))}
+  }
+  await enc.flush();enc.close();
+  if(err)throw err;
+  if(!avcC||!samples.length)return null;
+  return vMux(VW,VH,VFPS,avcC,samples);
+}
+
+async function vEncodeRecorder(canvas,draw,total,onProg){
+  if(typeof MediaRecorder==='undefined'||!canvas.captureStream)return null;
+  const type=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'].find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}});
+  if(!type)return null;
+  const stream=canvas.captureStream(VFPS),rec=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:9_000_000}),parts=[];
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
+  const done=new Promise(r=>rec.onstop=r);
+  draw(0);rec.start(500);
+  const t0=performance.now();
+  await new Promise(res=>{const step=()=>{const t=(performance.now()-t0)/1000;try{draw(Math.min(t,total))}catch(e){return res()}onProg(t/total);if(t>=total+.15)return res();requestAnimationFrame(step)};requestAnimationFrame(step)});
+  rec.stop();await done;stream.getTracks().forEach(t=>t.stop());
+  return new Blob(parts,{type:type.split(';')[0]});
+}
+
+let vJob=0,vUrl=null;
+async function openReviewVideo(){
+  const data=reviewData(currentYear);
+  if(!data){toast('這一年還沒有書，先放幾本上書架吧');return}
+  clearTimeout(rvTimer);
+  const job=++vJob;
+  const canvas=$('vCanvas'),ctx=canvas.getContext('2d'),player=$('vPlayer');
+  if(vUrl){URL.revokeObjectURL(vUrl);vUrl=null}
+  player.hidden=true;player.removeAttribute('src');canvas.hidden=false;
+  $('vActs').hidden=true;$('vProg').hidden=false;$('vFill').style.width='0%';$('vStatus').textContent='準備封面與字型…';
+  $('vNote').textContent='影片沒有聲音，發佈時可以在 IG 裡挑一首配樂。';
+  $('videoBox').showModal();
+  try{
+    const assets=await vAssets(data);if(job!==vJob)return;
+    const slides=vLayout(ctx,data,assets.imgs),total=slides.reduce((a,s)=>a+s.dur,0),frames=Math.ceil(total*VFPS);
+    $('vSub').textContent=`9:16 直式影片，長度約 ${Math.round(total)} 秒，可以直接發到 IG 限時動態或 Reels。`;
+    const draw=t=>{if(job!==vJob)throw new Error('cancel');vDraw(ctx,assets,slides,t)};
+    const prog=p=>{if(job!==vJob)return;const v=Math.round(vClamp(p)*100);$('vFill').style.width=v+'%';$('vStatus').textContent=`正在製作影片… ${v}%`};
+    let blob=null;
+    try{blob=await vEncodeWebCodecs(canvas,ctx,draw,frames,prog)}catch(e){console.warn('webcodecs',e);blob=null}
+    if(job!==vJob)return;
+    if(!blob){$('vStatus').textContent='正在錄製影片，請保持這個畫面開著…';blob=await vEncodeRecorder(canvas,draw,total,prog)}
+    if(job!==vJob)return;
+    if(!blob||!blob.size)throw new Error('這個瀏覽器不支援製作影片');
+    const ext=blob.type.includes('mp4')?'mp4':'webm';
+    const name=`頁間日子-${currentYear}-閱讀回顧.${ext}`;
+    vUrl=URL.createObjectURL(blob);
+    player.src=vUrl;player.hidden=false;canvas.hidden=true;player.play().catch(()=>{});
+    $('vProg').hidden=true;$('vActs').hidden=false;
+    const a=$('vDownload');a.href=vUrl;a.download=name;
+    const file=new File([blob],name,{type:blob.type});
+    const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+    $('vShare').hidden=!canShare;
+    $('vShare').onclick=async()=>{try{await navigator.share({files:[file],title:`${currentYear} 年度閱讀回顧`})}catch(e){if(e&&e.name!=='AbortError')toast('沒辦法開啟分享，請改用「下載影片」')}};
+    if(ext==='webm')$('vNote').textContent='這個瀏覽器只能做出 WebM 格式，IG 可能無法上傳。建議用 iPhone、iPad 的 Safari 或電腦版 Chrome 再做一次。';
+    else if(canShare)$('vNote').textContent='按「分享或存到相簿」，選「儲存影片」就會存進照片；之後在 IG 選限時動態或 Reels 就能發佈。影片沒有聲音，可以在 IG 裡挑一首配樂。';
+  }catch(e){
+    if(job!==vJob)return;
+    console.error(e);$('vStatus').textContent='做不出影片：'+(e.message||e)+'。請換用最新版的 Safari 或 Chrome 再試一次。';
+  }
+}
+$('rvVideo').onclick=openReviewVideo;
+$('vClose').onclick=()=>$('videoBox').close();
+$('videoBox').addEventListener('close',()=>{vJob++;const p=$('vPlayer');p.pause();if($('reviewBox').open&&rvIdx<rvSlides.length-1){clearTimeout(rvTimer);rvTimer=setTimeout(()=>rvGo(1),RV_DUR)}});
 
 /* ================= 跨裝置同步 =================
    主要：用 Google 帳號登入，資料存在使用者自己 Google 雲端硬碟的「App 專用資料夾」
