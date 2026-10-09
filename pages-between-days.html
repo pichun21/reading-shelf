@@ -182,6 +182,7 @@ kbd{font-family:var(--f-body);font-size:12px;border:1px solid var(--rule);border
 .faq summary::after{content:"＋";color:var(--brass);flex:none}
 .faq details[open] summary::after{content:"－"}
 .faq p{margin:10px 0 0;color:var(--ink-soft)}
+.privacy .faq p{margin:0 0 12px}
 
 /* 結尾 */
 .end{text-align:center;padding-block:80px 40px}
@@ -228,7 +229,7 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
         <a class="btn primary" href="https://pichun21.github.io/reading-shelf/">走進書房 →</a>
         <a class="btn" href="#start">怎麼開始</a>
       </div>
-      <div class="facts"><span>免費</span><span>不用註冊</span><span>手機、電腦都能用</span></div>
+      <div class="facts"><span>免費</span><span>登入 Google 就能跨裝置</span><span>手機、電腦都能用</span></div>
     </div>
     <div>
       <div class="case" id="case" aria-label="示意的書架：一月到三月的書"></div>
@@ -316,11 +317,11 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
 
 <div class="wrap">
   <section>
-    <div class="sec-head"><span class="no">iii.</span><h2>你的書，只在你手上</h2><p>書房沒有伺服器，也不收集任何資料。</p></div>
+    <div class="sec-head"><span class="no">iii.</span><h2>你的書，只在你手上</h2><p>頁間日子沒有自己的伺服器，不會收集、也看不到你的閱讀紀錄。</p></div>
     <div class="keep">
-      <div><h3>存在你的瀏覽器裡</h3><p>所有紀錄都存在你自己裝置的瀏覽器中。別人打開同一個網址，看到的是他自己的空書房，看不到你的書。</p></div>
-      <div><h3>隨時匯出備份</h3><p>可以匯出 JSON 完整備份（含封面圖），或 Excel 試算表。換裝置時再匯入，就能把整座書房搬過去。</p></div>
-      <div><h3>手機、電腦同步</h3><p>想在多台裝置之間自動同步，可以連到你自己 GitHub 上的私人儲存庫。資料只放在你的帳號裡，書房裡有一步一步的設定說明。</p></div>
+      <div><h3>登入 Google，換裝置也不怕</h3><p>用 Google 帳號登入後，書和封面會存到你自己 Google 雲端硬碟裡的 App 專用資料夾。換瀏覽器、換手機，登入同一個帳號就會回來。</p></div>
+      <div><h3>不登入也能用</h3><p>不想登入也沒關係，書會存在這個瀏覽器裡。只是換瀏覽器或清除網站資料時會不見，記得偶爾匯出備份。</p></div>
+      <div><h3>隨時匯出備份</h3><p>可以匯出 JSON 完整備份（含封面圖）或 Excel 試算表，留一份在自己電腦裡最安心。</p></div>
     </div>
   </section>
 </div>
@@ -332,9 +333,20 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
     <div class="sec-head"><span class="no">iv.</span><h2>常見問題</h2></div>
     <div class="faq">
       <details><summary>需要付費或註冊嗎？</summary><p>不用。打開網頁就能直接使用，也沒有廣告。</p></details>
-      <details><summary>清除瀏覽器資料後，書會不見嗎？</summary><p>會。因為紀錄存在瀏覽器裡，清除網站資料就會一起刪掉。建議定期匯出備份，或設定 GitHub 同步；書房選單裡會提醒你上次備份是什麼時候。</p></details>
-      <details><summary>換新手機要怎麼把書搬過去？</summary><p>在舊裝置匯出 JSON 備份，到新裝置的書房選「匯入資料」選那個檔案。若有設定 GitHub 同步，新裝置連上同一個儲存庫就會自動帶過來。</p></details>
+      <details><summary>換瀏覽器或換手機，書會不見嗎？</summary><p>有登入 Google 帳號就不會。在新的瀏覽器或手機打開頁間日子，用同一個 Google 帳號登入，書就會自動回來。沒登入的話，書只存在原本的瀏覽器裡。</p></details>
+      <details><summary>頁間日子會看到我的雲端硬碟嗎？</summary><p>不會。頁間日子只申請「App 專用資料夾」的權限，只能讀寫它自己建立的那個隱藏資料夾，看不到也碰不到你雲端硬碟裡的其他檔案。</p></details>
+      <details><summary>不想用了，資料要怎麼刪除？</summary><p>在書房選單按「清空這台裝置的書房」可以刪除這個瀏覽器裡的資料。雲端上的資料，可以到 Google 雲端硬碟的「設定 → 管理應用程式」找到頁間日子，選「刪除隱藏的應用程式資料」。</p></details>
       <details><summary>可以分享我的書房給別人看嗎？</summary><p>目前不行，書房是只給自己看的。可以把網址分享給朋友，讓他們建立自己的書房。</p></details>
+    </div>
+  </section>
+
+  <section id="privacy" class="privacy">
+    <div class="sec-head"><span class="no">v.</span><h2>隱私權說明</h2></div>
+    <div class="faq" style="color:var(--ink-soft)">
+      <p>頁間日子是一個在瀏覽器裡執行的個人閱讀紀錄工具，沒有自己的伺服器，不使用廣告或追蹤程式。</p>
+      <p><b>你記錄的書</b>（書名、作者、譯者、月份、標籤、筆記、封面圖）只會存在兩個地方：你使用的瀏覽器裡，以及你選擇登入時，你自己 Google 雲端硬碟的 App 專用資料夾。頁間日子的作者無法讀取這些資料。</p>
+      <p><b>Google 登入</b>只用來取得兩項權限：讀寫頁間日子自己的 App 專用資料夾（drive.appdata），以及取得你的 Email，用來在畫面上顯示目前登入的帳號。Email 只存在你的瀏覽器裡，不會傳送給任何人。</p>
+      <p><b>撤銷與刪除：</b>你可以隨時在書房裡登出，或到 Google 帳戶的「第三方應用程式和服務」移除頁間日子的存取權；雲端上的資料可在 Google 雲端硬碟「設定 → 管理應用程式」中刪除。</p>
     </div>
   </section>
 
@@ -343,7 +355,7 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
     <a class="btn primary" href="https://pichun21.github.io/reading-shelf/">走進書房 →</a>
   </div>
 
-  <footer><span>頁間日子 Pages Between Days</span><a class="back" href="https://pichun21.github.io/">← 回到作品集</a></footer>
+  <footer><span>頁間日子 Pages Between Days ・ <a href="#privacy">隱私權說明</a></span><a class="back" href="https://pichun21.github.io/">← 回到作品集</a></footer>
 </div>
 
 <script>
