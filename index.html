@@ -2633,7 +2633,7 @@ async function googleSignIn(hint){
   return new Promise((resolve,reject)=>{
     gTokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:G_SCOPE,
       callback:r=>{if(r.error){reject(new Error(r.error==='access_denied'?'你取消了登入，或沒有勾選允許存取雲端硬碟':'Google 登入失敗：'+r.error));return}
-        if(!google.accounts.oauth2.hasGrantedAllScopes(r,'https://www.googleapis.com/auth/drive.appdata')){reject(new Error('需要勾選「查看及管理這個應用程式在 Google 雲端硬碟中的設定資料」才能同步'));return}
+        if(!google.accounts.oauth2.hasGrantedAllScopes(r,'https://www.googleapis.com/auth/drive.appdata')){reject(new Error('登入時要勾選「查看、建立及刪除此應用程式本身在您 Google 雲端硬碟中的設定資料」那一格才能同步，請再登入一次並打勾'));return}
         ls.set('g-token',JSON.stringify({t:r.access_token,exp:Date.now()+(Number(r.expires_in)||3600)*1000}));resolve(r.access_token)},
       error_callback:e=>reject(new Error(e?.type==='popup_closed'?'登入視窗被關閉了':e?.type==='popup_failed_to_open'?'登入視窗被瀏覽器擋住了，請允許彈出視窗後再試一次':'Google 登入沒有完成'))});
     gTokenClient.requestAccessToken(hint?{prompt:'',login_hint:hint}:{prompt:'select_account'});
