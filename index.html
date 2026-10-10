@@ -1922,7 +1922,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   currentYear=Math.max(...yearsList());
   render();
   if(restored)toast(`已從原始 Excel 補回 ${restored} 張封面`);
-  if(syncCfg()){setSyncStatus('pending');runSync()}else setSyncStatus('off');
+  if(googleRedirectReturn()){}else if(syncCfg()){setSyncStatus('pending');runSync()}else setSyncStatus('off');
 })().catch(err=>{$('stage').innerHTML=`<div class="empty">書房打不開：${esc(err.message)}</div>`});
 
 /* ================= 年度目標 ================= */
@@ -2833,21 +2833,50 @@ async function firstSyncChoice(be,label){
 }
 
 /* ---------------- 登入／設定畫面 ---------------- */
+/* 手機與加到主畫面的 App：彈出視窗登入後回不來，改成整頁跳轉，登入完自動回到書房 */
+function useRedirectLogin(){
+  try{return ls.get('g-login-mode')==='redirect'||window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||window.matchMedia('(pointer: coarse)').matches}catch{return false}
+}
+function googleRedirectUri(){return new URL('./',location.href.split('#')[0].split('?')[0]).href}
+function redirectSignIn(hint){
+  const state=Math.random().toString(36).slice(2)+Date.now().toString(36);
+  ls.set('g-redirect',JSON.stringify({state,t:Date.now()}));
+  const p=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:googleRedirectUri(),response_type:'token',scope:G_SCOPE,include_granted_scopes:'true',state});
+  if(hint)p.set('login_hint',hint);else p.set('prompt','select_account');
+  location.assign('https://accounts.google.com/o/oauth2/v2/auth?'+p.toString());
+}
+function googleRedirectReturn(){
+  const h=location.hash||'';if(!/(access_token|error)=/.test(h))return false;
+  const q=new URLSearchParams(h.slice(1));let saved=null;try{saved=JSON.parse(ls.get('g-redirect')||'null')}catch{}
+  if(!saved||q.get('state')!==saved.state)return false;
+  ls.set('g-redirect','');history.replaceState(null,'',location.href.split('#')[0]);
+  const cfg=syncCfg();
+  if(q.get('error')){setSyncStatus(cfg?'err':'off');notify('Google 登入沒有完成',q.get('error')==='access_denied'?'你取消了登入，或沒有勾選允許存取雲端硬碟。':'Google 登入失敗：'+q.get('error'));return true}
+  if(!String(q.get('scope')||'').includes('drive.appdata')){setSyncStatus(cfg?'err':'off');notify('還差一步','登入時要勾選「查看、建立及刪除此應用程式本身在您 Google 雲端硬碟中的設定資料」那一格才能同步，請再登入一次並打勾。');return true}
+  ls.set('g-token',JSON.stringify({t:q.get('access_token'),exp:Date.now()+(Number(q.get('expires_in'))||3600)*1000}));
+  setSyncStatus('busy','正在完成登入…');
+  finishGoogleLogin(cfg).catch(e=>{setSyncStatus(syncCfg()?'err':'off',e.message);if(!e.cancel)notify('Google 登入沒有完成',e.message)});
+  return true;
+}
+async function finishGoogleLogin(cfg){
+  let email=cfg?.email||'';
+  try{const r=await gfetch('https://www.googleapis.com/oauth2/v3/userinfo');email=(await r.json()).email||email}catch{}
+  const next={type:'google',email};
+  let replace=false;
+  if(!cfg||cfg.type!=='google'){try{replace=await firstSyncChoice(googleBackend(next),'雲端')}catch(e){if(e.cancel){setSyncStatus(syncCfg()?'ok':'off');return}throw e}}
+  ls.set('sync-cfg',JSON.stringify(next));
+  const ok=await runSync({replace});
+  if(ok){$('syncBox').open&&$('syncBox').close();toast(cfg?'已重新連線並同步':`已登入 ${email}，書會自動同步到雲端`)}
+}
 async function startGoogleLogin(){
   if(!googleReady()){notify('還不能用 Google 登入','網站管理者還沒有完成 Google 登入的設定。');return}
   const cfg=syncCfg();
   try{
     setSyncStatus('busy','正在登入 Google…');
     const hint=cfg?.type==='google'?cfg.email:'';
+    if(useRedirectLogin()){redirectSignIn(hint);return}
     await googleSignIn(hint);
-    let email=cfg?.email||'';
-    try{const r=await gfetch('https://www.googleapis.com/oauth2/v3/userinfo');email=(await r.json()).email||email}catch{}
-    const next={type:'google',email};
-    let replace=false;
-    if(!cfg||cfg.type!=='google'){replace=await firstSyncChoice(googleBackend(next),'雲端')}
-    ls.set('sync-cfg',JSON.stringify(next));
-    const ok=await runSync({replace});
-    if(ok){$('syncBox').open&&$('syncBox').close();toast(cfg?'已重新連線並同步':`已登入 ${email}，書會自動同步到雲端`)}
+    await finishGoogleLogin(cfg);
   }catch(e){
     if(e.cancel){setSyncStatus(syncCfg()?'ok':'off');return}
     setSyncStatus(syncCfg()?'err':'off',e.message);notify('Google 登入沒有完成',e.message);
