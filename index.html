@@ -449,6 +449,11 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .site-foot nav{display:flex;gap:8px;align-items:center}
 .site-foot a{color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
 .site-foot a:hover{color:var(--accent)}
+.imp-fix{display:flex;flex-direction:column;gap:8px;margin:10px 0;padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--brass) 45%,transparent);background:color-mix(in srgb,var(--brass) 10%,transparent);font-size:14px}
+.imp-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.imp-y{display:flex;gap:6px;align-items:center}
+.imp-y input{width:6em;height:34px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);padding:0 10px;color:var(--ink);font-size:14px}
+.imp-skip{margin:0;font-size:12px;color:var(--ink-soft)}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -1749,8 +1754,8 @@ $('mClear').onclick=async()=>{
 };
 function normHeader(v){return String(v??'').trim().toLowerCase().replace(/[\s　:_：()（）]/g,'')}
 function colIndexFromRef(ref){const m=String(ref||'').match(/^([A-Z]+)/i);if(!m)return -1;let n=0;for(const ch of m[1].toUpperCase())n=n*26+ch.charCodeAt(0)-64;return n-1}
-function yearFrom(v){const m=String(v??'').match(/(?:19|20)\d{2}/);return m?Number(m[0]):null}
-function monthFrom(v){if(v==null||String(v).trim()==='')return '';const s=String(v).trim();if(/^\d+(?:\.0+)?$/.test(s)){const n=Number(s);if(n>=1&&n<=12)return `${n}月`}return s}
+function yearFrom(v){const s=String(v??'').trim();let m=s.match(/(?:19|20)\d{2}/);if(m)return Number(m[0]);m=s.match(/^(?:民國)?\s*(\d{2,3})\s*年?(?:度)?$/);if(m){const n=Number(m[1]);if(n>=1&&n<=200)return n+1911}return null}
+function monthFrom(v){if(v==null||/^\s*月?\s*$/.test(String(v)))return '';const s=String(v).trim();if(/^\d+(?:\.0+)?$/.test(s)){const n=Number(s);if(n>=1&&n<=12)return `${n}月`}return s}
 function boolFrom(v){const s=normHeader(v);return ['1','true','yes','y','是','有','喜歡','收藏','最愛','★','♥','❤️'].some(x=>s.includes(normHeader(x)))}
 function resolveZipPath(base,target){const a=(base.split('/').slice(0,-1).concat(String(target).split('/'))),out=[];for(const p of a){if(!p||p==='.')continue;if(p==='..')out.pop();else out.push(p)}return out.join('/')}
 async function parseStyles(zip){
@@ -1764,7 +1769,7 @@ async function resizeExcelImage(blob){
     return await new Promise((res,rej)=>{const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{const scale=Math.min(1,500/im.naturalWidth,750/im.naturalHeight),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*scale));c.height=Math.max(1,Math.round(im.naturalHeight*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.84))};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('圖片讀取失敗'))};im.src=u})
   }
 }
-async function parseXlsx(file){
+async function parseXlsx(file,opts={}){
   if(!window.JSZip)throw new Error('Excel 元件還沒載入，請確認網路連線後重新整理');
   const zip=await JSZip.loadAsync(await file.arrayBuffer()),parser=new DOMParser();
   const wbFile=zip.file('xl/workbook.xml');if(!wbFile)throw new Error('這不是有效的 .xlsx 檔');
@@ -1782,14 +1787,14 @@ async function parseXlsx(file){
   }
   const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],translatorHeads=['譯者','翻譯','translator'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'],feelHeads=['讀完的感覺','感覺','感受','feel','feeling'],quoteHeads=['書摘','金句','摘句','摘錄','quote','quotes'];
   const headMatch=(v,list)=>{const n=normHeader(v);return !!n&&list.some(h=>n===normHeader(h)||n.includes(normHeader(h)))};
-  const records=[];let order=0;
-  for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const defaultYear=yearFrom(sh.name);let headerRow=null,map={};
+  const records=[];let order=0;const noYear={},noMonth=[];
+  for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const defaultYear=Number(opts.years?.[sh.name])||yearFrom(sh.name);let headerRow=null,map={};
     for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,translatorHeads))tm.translator=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,feelHeads))tm.feel=k;else if(headMatch(v,quoteHeads))tm.quotes=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
     if(headerRow==null)continue;let carryYear=defaultYear;
-    for(const row of sd.rows.filter(r=>r.r>headerRow)){const title=String(row.cells[map.title]?.v??'').trim();if(!title)continue;const yv=map.year!=null?yearFrom(row.cells[map.year]?.v):null;if(yv)carryYear=yv;const year=yv||carryYear||defaultYear;const month=map.month!=null?monthFrom(row.cells[map.month]?.v):'';if(!year||!month)continue;const favCell=map.favorite!=null?row.cells[map.favorite]:null;const favorite=(favCell?boolFrom(favCell.v):false)||styleLooksHighlighted(row.cells[map.title]?.style,styles);
+    for(const row of sd.rows.filter(r=>r.r>headerRow)){const title=String(row.cells[map.title]?.v??'').trim();if(!title)continue;const yv=map.year!=null?yearFrom(row.cells[map.year]?.v):null;if(yv)carryYear=yv;const year=yv||carryYear||defaultYear;const month=map.month!=null?monthFrom(row.cells[map.month]?.v):'';if(!year){noYear[sh.name]=(noYear[sh.name]||0)+1;continue}if(!month){noMonth.push(title);continue}const favCell=map.favorite!=null?row.cells[map.favorite]:null;const favorite=(favCell?boolFrom(favCell.v):false)||styleLooksHighlighted(row.cells[map.title]?.style,styles);
       records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),translator:String(map.translator!=null?(row.cells[map.translator]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),...(map.feel!=null&&normFeel(row.cells[map.feel]?.v)?{feel:normFeel(row.cells[map.feel]?.v)}:{}),...(map.quotes!=null&&normQuotes(String(row.cells[map.quotes]?.v??'')).length?{quotes:normQuotes(String(row.cells[map.quotes]?.v??''))}:{}),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
   }
-  if(!records.length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
+  if(!records.length&&!Object.keys(noYear).length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
   const images=[];
   for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const draw=[...sd.doc.getElementsByTagNameNS('*','drawing')][0];if(!draw)continue;const rid=[...draw.attributes].find(a=>a.localName==='id')?.value;if(!rid)continue;const rf=zip.file(resolveZipPath(sh.path,`_rels/${sh.path.split('/').pop()}.rels`));if(!rf)continue;const rd=parser.parseFromString(await rf.async('text'),'application/xml'),rm={};[...rd.getElementsByTagNameNS('*','Relationship')].forEach(r=>rm[r.getAttribute('Id')]=r.getAttribute('Target'));const drawPath=resolveZipPath(sh.path,rm[rid]);const df=zip.file(drawPath);if(!df)continue;const dd=parser.parseFromString(await df.async('text'),'application/xml');const drf=zip.file(resolveZipPath(drawPath,`_rels/${drawPath.split('/').pop()}.rels`)),drm={};if(drf){const drd=parser.parseFromString(await drf.async('text'),'application/xml');[...drd.getElementsByTagNameNS('*','Relationship')].forEach(r=>drm[r.getAttribute('Id')]=r.getAttribute('Target'))}
     for(const anc of [...dd.documentElement.children].filter(n=>['oneCellAnchor','twoCellAnchor','absoluteAnchor'].includes(n.localName))){const from=[...anc.children].find(n=>n.localName==='from');const row=Number([...from?.children||[]].find(n=>n.localName==='row')?.textContent||0)+1,col=Number([...from?.children||[]].find(n=>n.localName==='col')?.textContent||0)+1;const blip=[...anc.getElementsByTagNameNS('*','blip')][0];const er=blip?[...blip.attributes].find(a=>a.localName==='embed')?.value:null;if(!er||!drm[er])continue;const mediaPath=resolveZipPath(drawPath,drm[er]),mf=zip.file(mediaPath);if(!mf)continue;const ext=mediaPath.split('.').pop().toLowerCase(),mime=ext==='png'?'image/png':ext==='webp'?'image/webp':'image/jpeg';try{const data=await resizeExcelImage(await mf.async('blob').then(b=>new Blob([b],{type:mime})));images.push({sheet:sh.name,row,col,data})}catch{}}
@@ -1800,14 +1805,29 @@ async function parseXlsx(file){
   // 2) 圖片沒有落在任何書的那一列（例如稍微放歪了）：找最近、而且還沒有封面的書，最多差 2 列
   images.forEach((im,i)=>{if(used.has(i))return;const c=records.filter(r=>r._sheet===im.sheet&&!r.cover&&Math.abs(r._row-im.row)<=2).sort((a,b)=>Math.abs(a._row-im.row)-Math.abs(b._row-im.row));if(c[0]){c[0].cover=im.data;used.add(i)}});
   for(const y of [...new Set(records.map(r=>r.year))]){const ims=images.map((im,i)=>({...im,i})).filter(x=>!used.has(x.i)&&yearFrom(x.sheet)===y).sort((a,b)=>a.row-b.row||a.col-b.col);const recs=records.filter(r=>r.year===y&&!r.cover).sort((a,b)=>a._order-b._order);for(let i=0;i<Math.min(ims.length,recs.length);i++){recs[i].cover=ims[i].data;used.add(ims[i].i)}}
-  records.forEach(r=>{delete r._sheet;delete r._row;delete r._order});return {records,imageCount:images.length,mappedCount:records.filter(r=>r.cover).length};
+  records.forEach(r=>{delete r._sheet;delete r._row;delete r._order});return {records,noYear,noMonth,imageCount:images.length,mappedCount:records.filter(r=>r.cover).length};
 }
+let excelFile=null,excelYears={};
 function showExcelPreview(file,result){
+  excelFile=file;document.querySelectorAll('#importPreview .imp-fix').forEach(x=>x.remove());
   pendingExcelImport=result.records;$('importFileName').textContent=`${file.name}｜確認判讀結果後，再選擇合併或取代。`;
   $('impBooks').textContent=result.records.length;$('impImages').textContent=result.imageCount;$('impMapped').textContent=result.mappedCount;$('impFavs').textContent=result.records.filter(x=>x.favorite).length;
   $('importNote').textContent=result.imageCount?'圖片會先依「同一列」對應書籍；若圖片放在獨立的年份工作表，則依由上到下、由左到右的順序對應那一年的書。匯入後每本都還能再調整封面。':'這份 Excel 裡沒有嵌入圖片，書籍資料仍可以正常匯入。';
+  const ny=Object.entries(result.noYear||{}),thisY=new Date().getFullYear();
+  if(ny.length||result.noMonth?.length){
+    const box=document.createElement('div');box.className='imp-fix';
+    box.innerHTML=ny.map(([n,c])=>`<div class="imp-row"><span>「${esc(n)}」工作表有 <b>${c}</b> 本沒有年份，要算在哪一年？</span><span class="imp-y"><input type="number" inputmode="numeric" min="1900" max="2200" data-sheet="${esc(n)}" placeholder="${thisY}" value="${esc(excelYears[n]||'')}" aria-label="${esc(n)} 的年份"><button type="button" class="btn sm primary" data-apply>套用</button></span></div>`).join('')
+      +(result.noMonth?.length?`<p class="imp-skip">有 ${result.noMonth.length} 本沒有填月份，這次不會匯入：${result.noMonth.slice(0,5).map(t=>'《'+esc(t)+'》').join('、')}${result.noMonth.length>5?' 等':''}。補上月份後再匯入一次即可。</p>`:'');
+    $('importNote').after(box);
+    box.querySelectorAll('[data-apply]').forEach(b=>b.onclick=async()=>{
+      const inp=b.parentElement.querySelector('input'),raw=inp.value.trim(),y=yearFrom(raw)||(/^\d{4}$/.test(raw)?Number(raw):null);
+      if(!y){inp.focus();toast('請填年份，例如 2025 或 114');return}
+      excelYears[inp.dataset.sheet]=y;b.disabled=true;b.textContent='讀取中…';
+      try{showExcelPreview(excelFile,await parseXlsx(excelFile,{years:excelYears}));toast(`「${inp.dataset.sheet}」算在 ${y} 年`)}catch(err){notify('讀取失敗',err.message)}
+    });
+  }
   $('importRows').innerHTML=result.records.slice(0,80).map(b=>`<tr><td>${esc(b.year)}</td><td>${esc(b.month)}</td><td>${esc(b.title)}</td><td>${b.cover?`<img class="import-thumb" src="${b.cover}" alt="">`:'—'}</td><td>${esc(b.author||'')}</td><td>${b.favorite?'✓':'—'}</td></tr>`).join('')+(result.records.length>80?`<tr><td colspan="6">還有 ${result.records.length-80} 筆沒有展開</td></tr>`:'');
-  $('importPreview').showModal();
+  if(!$('importPreview').open)$('importPreview').showModal();
 }
 async function applyExcelImport(replace){
   if(!pendingExcelImport?.length)return;
@@ -1816,7 +1836,7 @@ async function applyExcelImport(replace){
 }
 $('closeImportPreview').onclick=()=>$('importPreview').close();$('cancelExcelImport').onclick=()=>$('importPreview').close();
 $('mergeExcelImport').onclick=()=>applyExcelImport(false);$('replaceExcelImport').onclick=()=>applyExcelImport(true);
-$('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(/\.xlsx$/i.test(file.name)||file.type.includes('spreadsheetml')){toast('正在讀取 Excel 與圖片…');showExcelPreview(file,await parseXlsx(file))}else await importBackup(file)}catch(err){notify('匯入沒有成功',err.message)}};
+$('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(/\.xlsx$/i.test(file.name)||file.type.includes('spreadsheetml')){toast('正在讀取 Excel 與圖片…');excelYears={};showExcelPreview(file,await parseXlsx(file))}else await importBackup(file)}catch(err){notify('匯入沒有成功',err.message)}};
 $('mImport').onclick=chooseImport;
 
 /* ================= 一次整理全部封面 ================= */
