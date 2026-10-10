@@ -342,6 +342,21 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .review .rvideo{position:absolute;top:calc(34px + env(safe-area-inset-top,0px));left:12px;z-index:4;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(241,233,216,.3);color:#f1e9d8;font-size:13px;background:rgba(13,17,18,.4)}
 .review .rvideo svg{width:18px;height:18px}
 .review .rvideo:hover{background:rgba(241,233,216,.12)}
+.page-r .author .person{display:inline-flex;align-items:baseline;gap:4px;color:inherit;border-bottom:1px dashed color-mix(in srgb,var(--ink-soft) 60%,transparent);padding:0 1px;line-height:1.5}
+.page-r .author .person:hover{color:var(--accent);border-bottom-color:var(--accent)}
+.page-r .author .person small{font-family:var(--f-num);font-size:11px;font-weight:600;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--wall-2);color:var(--ink-soft);display:inline-flex;align-items:center;justify-content:center;transform:translateY(-1px)}
+.page-r .author .psep{color:var(--ink-soft)}
+.person-sheet{width:min(760px,calc(100vw - 32px))}
+.person-sheet h3{font-family:var(--f-display);font-size:26px}
+.psum{font-family:var(--f-display);font-size:15px;line-height:1.7}
+.psum em{font-style:normal;font-family:var(--f-num);font-weight:600;font-size:1.3em;color:var(--accent);padding:0 .08em}
+.psum .delta{display:inline-block;font-family:var(--f-body);font-size:12px;color:var(--ink-soft);border:1px solid var(--rule);border-radius:999px;padding:0 9px;margin-left:6px;vertical-align:2px}
+.p-year{display:grid;grid-template-columns:64px minmax(0,1fr);gap:16px;padding:14px 0;border-top:1px solid var(--rule)}
+.p-year:first-child{border-top:0;padding-top:4px}
+.p-year .y{font-family:var(--f-num);font-style:italic;font-weight:500;font-size:30px;line-height:1;color:var(--brass)}
+.p-year .wall{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:18px 14px}
+.result .pav{width:36px;height:36px;border-radius:50%;background:var(--wall-2);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--accent)}
+@media (max-width:640px){.p-year{grid-template-columns:1fr;gap:8px}.p-year .wall{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px}}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -706,6 +721,14 @@ a.btn.primary{color:var(--accent-ink)}
     <button type="button" class="tap l" id="rvPrev" aria-label="上一頁"></button>
     <button type="button" class="tap r" id="rvNext" aria-label="下一頁"></button>
     <div id="rvSlide"></div>
+  </div>
+</dialog>
+
+<!-- 作者／譯者 -->
+<dialog id="personBox" class="bottom" aria-labelledby="personName">
+  <div class="sheet person-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="personName"></h3><p class="psum" id="personSum"></p></div><button type="button" class="x" id="personClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body" id="personList"></div>
   </div>
 </dialog>
 
@@ -1078,7 +1101,7 @@ function renderSpread(){
       ${recallMode?`<p class="recall">${esc(recallLine(b))}</p>`:''}
       <div class="when"><b>${esc(b.year)}</b>　${esc(monthLabel(b.month))}讀完</div>
       <h2>${esc(b.title)}</h2>
-      ${b.author||b.translator?`<p class="author">${[b.author,b.translator?b.translator+' 譯':''].filter(Boolean).map(esc).join('　')}</p>`:''}
+      ${b.author||b.translator?`<p class="author">${[b.author?personLinks(b.author):'',b.translator?personLinks(b.translator,' 譯'):''].filter(Boolean).join('<span class="psep">　</span>')}</p>`:''}
       ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
       <button type="button" class="fav-toggle ${b.favorite?'on':''}" id="bvFav" aria-pressed="${b.favorite}"><svg viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg><span>${b.favorite?'已放進珍藏':'放進珍藏'}</span></button>
       <div class="lined ${note?'':'placeholder'}">${note?esc(note):'還沒寫下感想。按「編輯」，留一句話給以後的自己。'}</div>
@@ -1103,6 +1126,7 @@ function renderSpread(){
   };
   $('bvAgain')?.addEventListener('click',()=>{$('bookView').close();drawOne()});
   stage.querySelectorAll('[data-tag]').forEach(c=>c.onclick=()=>{$('bookView').close();openSearch(c.dataset.tag)});
+  stage.querySelectorAll('[data-person]').forEach(c=>c.onclick=()=>{$('bookView').close();openPerson(c.dataset.person)});
   const left=$('bvLeft'),cover=$('bvCover');
   left.onpointermove=e=>{if(e.pointerType!=='mouse'||reduceMotion())return;const r=left.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;cover.style.setProperty('--ry',(px*18).toFixed(1)+'deg');cover.style.setProperty('--rx',(-py*12).toFixed(1)+'deg')};
   left.onpointerleave=()=>{cover.style.setProperty('--ry','0deg');cover.style.setProperty('--rx','0deg')};
@@ -1126,17 +1150,19 @@ function runSearch(){
   searchHits=list.map(b=>b.id);searchSel=0;
   const box=$('results');
   if(!list.length){box.innerHTML=`<div class="none">書房裡沒有符合「${esc(q)}」的書。</div>`;return}
-  box.innerHTML=(q?'':'<div class="hint" style="padding:6px 10px">最近讀的書</div>')+list.map((b,i)=>{
+  const ppl=q?allPeople().filter(p=>p.n>1&&personKey(p.name).includes(personKey(q))).sort((a,b)=>b.n-a.n).slice(0,3):[];
+  box.innerHTML=(q?'':'<div class="hint" style="padding:6px 10px">最近讀的書</div>')+ppl.map(p=>`<button type="button" class="result person-row" data-person="${esc(p.name)}"><span class="pav">${esc([...p.name][0])}</span><span style="min-width:0"><span class="rt" style="display:block">${hl(p.name,q)}</span><span class="rs" style="display:block">查看全部</span></span><span class="rd">${p.n} 本</span></button>`).join('')+list.map((b,i)=>{
     const sub=[b.author?hl(b.author,q):'',b.translator?hl(b.translator,q)+' 譯':'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
     return `<button type="button" class="result ${i===0?'on':''}" data-id="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span style="min-width:0"><span class="rt" style="display:block">${b.favorite?'<svg viewBox="0 0 14 20" style="width:9px;height:12px;fill:var(--ribbon);margin-right:5px" aria-label="珍藏"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>':''}${hl(b.title,q)}</span><span class="rs" style="display:block">${sub||'&nbsp;'}</span></span><span class="rd">${esc(b.year)}・${monthNum(b.month)||esc(b.month)}月</span></button>`}).join('');
-  box.querySelectorAll('.result').forEach(r=>r.onclick=()=>pickResult(r.dataset.id));
+  box.querySelectorAll('.result').forEach(r=>r.onclick=()=>{if(r.dataset.person){$('searchBox').close();openPerson(r.dataset.person)}else pickResult(r.dataset.id)});
+  box.querySelectorAll('.result').forEach((r,i)=>r.classList.toggle('on',i===0));
 }
 function pickResult(id){const ctx=[...searchHits];$('searchBox').close();openBook(id,ctx)}
 $('searchInput').addEventListener('input',runSearch);
 $('searchInput').addEventListener('keydown',e=>{
   const items=[...$('results').querySelectorAll('.result')];if(!items.length)return;
   if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();searchSel=(searchSel+(e.key==='ArrowDown'?1:-1)+items.length)%items.length;items.forEach((x,i)=>x.classList.toggle('on',i===searchSel));items[searchSel].scrollIntoView({block:'nearest'})}
-  if(e.key==='Enter'){e.preventDefault();pickResult(items[searchSel].dataset.id)}
+  if(e.key==='Enter'){e.preventDefault();items[searchSel].click()}
 });
 $('openSearch').onclick=()=>openSearch();
 $('closeSearch').onclick=()=>$('searchBox').close();
@@ -1806,6 +1832,38 @@ $('goalSave').onclick=()=>{
   setGoal(currentYear,v);$('goalBox').close();renderGoalRow();toast(`${currentYear} 年的目標：${v} 本`);
 };
 $('goalRemove').onclick=()=>{setGoal(currentYear,0);$('goalBox').close();renderGoalRow();toast('已取消這一年的目標')};
+
+/* ================= 作者／譯者：看這個人的所有書 ================= */
+const PERSON_SPLIT=/\s*(?:[、,，\/／;；&＆]|\s+(?:and|與|和)\s+)\s*/;
+function personNames(s){return String(s||'').split(PERSON_SPLIT).map(x=>x.trim()).filter(Boolean)}
+function personKey(n){return String(n||'').replace(/[（(][^）)]*[）)]/g,'').replace(/[\s·・．.]/g,'').toLowerCase()}
+function personBooks(name){
+  const k=personKey(name);if(!k)return [];
+  return books.map(b=>{const as=personNames(b.author).some(n=>personKey(n)===k),ts=personNames(b.translator).some(n=>personKey(n)===k);return as||ts?{b,role:as&&ts?'both':as?'author':'translator'}:null}).filter(Boolean)
+    .sort((x,y)=>Number(y.b.year)-Number(x.b.year)||monthNum(y.b.month)-monthNum(x.b.month)||orderKey(y.b)-orderKey(x.b));
+}
+function allPeople(){
+  const m=new Map();
+  books.forEach(b=>[...personNames(b.author),...personNames(b.translator)].forEach(n=>{const k=personKey(n);if(!k)return;const e=m.get(k)||{name:n,ids:new Set()};e.ids.add(b.id);m.set(k,e)}));
+  return [...m.values()].map(e=>({name:e.name,n:e.ids.size}));
+}
+function personLinks(s,suffix=''){
+  return personNames(s).map(n=>{const c=personBooks(n).length;return `<button type="button" class="person" data-person="${esc(n)}" aria-label="看 ${esc(n)} 的所有書（${c} 本）">${esc(n)}${suffix}${c>1?`<small>${c}</small>`:''}</button>`}).join('<span class="psep">、</span>');
+}
+function openPerson(name){
+  const list=personBooks(name);if(!list.length)return;
+  const ids=list.map(x=>x.b.id),au=list.filter(x=>x.role!=='translator').length,tr=list.filter(x=>x.role!=='author').length;
+  const ys=[...new Set(list.map(x=>Number(x.b.year)))].sort((a,b)=>a-b),fav=list.filter(x=>x.b.favorite).length;
+  const role=au&&tr?`當作者 ${au} 本・當譯者 ${tr} 本`:'';
+  const span=ys.length>1?`從 ${ys[0]} 到 ${ys.at(-1)} 年`:`都在 ${ys[0]} 年`;
+  $('personName').textContent=list[0].role==='translator'&&!au?`${name}（譯者）`:name;
+  $('personSum').innerHTML=`讀過 <em>${list.length}</em> 本，${span}${fav?`，其中 <em>${fav}</em> 本放進了珍藏`:''}。${role?`<span class="delta">${role}</span>`:''}`;
+  const groups=[];list.forEach(x=>{const y=Number(x.b.year);let g=groups.at(-1);if(!g||g.y!==y)groups.push(g={y,items:[]});g.items.push(x)});
+  $('personList').innerHTML=groups.map(g=>`<div class="p-year"><div class="y">${g.y}</div><div class="wall">${g.items.map(x=>tileEl(x.b,monthLabel(x.b.month)+(x.role==='translator'?'・翻譯':''))).join('')}</div></div>`).join('');
+  $('personList').querySelectorAll('.tile').forEach(t=>t.onclick=()=>{$('personBox').close();openBook(t.dataset.id,ids)});
+  $('personBox').showModal();$('personList').scrollTop=0;
+}
+$('personClose').onclick=()=>$('personBox').close();
 
 /* ================= 回顧影片（IG 9:16） ================= */
 const VW=1080, VH=1920, VFPS=30;
