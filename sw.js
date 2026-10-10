@@ -1,5 +1,5 @@
 /* 頁間日子：離線開啟用。網頁本身採「先連網、失敗才用快取」，所以更新網站後一定拿到新版。 */
-const VERSION='pages-between-days-v5';
+const VERSION='pages-between-days-v7';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 const RUNTIME_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','cdn.jsdelivr.net'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});

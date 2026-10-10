@@ -357,6 +357,22 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .p-year .wall{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:18px 14px}
 .result .pav{width:36px;height:36px;border-radius:50%;background:var(--wall-2);display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--accent)}
 @media (max-width:640px){.p-year{grid-template-columns:1fr;gap:8px}.p-year .wall{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px}}
+.field .lab small{font-weight:400;font-size:11px;color:var(--ink-soft);margin-left:8px}
+.feel-chips{display:flex;flex-wrap:wrap;gap:6px}
+.feel-chips button{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);font-family:var(--f-display);font-size:15px;color:var(--ink)}
+.feel-chips button:hover{border-color:var(--ink-soft)}
+.feel-chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.feel-pill{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-family:var(--f-display);font-size:14px;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.feel-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.feel-pill.f3,.feel-pill.f4,.feel-pill.f5{background:transparent;color:var(--ink-soft);border-color:var(--rule)}
+.result .rfeel{font-weight:500;color:var(--accent)}
+.slide .feels{display:grid;gap:12px;width:100%;max-width:440px}
+.slide .fr{display:grid;grid-template-columns:5.2em minmax(0,1fr) 2em;align-items:center;gap:12px;font-family:var(--f-display);font-size:17px}
+.slide .fr span{text-align:right}
+.slide .fr i{display:block;height:16px;border-radius:8px;background:rgba(241,233,216,.28);width:0;animation:feelW .9s cubic-bezier(.2,.8,.2,1) forwards}
+.slide .fr.f0 i,.slide .fr.f1 i,.slide .fr.f2 i{background:var(--rv)}
+.slide .fr b{font-family:var(--f-num);font-style:italic;font-weight:500;font-size:22px;text-align:left;color:rgba(241,233,216,.8)}
+@keyframes feelW{to{width:var(--w)}}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -663,6 +679,10 @@ a.btn.primary{color:var(--accent-ink)}
       </div>
       <div class="field">
         <label class="switch" for="bookFav"><input id="bookFav" type="checkbox"><svg aria-hidden="true"><use href="#i-ribbon"/></svg><span>這本我很喜歡，放進珍藏</span></label>
+      </div>
+      <div class="field">
+        <span class="lab">讀完的感覺<small>選填，再點一次可以取消</small></span>
+        <div class="feel-chips" id="feelChips" role="radiogroup" aria-label="讀完的感覺"></div>
       </div>
       <div class="field">
         <span class="lab">封面</span>
@@ -1102,6 +1122,7 @@ function renderSpread(){
       <div class="when"><b>${esc(b.year)}</b>　${esc(monthLabel(b.month))}讀完</div>
       <h2>${esc(b.title)}</h2>
       ${b.author||b.translator?`<p class="author">${[b.author?personLinks(b.author):'',b.translator?personLinks(b.translator,' 譯'):''].filter(Boolean).join('<span class="psep">　</span>')}</p>`:''}
+      ${normFeel(b.feel)?`<button type="button" class="feel-pill f${FEELS.indexOf(normFeel(b.feel))}" data-feel="${esc(normFeel(b.feel))}">${esc(normFeel(b.feel))}</button>`:''}
       ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
       <button type="button" class="fav-toggle ${b.favorite?'on':''}" id="bvFav" aria-pressed="${b.favorite}"><svg viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg><span>${b.favorite?'已放進珍藏':'放進珍藏'}</span></button>
       <div class="lined ${note?'':'placeholder'}">${note?esc(note):'還沒寫下感想。按「編輯」，留一句話給以後的自己。'}</div>
@@ -1126,6 +1147,7 @@ function renderSpread(){
   };
   $('bvAgain')?.addEventListener('click',()=>{$('bookView').close();drawOne()});
   stage.querySelectorAll('[data-tag]').forEach(c=>c.onclick=()=>{$('bookView').close();openSearch(c.dataset.tag)});
+  stage.querySelectorAll('[data-feel]').forEach(c=>c.onclick=()=>{$('bookView').close();openSearch(c.dataset.feel)});
   stage.querySelectorAll('[data-person]').forEach(c=>c.onclick=()=>{$('bookView').close();openPerson(c.dataset.person)});
   const left=$('bvLeft'),cover=$('bvCover');
   left.onpointermove=e=>{if(e.pointerType!=='mouse'||reduceMotion())return;const r=left.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;cover.style.setProperty('--ry',(px*18).toFixed(1)+'deg');cover.style.setProperty('--rx',(-py*12).toFixed(1)+'deg')};
@@ -1146,13 +1168,13 @@ function runSearch(){
   const q=$('searchInput').value.trim().replace(/^#/,''), ql=q.toLowerCase();
   let list;
   if(!q)list=[...books].sort((a,b)=>Number(b.year)-Number(a.year)||monthNum(b.month)-monthNum(a.month)||orderKey(b)-orderKey(a)).slice(0,8);
-  else list=books.map(b=>{let s=0;const t=b.title.toLowerCase();if(t===ql)s=100;else if(t.startsWith(ql))s=80;else if(t.includes(ql))s=60;if(String(b.author||'').toLowerCase().includes(ql))s=Math.max(s,50);if(String(b.translator||'').toLowerCase().includes(ql))s=Math.max(s,48);if(b.tags.some(x=>x.toLowerCase().includes(ql)))s=Math.max(s,45);if(String(b.note||'').toLowerCase().includes(ql))s=Math.max(s,30);return {b,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||Number(b.b.year)-Number(a.b.year)).map(x=>x.b);
+  else list=books.map(b=>{let s=0;const t=b.title.toLowerCase();if(t===ql)s=100;else if(t.startsWith(ql))s=80;else if(t.includes(ql))s=60;if(String(b.author||'').toLowerCase().includes(ql))s=Math.max(s,50);if(String(b.translator||'').toLowerCase().includes(ql))s=Math.max(s,48);if(b.tags.some(x=>x.toLowerCase().includes(ql)))s=Math.max(s,45);if(normFeel(b.feel)&&normFeel(b.feel).includes(q))s=Math.max(s,46);if(String(b.note||'').toLowerCase().includes(ql))s=Math.max(s,30);return {b,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||Number(b.b.year)-Number(a.b.year)).map(x=>x.b);
   searchHits=list.map(b=>b.id);searchSel=0;
   const box=$('results');
   if(!list.length){box.innerHTML=`<div class="none">書房裡沒有符合「${esc(q)}」的書。</div>`;return}
   const ppl=q?allPeople().filter(p=>p.n>1&&personKey(p.name).includes(personKey(q))).sort((a,b)=>b.n-a.n).slice(0,3):[];
   box.innerHTML=(q?'':'<div class="hint" style="padding:6px 10px">最近讀的書</div>')+ppl.map(p=>`<button type="button" class="result person-row" data-person="${esc(p.name)}"><span class="pav">${esc([...p.name][0])}</span><span style="min-width:0"><span class="rt" style="display:block">${hl(p.name,q)}</span><span class="rs" style="display:block">查看全部</span></span><span class="rd">${p.n} 本</span></button>`).join('')+list.map((b,i)=>{
-    const sub=[b.author?hl(b.author,q):'',b.translator?hl(b.translator,q)+' 譯':'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
+    const sub=[q&&normFeel(b.feel).includes(q)?'<b class="rfeel">'+hl(normFeel(b.feel),q)+'</b>':'',b.author?hl(b.author,q):'',b.translator?hl(b.translator,q)+' 譯':'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
     return `<button type="button" class="result ${i===0?'on':''}" data-id="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span style="min-width:0"><span class="rt" style="display:block">${b.favorite?'<svg viewBox="0 0 14 20" style="width:9px;height:12px;fill:var(--ribbon);margin-right:5px" aria-label="珍藏"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>':''}${hl(b.title,q)}</span><span class="rs" style="display:block">${sub||'&nbsp;'}</span></span><span class="rd">${esc(b.year)}・${monthNum(b.month)||esc(b.month)}月</span></button>`}).join('');
   box.querySelectorAll('.result').forEach(r=>r.onclick=()=>{if(r.dataset.person){$('searchBox').close();openPerson(r.dataset.person)}else pickResult(r.dataset.id)});
   box.querySelectorAll('.result').forEach((r,i)=>r.classList.toggle('on',i===0));
@@ -1208,6 +1230,14 @@ function reviewData(y){
   S.push({type:'bars',k:'閱讀的節奏',h:`${best} 月是你讀得最起勁的時候`,c:c.slice(1),best,p:`那個月讀了 ${c[best]} 本。一整年裡，有 ${active} 個月都有書陪著你。`});
   if(n>=2){const a=list[0],z=list[n-1];S.push({type:'pair',k:'從這本開始，到這本為止',a,z,ca:`${monthLabel(a.month)}的第一本`,cz:'最近讀完的'})}
   if(favs.length)S.push({type:'fan',k:'特別喜歡的',books:favs.slice(0,7),h:`其中 ${favs.length} 本，你放進了珍藏`,p:favs.slice(0,3).map(b=>'《'+b.title+'》').join('、')+(favs.length>3?' 等等':'')});
+  const fs=feelStats(list);
+  if(fs.n>=3){const c=fs.c;let h,p='';
+    if(c['意猶未盡']){h=`有 ${c['意猶未盡']} 本書，讓你意猶未盡`;if(c['值得重讀'])p=`還有 ${c['值得重讀']} 本，你覺得值得重讀。`}
+    else if(c['值得重讀']){h=`有 ${c['值得重讀']} 本，你想再讀一次`;if(c['好看'])p=`另外 ${c['好看']} 本，你覺得好看。`}
+    else if(c['好看'])h=`有 ${c['好看']} 本，你覺得好看`;
+    else h='每一本，都留下了一點感覺';
+    if(!p&&c['沒讀完'])p=`也有 ${c['沒讀完']} 本沒讀完。沒關係，書會等你。`;
+    S.push({type:'feel',k:'讀完的感覺',h,p,rows:FEELS.filter(f=>c[f]).map(f=>[f,c[f]])})}
   const tc={};list.forEach(b=>(b.tags||[]).forEach(t=>tc[t]=(tc[t]||0)+1));const tags=Object.entries(tc).sort((a,b)=>b[1]-a[1]).slice(0,10);
   if(tags.length)S.push({type:'tags',k:'讀了哪些類型',h:`你最常翻開的是「${tags[0][0]}」`,tags});
   S.push({type:'end',k:String(y),h:'下一本，會是哪一本呢？',p:'翻過的每一頁都收在這裡了。'});
@@ -1219,6 +1249,7 @@ function buildReview(y){
   return D.map(d=>{
     if(d.type==='count')return `<div class="k">${esc(d.k)}</div><div class="huge">${d.n}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`;
     if(d.type==='goal')return `<div class="k">${esc(d.k)}</div><div class="gring">${ringSvg(d.n/d.g,240,16)}<b>${d.pct}%<small>目標 ${d.g} 本</small></b></div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`;
+    if(d.type==='feel'){const mx=Math.max(...d.rows.map(r=>r[1]));return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><div class="feels">${d.rows.map(([f,v],i)=>`<div class="fr f${FEELS.indexOf(f)}"><span>${esc(f)}</span><i style="--w:${(v/mx*100).toFixed(0)}%;animation-delay:${200+i*90}ms"></i><b>${v}</b></div>`).join('')}</div>${d.p?`<p>${esc(d.p)}</p>`:''}`}
     if(d.type==='bars'){const mx=Math.max(1,...d.c);return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><div class="rbars">${d.c.map((v,i)=>`<div class="${i+1===d.best?'top':''}" style="--h:${Math.max(3,v/mx*100)}%;animation-delay:${i*50}ms"></div>`).join('')}</div><div class="rmon">${Array.from({length:12},(_,i)=>`<span>${i+1}</span>`).join('')}</div><p>${esc(d.p)}</p>`}
     if(d.type==='pair')return `<div class="k">${esc(d.k)}</div><div class="pair"><figure><div class="cover">${coverInner(d.a)}</div><figcaption>${esc(d.ca)}<b>${esc(d.a.title)}</b></figcaption></figure><figure><div class="cover">${coverInner(d.z)}</div><figcaption>${esc(d.cz)}<b>${esc(d.z.title)}</b></figcaption></figure></div>`;
     if(d.type==='fan'){const k=d.books.length;return `<div class="k">${esc(d.k)}</div><div class="fan">${d.books.map((b,i)=>`<div class="cover" style="--a:${k===1?0:(-26+52*i/(k-1)).toFixed(1)}deg;z-index:${i};animation-delay:${i*70}ms">${coverInner(b)}</div>`).join('')}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`}
@@ -1308,7 +1339,7 @@ function openEditor(b=null,opts={}){
   const defMonth=b?b.month:(Number(currentYear)===NOW.getFullYear()?`${NOW.getMonth()+1}月`:'');
   $('bookMonthCustom').value='';setMonth(defMonth);
   editTags=[...(b?.tags||[])];renderTags();
-  $('bookFav').checked=!!b?.favorite;
+  $('bookFav').checked=!!b?.favorite;editFeel=normFeel(b?.feel);renderFeelChips();
   $('bookNote').value=b?.note||'';
   $('bookCoverFile').value='';$('formErr').hidden=true;
   updatePreview();$('skipBatch').hidden=!batchModeActive;
@@ -1418,6 +1449,7 @@ $('editForm').onsubmit=async e=>{
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
   const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
+  if(editFeel)b.feel=editFeel;else delete b.feel;
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
@@ -1490,10 +1522,10 @@ async function exportExcel(){
   if(!books.length){notify('沒有可以匯出的書','書房裡還沒有任何紀錄。');return}
   const btn=$('exportExcelBtn');btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='<b>正在製作 Excel…</b><span>封面越多會越久一點</span>';
   try{
-    const IMG_COL=11;
-    const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','閱讀筆記','封面裁切X','封面裁切Y','封面縮放','封面']];
+    const IMG_COL=12;
+    const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','讀完的感覺','閱讀筆記','封面裁切X','封面裁切Y','封面縮放','封面']];
     const sorted=[...books].sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||String(a.month).localeCompare(String(b.month),'zh-Hant',{numeric:true})||orderKey(a)-orderKey(b));
-    sorted.forEach(b=>rows.push([b.year,b.month,b.title,b.author||'',b.translator||'',(b.tags||[]).join('、'),b.favorite?'是':'',b.note||'',Number(b.coverX??50),Number(b.coverY??50),Number(b.coverZoom??1),b.cover?'有':'']));
+    sorted.forEach(b=>rows.push([b.year,b.month,b.title,b.author||'',b.translator||'',(b.tags||[]).join('、'),b.favorite?'是':'',normFeel(b.feel),b.note||'',Number(b.coverX??50),Number(b.coverY??50),Number(b.coverZoom??1),b.cover?'有':'']));
     const zip=new JSZip();
     zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
     zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
@@ -1502,7 +1534,7 @@ async function exportExcel(){
     zip.folder('xl').file('styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE699"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0" applyFill="1"/></cellXfs></styleSheet>');
     const imageItems=[];for(let i=0;i<sorted.length;i++){const b=sorted[i];if(!b.cover)continue;let im=dataUrlBytes(b.cover);if(!im&&/^https?:/i.test(b.cover))im=await externalCoverBytes(b.cover);if(im)imageItems.push({row:i+2,...im})}
     let sheetRows='';for(let r=0;r<rows.length;r++){const vals=rows[r],rn=r+1;let cells='';for(let c=0;c<vals.length;c++){const ref=colRef(c+1)+rn,val=vals[c];const style=(r>0&&c===2&&sorted[r-1]?.favorite)?' s="1"':'';if(typeof val==='number'&&Number.isFinite(val))cells+=`<c r="${ref}"${style}><v>${val}</v></c>`;else cells+=`<c r="${ref}" t="inlineStr"${style}><is><t xml:space="preserve">${xesc(val)}</t></is></c>`}sheetRows+=`<row r="${rn}"${rn>1?' ht="82" customHeight="1"':''}>${cells}</row>`}
-    zip.folder('xl').folder('worksheets').file('sheet1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="10" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="5" width="18" customWidth="1"/><col min="6" max="6" width="18" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="45" customWidth="1"/><col min="9" max="11" width="12" customWidth="1"/><col min="12" max="12" width="18" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><drawing r:id="rId1"/></worksheet>`);
+    zip.folder('xl').folder('worksheets').file('sheet1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="10" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="5" width="18" customWidth="1"/><col min="6" max="6" width="18" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="9" width="45" customWidth="1"/><col min="10" max="12" width="12" customWidth="1"/><col min="13" max="13" width="18" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><drawing r:id="rId1"/></worksheet>`);
     zip.folder('xl').folder('worksheets').folder('_rels').file('sheet1.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>');
     let anchors='',drawRels='';const media=zip.folder('xl').folder('media');
     for(let i=0;i<imageItems.length;i++){const im=imageItems[i],name=`image${i+1}.${im.ext}`,rid=`rId${i+1}`;media.file(name,im.bytes,{binary:true});drawRels+=`<Relationship Id="${rid}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/${name}"/>`;anchors+=`<xdr:oneCellAnchor><xdr:from><xdr:col>${IMG_COL}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>${im.row-1}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:ext cx="760000" cy="1100000"/><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${i+1}" name="封面 ${i+1}"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" r:embed="${rid}"/><a:stretch xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>`}
@@ -1521,7 +1553,7 @@ $('exportExcelBtn').onclick=exportExcel;
 function splitTags(v){return String(v||'').split(/[、,，;；\/#\s]+/).map(s=>s.trim()).filter(Boolean).slice(0,8)}
 function normalizeImported(raw){
   const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null;if(!arr)throw new Error('這不是書房的備份檔');
-  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),translator:String(b.translator||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
+  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),translator:String(b.translator||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);if(normFeel(b.feel))o.feel=normFeel(b.feel);return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
 }
 const bookKey=b=>`${Number(b.year)}|${String(b.month||'').trim()}|${normTitleKey(b.title)}`;
 async function writeImport(incoming,replace){
@@ -1540,6 +1572,7 @@ async function writeImport(incoming,replace){
       if(!cur.note&&src.note){cur.note=src.note;ch=true}
       if(!cur.tags?.length&&src.tags?.length){cur.tags=src.tags;ch=true}
       if(!cur.favorite&&src.favorite){cur.favorite=true;ch=true}
+      if(!normFeel(cur.feel)&&normFeel(src.feel)){cur.feel=normFeel(src.feel);ch=true}
       if(ch){await saveBook(cur);filled++}
     }
   }
@@ -1580,9 +1613,9 @@ $('importPick').onclick=()=>{$('importBox').close();const f=$('importFile');f.va
 $('importBoxClose').onclick=()=>$('importBox').close();
 $('templateBtn').onclick=async()=>{
   if(!window.JSZip){notify('Excel 元件還沒載入','請確認網路連線後重新整理頁面。');return}
-  const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','閱讀筆記'],[2026,'3月','（範例）書名寫這裡','作者名','譯者名','小說、日本','是','一句感想'],[2026,'4月','（範例）第二本書','','','散文','','']];
+  const rows=[['年份','月份','書名','作者','譯者','標籤','喜歡','讀完的感覺','閱讀筆記'],[2026,'3月','（範例）書名寫這裡','作者名','譯者名','小說、日本','是','意猶未盡','一句感想'],[2026,'4月','（範例）第二本書','','','散文','','普通','']];
   const cell=(v,ref)=>typeof v==='number'?`<c r="${ref}"><v>${v}</v></c>`:`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`;
-  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="2" width="9" customWidth="1"/><col min="3" max="3" width="36" customWidth="1"/><col min="4" max="6" width="16" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="40" customWidth="1"/></cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,colRef(j+1)+(i+1))).join('')}</row>`).join('')}</sheetData></worksheet>`;
+  const sheet=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="2" width="9" customWidth="1"/><col min="3" max="3" width="36" customWidth="1"/><col min="4" max="6" width="16" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="9" width="40" customWidth="1"/></cols><sheetData>${rows.map((r,i)=>`<row r="${i+1}">${r.map((v,j)=>cell(v,colRef(j+1)+(i+1))).join('')}</row>`).join('')}</sheetData></worksheet>`;
   const zip=new JSZip();
   zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
   zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
@@ -1636,14 +1669,14 @@ async function parseXlsx(file){
       if(Object.keys(cells).length)rows.push({r:rnum,cells})}
     sheetData[sh.name]={...sh,doc,rows};
   }
-  const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],translatorHeads=['譯者','翻譯','translator'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'];
+  const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],translatorHeads=['譯者','翻譯','translator'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'],feelHeads=['讀完的感覺','感覺','感受','feel','feeling'];
   const headMatch=(v,list)=>{const n=normHeader(v);return !!n&&list.some(h=>n===normHeader(h)||n.includes(normHeader(h)))};
   const records=[];let order=0;
   for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const defaultYear=yearFrom(sh.name);let headerRow=null,map={};
-    for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,translatorHeads))tm.translator=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
+    for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,translatorHeads))tm.translator=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,feelHeads))tm.feel=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
     if(headerRow==null)continue;let carryYear=defaultYear;
     for(const row of sd.rows.filter(r=>r.r>headerRow)){const title=String(row.cells[map.title]?.v??'').trim();if(!title)continue;const yv=map.year!=null?yearFrom(row.cells[map.year]?.v):null;if(yv)carryYear=yv;const year=yv||carryYear||defaultYear;const month=map.month!=null?monthFrom(row.cells[map.month]?.v):'';if(!year||!month)continue;const favCell=map.favorite!=null?row.cells[map.favorite]:null;const favorite=(favCell?boolFrom(favCell.v):false)||styleLooksHighlighted(row.cells[map.title]?.style,styles);
-      records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),translator:String(map.translator!=null?(row.cells[map.translator]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
+      records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),translator:String(map.translator!=null?(row.cells[map.translator]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),...(map.feel!=null&&normFeel(row.cells[map.feel]?.v)?{feel:normFeel(row.cells[map.feel]?.v)}:{}),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
   }
   if(!records.length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
   const images=[];
@@ -1865,6 +1898,20 @@ function openPerson(name){
 }
 $('personClose').onclick=()=>$('personBox').close();
 
+/* ================= 讀完的感覺 ================= */
+const FEELS=['意猶未盡','值得重讀','好看','普通','不合胃口','沒讀完'];
+const FEEL_ALIAS={'不好看':'不合胃口','難看':'不合胃口','不喜歡':'不合胃口','還好':'普通','不錯':'好看','推薦':'好看','喜歡':'好看','想重讀':'值得重讀','未讀完':'沒讀完','棄書':'沒讀完'};
+function normFeel(v){const s=String(v||'').trim();if(FEELS.includes(s))return s;return FEEL_ALIAS[s]||''}
+var editFeel='';
+function renderFeelChips(){
+  const box=$('feelChips');if(!box)return;
+  box.innerHTML=FEELS.map(f=>`<button type="button" role="radio" aria-checked="${f===editFeel}" class="${f===editFeel?'on':''}" data-f="${f}">${f}</button>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{editFeel=editFeel===b.dataset.f?'':b.dataset.f;renderFeelChips()});
+}
+function feelStats(list){
+  const c={};FEELS.forEach(f=>c[f]=0);let n=0;list.forEach(b=>{const f=normFeel(b.feel);if(f){c[f]++;n++}});return {c,n};
+}
+
 /* ================= 回顧影片（IG 9:16） ================= */
 const VW=1080, VH=1920, VFPS=30;
 const VC={bg:'#0d1112',ink:'#f1e9d8',soft:'rgba(241,233,216,.72)',mute:'rgba(241,233,216,.5)',faint:'rgba(241,233,216,.22)',acc:'#86c0b6'};
@@ -1951,6 +1998,16 @@ function vSlideItems(ctx,d,imgs){
   if(d.type==='count'){
     it.push({h:400,gap:30,draw:(y,lt)=>{const v=Math.round(d.n*vEase(lt/1.3));ctx.font=`italic 500 460px ${VF.n}`;ctx.fillStyle=VC.acc;ctx.fillText(String(v),VW/2,y+350)}});
     it.push({...hItem(d.h),gap:30});it.push(pItem(d.p));
+  }else if(d.type==='feel'){
+    it.push({...hItem(d.h),gap:56});
+    const mx=Math.max(...d.rows.map(r=>r[1])),RH=92,LW=230,BW=520,x0=(VW-(LW+BW+110))/2;
+    it.push({h:d.rows.length*RH,gap:d.p?46:0,draw:(y,lt)=>{
+      d.rows.forEach(([f,v],i)=>{const p=vEase((lt-.2-i*.09)/.8),yy=y+i*RH,pos=FEELS.indexOf(f)<3;
+        ctx.save();ctx.globalAlpha*=vClamp(p*1.6);ctx.textAlign='right';ctx.font=`700 46px ${VF.d}`;ctx.fillStyle=VC.ink;ctx.fillText(f,x0+LW-24,yy+56);
+        ctx.fillStyle=pos?VC.acc:'rgba(241,233,216,.28)';vRound(ctx,x0+LW,yy+22,Math.max(14,BW*v/mx*p),44,22);ctx.fill();
+        ctx.textAlign='left';ctx.font=`italic 500 54px ${VF.n}`;ctx.fillStyle=pos?VC.acc:VC.soft;ctx.fillText(String(v),x0+LW+Math.max(14,BW*v/mx*p)+20,yy+60);ctx.restore()});
+    }});
+    if(d.p)it.push(pItem(d.p));
   }else if(d.type==='goal'){
     const R=230,SW=30;
     it.push({h:R*2+SW+10,gap:56,draw:(y,lt)=>{
