@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="頁間日子 Pages Between Days：記錄每一本讀過的書、標記珍藏、抄下喜歡的句子，做成年度回顧。資料只存在你的瀏覽器或你自己的 Google 雲端硬碟。">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#e4e8e1" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141819" media="(prefers-color-scheme: dark)">
@@ -443,6 +444,11 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .qd-src small{font-size:12px;color:var(--ink-soft)}
 .qd-acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:22px}
 @media (max-width:640px){.qv-list{columns:1}.qdsheet{padding:40px 22px 22px}.qd-acts .btn{flex:1}}
+.site-foot{margin-top:56px;padding-top:20px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-soft)}
+.site-foot p{margin:0;max-width:44em;line-height:1.6}
+.site-foot nav{display:flex;gap:8px;align-items:center}
+.site-foot a{color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px}
+.site-foot a:hover{color:var(--accent)}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -685,6 +691,10 @@ a.btn.primary{color:var(--accent-ink)}
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
   <main id="stage" aria-live="polite"></main>
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
+  <footer class="site-foot">
+    <p>頁間日子 Pages Between Days：記錄每一本讀過的書，書只存在你的瀏覽器，或你自己的 Google 雲端硬碟。</p>
+    <nav><a href="https://pichun21.github.io/reading-shelf/pages-between-days.html">關於頁間日子</a><span>·</span><a href="https://pichun21.github.io/reading-shelf/pages-between-days.html#privacy">隱私權說明</a></nav>
+  </footer>
 </div>
 
 <button class="fab" id="addBtn" type="button"><svg><use href="#i-plus"/></svg>放一本書</button>
