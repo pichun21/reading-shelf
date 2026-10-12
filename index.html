@@ -705,6 +705,70 @@ a.btn.primary{color:var(--accent-ink)}
 @media (prefers-reduced-motion: reduce){
   *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* ===== 書堆 ===== */
+html[data-view="pile"] #intro{display:none}
+.status-seg{display:flex;width:100%;max-width:420px}
+.status-seg button{flex:1;height:38px;font-size:14px}
+.status-seg button.on{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+.src-chips{display:flex;flex-wrap:wrap;gap:6px}
+.src-chips button{height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);font-size:14px;color:var(--ink)}
+.src-chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+#bookDue{max-width:220px}
+.pile-fields[hidden],#doneRow[hidden],#favField[hidden],#feelField[hidden],#dueField[hidden],.pile-del[hidden]{display:none}
+.pile-del{margin-right:auto;color:var(--ribbon);border-color:transparent}
+.pile{border-radius:16px;padding:26px clamp(16px,3vw,34px) 30px;background:var(--paper);border:1px solid var(--rule)}
+.pile-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 18px;margin-bottom:18px}
+.pile-head h2{font-family:var(--f-display);font-size:28px;margin:0;letter-spacing:.1em;display:flex;align-items:baseline;gap:10px}
+.pile-head h2 small{font-family:var(--f-body,inherit);font-size:13px;letter-spacing:0;color:var(--ink-soft);font-weight:400}
+.pile-tag{margin:6px 0 0;font-size:13.5px;color:var(--ink-soft);line-height:1.6}
+.pile-head .btn svg{width:16px;height:16px}
+.pile-alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:12px;margin:0 0 18px;background:color-mix(in srgb,var(--ribbon) 10%,transparent);color:var(--ink);font-size:14px;line-height:1.6}
+.pile-alert svg{width:20px;height:20px;flex:none;color:var(--ribbon);margin-top:1px}
+.pile-group{margin-top:22px}
+.pile-group:first-of-type{margin-top:6px}
+.pile-group h3{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;font-family:var(--f-display);font-size:19px;letter-spacing:.06em}
+.pile-group h3 small{font-family:inherit;font-size:13px;color:var(--ink-soft);letter-spacing:0;font-weight:400}
+.pile-group h3 .pg-hint{margin-left:auto;font-family:system-ui,sans-serif;font-size:12.5px;font-weight:400;color:var(--ink-soft);letter-spacing:0}
+.pile-group[data-st="reading"] h3{color:var(--accent)}
+.pile-none{margin:0;padding:14px;border:1.5px dashed var(--rule);border-radius:12px;color:var(--ink-soft);font-size:14px;text-align:center}
+.pile-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.pcard{display:flex;align-items:center;gap:10px;padding:10px 12px 10px 10px;border-radius:14px;border:1px solid var(--rule);background:var(--wall);transition:transform .2s,opacity .2s}
+.pile-group[data-st="reading"] .pcard{background:color-mix(in srgb,var(--accent) 8%,var(--paper));border-color:color-mix(in srgb,var(--accent) 35%,var(--rule))}
+.pc-open{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left}
+.pc-cover{position:relative;flex:none;width:48px;height:70px;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:0 4px 10px -4px var(--shadow);background:var(--wall-2)}
+.pc-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.pc-gen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:4px;background:hsl(var(--h) 28% 42%);color:#fff;font-family:var(--f-display);font-size:11px;line-height:1.25;text-align:center;overflow:hidden}
+.pc-txt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.pc-txt b{font-family:var(--f-display);font-size:16px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pc-txt small{font-size:12.5px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.pchip{font-size:11.5px;padding:1px 8px;border-radius:999px;background:var(--paper);border:1px solid var(--rule);color:var(--ink-soft);white-space:nowrap}
+.pchip.due{color:var(--ink)}
+.pchip.due.soon{background:color-mix(in srgb,var(--brass) 18%,var(--paper));border-color:color-mix(in srgb,var(--brass) 50%,var(--rule))}
+.pchip.due.over{background:var(--ribbon);border-color:var(--ribbon);color:#fff}
+.pc-act{flex:none;gap:5px;white-space:nowrap}
+.pc-act svg{width:15px;height:15px}
+.pcard.leaving{opacity:0;transform:translateX(18px)}
+.pcard.arrive{animation:pcArrive .7s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pcArrive{0%{transform:scale(.92);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 50%,transparent)}60%{transform:scale(1.02)}100%{transform:none;box-shadow:0 0 0 10px transparent}}
+.pile-empty{padding:30px 10px}
+.pile-empty .hint{line-height:1.8}
+[data-view="pile"].has-dot{position:relative}
+.views [data-view="pile"].has-dot::before{content:"";position:absolute;top:10px;right:-8px;width:7px;height:7px;border-radius:50%;background:var(--ribbon)}
+.tabbar [data-view="pile"].has-dot::before{content:"";position:absolute;top:3px;left:calc(50% + 8px);width:7px;height:7px;border-radius:50%;background:var(--ribbon)}
+.tabbar [data-view="pile"] svg{fill:none}
+.stage-switch{display:none}
+@media (max-width:640px){
+  html[data-view="shelf"] .stage-switch,html[data-view="wall"] .stage-switch{display:flex;gap:4px;padding:3px;border-radius:999px;background:var(--wall-2);width:max-content;margin:0 0 14px}
+  .stage-switch button{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:999px;font-size:13px;color:var(--ink-soft)}
+  .stage-switch button svg{width:16px;height:16px}
+  .stage-switch button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px var(--shadow)}
+  .pile{padding:20px 14px 24px}
+  .pile-list{grid-template-columns:1fr}
+  .pile-group h3 .pg-hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){.pcard.arrive{animation:none}}
 </style>
 
 </head>
@@ -774,6 +838,7 @@ a.btn.primary{color:var(--accent-ink)}
   <nav class="views" aria-label="檢視方式">
     <button type="button" data-view="shelf" class="on">書架</button>
     <button type="button" data-view="wall">封面牆</button>
+    <button type="button" data-view="pile">書堆</button>
     <button type="button" data-view="treasure">珍藏</button>
     <button type="button" data-view="quotes">書摘</button>
     <button type="button" id="reviewBtn">年度回顧</button>
@@ -783,6 +848,7 @@ a.btn.primary{color:var(--accent-ink)}
 
   <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
+  <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button></div>
   <main id="stage" aria-live="polite"></main>
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
   <footer class="site-foot">
@@ -795,7 +861,7 @@ a.btn.primary{color:var(--accent-ink)}
 
 <nav class="tabbar" aria-label="主要功能">
   <button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button>
-  <button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button>
+  <button type="button" data-view="pile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="4" y="15" width="16" height="4.5" rx="1"/><rect x="5.5" y="10" width="13" height="4.5" rx="1" transform="rotate(-4 12 12)"/><rect x="4.5" y="4.8" width="14" height="4.5" rx="1" transform="rotate(3 12 7)"/></svg>書堆</button>
   <button type="button" class="add" id="addTab"><span class="c"><svg style="color:var(--accent-ink)"><use href="#i-plus"/></svg></span>新增</button>
   <button type="button" data-view="treasure"><svg viewBox="0 0 14 20" style="width:16px;fill:none;stroke:currentColor;stroke-width:1.5"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>珍藏</button>
   <button type="button" data-view="quotes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 7h5v5H6.5c0 2.5 1 4 3.5 4.5M14 7h5v5h-3.5c0 2.5 1 4 3.5 4.5"/></svg>書摘</button>
@@ -820,12 +886,13 @@ a.btn.primary{color:var(--accent-ink)}
     </div>
     <div class="sheet-body">
       <input type="hidden" id="bookId">
+      <div class="field status-field"><span class="lab">這本書</span><div class="seg status-seg" id="statusSeg" role="radiogroup" aria-label="閱讀狀態"></div></div>
       <div class="field">
         <label for="bookTitle">書名</label>
         <input id="bookTitle" maxlength="160" autocomplete="off" placeholder="例如：52赫茲的鯨魚">
         <div class="hint" id="titleHint" hidden></div>
       </div>
-      <div class="row">
+      <div class="row" id="doneRow">
         <div class="field">
           <label for="bookYear">讀完的年份</label>
           <select id="bookYear"></select>
@@ -860,6 +927,10 @@ a.btn.primary{color:var(--accent-ink)}
           </div>
         </div>
       </div>
+      <div class="pile-fields" id="pileFields" hidden>
+        <div class="field"><span class="lab">書從哪裡來<small>選填，再點一次可以取消</small></span><div class="src-chips" id="srcChips"></div></div>
+        <div class="field" id="dueField" hidden><label for="bookDue">圖書館到期日<small>選填</small></label><input id="bookDue" type="date"></div>
+      </div>
       <button type="button" class="more-toggle" id="moreToggle" aria-expanded="false" aria-controls="editorMore"><span class="mt-ic">＋</span><span id="moreLabel">作者、標籤、珍藏、讀完的感覺、筆記</span><small>選填</small></button>
       <div class="adv" id="editorMore" hidden>
       <div class="row2">
@@ -872,10 +943,10 @@ a.btn.primary{color:var(--accent-ink)}
           <input id="bookTranslator" maxlength="80" autocomplete="off">
         </div>
       </div>
-      <div class="field">
+      <div class="field" id="favField">
         <label class="switch" for="bookFav"><input id="bookFav" type="checkbox"><svg aria-hidden="true"><use href="#i-ribbon"/></svg><span>這本我很喜歡，放進珍藏</span></label>
       </div>
-      <div class="field">
+      <div class="field" id="feelField">
         <span class="lab">讀完的感覺<small>選填，再點一次可以取消</small></span>
         <div class="feel-chips" id="feelChips" role="radiogroup" aria-label="讀完的感覺"></div>
       </div>
@@ -892,6 +963,7 @@ a.btn.primary{color:var(--accent-ink)}
       <p class="hint err" id="formErr" hidden></p>
     </div>
     <div class="sheet-foot">
+      <button type="button" class="btn pile-del" id="pileDel" hidden>從書堆移除</button>
       <button type="button" class="btn" id="cancelEditor">取消</button>
       <button type="submit" class="btn primary" id="saveBtn">放上書架</button>
     </div>
@@ -1173,6 +1245,7 @@ async function migrateExcelCovers(){
 function markDirty(){if(typeof demoMode!=='undefined'&&demoMode)return;ls.set('shelf-dirty',String((Number(ls.get('shelf-dirty'))||0)+1));updateBackupUI()}
 
 /* ================= 狀態與小工具 ================= */
+var pile=[];
 let books=[], currentYear=new Date().getFullYear(), view='shelf', pendingCover='', pendingCrop={x:50,y:50,zoom:1}, pendingCoverSource='';
 let editTags=[], pendingOriginal='';
 const NOW=new Date();
@@ -1185,7 +1258,7 @@ function monthLabel(m){const s=String(m||'').trim();const x=s.match(/^(\d{1,2})\
 function orderKey(b){const n=String(b.id).match(/\d+/g)||['0'];return Number(n[0])+(n[1]?Number(n[1])/1e4:0)}
 function byId(id){return books.find(x=>String(x.id)===String(id))}
 function normalizeBook(b){return {...b,tags:Array.isArray(b.tags)?b.tags.filter(Boolean).map(String):[]}}
-async function reload(){books=(await getAll()).map(normalizeBook)}
+async function reload(){const all=(await getAll()).map(normalizeBook);books=all.filter(isDone);pile=all.filter(b=>!isDone(b))}
 function yearsList(){const y=[...new Set(books.map(b=>Number(b.year)))].filter(Number.isFinite).sort((a,b)=>a-b);return y.length?y:[NOW.getFullYear()]}
 function yearBooks(y=currentYear){return books.filter(b=>Number(b.year)===Number(y))}
 function sortInMonth(a,b){return orderKey(a)-orderKey(b)}
@@ -1225,7 +1298,7 @@ function ask({title,body='',buttons}){
 const notify=(title,body)=>ask({title,body});
 
 /* ================= 主畫面 ================= */
-function render(animateBars=true){renderIntro(animateBars);renderStage();updateBackupUI();updateTidyBanner();updateLoginBanner()}
+function render(animateBars=true){renderIntro(animateBars);renderStage();updateBackupUI();updateTidyBanner();updateLoginBanner();updatePileDot()}
 function renderIntro(animateBars){
   const years=yearsList();
   if(!years.includes(currentYear))currentYear=years.at(-1);
@@ -1263,6 +1336,7 @@ function renderStage(){
   const st=$('stage');
   if(view==='treasure'){renderTreasure(st);return}
   if(view==='quotes'){renderQuotesView(st);return}
+  if(view==='pile'){renderPile(st);return}
   const groups=groupByMonth(yearBooks());
   stageCtx=groups.flatMap(g=>g.items.map(b=>b.id));
   if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button><button type="button" class="btn" id="wSync">${googleReady()?'用 Google 帳號登入':'從其他裝置同步'}</button><button type="button" class="btn" id="wImport">匯入備份檔</button></div><button type="button" class="demo-link" id="wDemo">還不確定？先逛逛示範書櫃 →</button></div>`;$('wDemo').onclick=()=>enterDemo();$('wAdd').onclick=()=>openEditor();$('wSync').onclick=()=>googleReady()?startGoogleLogin():openSyncBox();$('wImport').onclick=()=>chooseImport();return}
@@ -1285,9 +1359,13 @@ function renderTreasure(st){
   st.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>pullAndOpen(el,el.dataset.id,stageCtx));
 }
 function setYear(y){if(y===currentYear)return;currentYear=y;render()}
+function markViewTabs(v){
+  document.documentElement.dataset.view=v;
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v||(v==='wall'&&b.dataset.view==='shelf'&&!!b.closest('.tabbar'))));
+}
 function setView(v){
   view=v;
-  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  markViewTabs(v);
   renderIntro(false);renderStage();
   if(!demoMode)ls.set('shelf-view',v);
 }
@@ -1379,12 +1457,16 @@ function runSearch(){
   else list=books.map(b=>{let s=0;const t=b.title.toLowerCase();if(t===ql)s=100;else if(t.startsWith(ql))s=80;else if(t.includes(ql))s=60;if(String(b.author||'').toLowerCase().includes(ql))s=Math.max(s,50);if(String(b.translator||'').toLowerCase().includes(ql))s=Math.max(s,48);if(b.tags.some(x=>x.toLowerCase().includes(ql)))s=Math.max(s,45);if(normFeel(b.feel)&&normFeel(b.feel).includes(q))s=Math.max(s,46);if(String(b.note||'').toLowerCase().includes(ql))s=Math.max(s,30);if(quotesOf(b).some(x=>x.text.toLowerCase().includes(ql)))s=Math.max(s,32);return {b,s}}).filter(x=>x.s).sort((a,b)=>b.s-a.s||Number(b.b.year)-Number(a.b.year)).map(x=>x.b);
   searchHits=list.map(b=>b.id);searchSel=0;
   const box=$('results');
-  if(!list.length){box.innerHTML=`<div class="none">書房裡沒有符合「${esc(q)}」的書。</div>`;return}
+  const pHits=q?pile.filter(b=>b.title.toLowerCase().includes(ql)||String(b.author||'').toLowerCase().includes(ql)).slice(0,5):[];
+  const pHtml=pHits.length?'<div class="hint" style="padding:10px 10px 4px">在書堆裡</div>'+pHits.map(b=>`<button type="button" class="result" data-pile="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span style="min-width:0"><span class="rt" style="display:block">${hl(b.title,q)}</span><span class="rs">${PILE_LABEL[b.status]||''}${b.author?' · '+hl(b.author,q):''}</span></span></button>`).join(''):'';
+  const bindPile=()=>box.querySelectorAll('[data-pile]').forEach(r=>r.onclick=()=>{const b=pileById(r.dataset.pile);$('searchBox').close();if(b)openEditor(b)});
+  if(!list.length){box.innerHTML=pHtml||`<div class="none">書房裡沒有符合「${esc(q)}」的書。</div>`;bindPile();return}
   const ppl=q?allPeople().filter(p=>p.n>1&&personKey(p.name).includes(personKey(q))).sort((a,b)=>b.n-a.n).slice(0,3):[];
   box.innerHTML=(q?'':'<div class="hint" style="padding:6px 10px">最近讀的書</div>')+ppl.map(p=>`<button type="button" class="result person-row" data-person="${esc(p.name)}"><span class="pav">${esc([...p.name][0])}</span><span style="min-width:0"><span class="rt" style="display:block">${hl(p.name,q)}</span><span class="rs" style="display:block">查看全部</span></span><span class="rd">${p.n} 本</span></button>`).join('')+list.map((b,i)=>{
     const sub=[q&&normFeel(b.feel).includes(q)?'<b class="rfeel">'+hl(normFeel(b.feel),q)+'</b>':'',b.author?hl(b.author,q):'',b.translator?hl(b.translator,q)+' 譯':'',b.tags.length?b.tags.map(t=>'#'+hl(t,q)).join(' '):'',q&&!String(b.note||'').toLowerCase().includes(ql)&&quotesOf(b).some(x=>x.text.toLowerCase().includes(ql))?(()=>{const t=quotesOf(b).find(x=>x.text.toLowerCase().includes(ql)).text,i=t.toLowerCase().indexOf(ql);return '書摘：'+hl(t.slice(Math.max(0,i-8),i+30),q)})():'',q&&String(b.note||'').toLowerCase().includes(ql)?'筆記：'+hl(String(b.note).slice(Math.max(0,String(b.note).toLowerCase().indexOf(ql)-8),String(b.note).toLowerCase().indexOf(ql)+30),q):''].filter(Boolean).join('　');
     return `<button type="button" class="result ${i===0?'on':''}" data-id="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span style="min-width:0"><span class="rt" style="display:block">${b.favorite?'<svg viewBox="0 0 14 20" style="width:9px;height:12px;fill:var(--ribbon);margin-right:5px" aria-label="珍藏"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>':''}${hl(b.title,q)}</span><span class="rs" style="display:block">${sub||'&nbsp;'}</span></span><span class="rd">${esc(b.year)}・${monthNum(b.month)||esc(b.month)}月</span></button>`}).join('');
-  box.querySelectorAll('.result').forEach(r=>r.onclick=()=>{if(r.dataset.person){$('searchBox').close();openPerson(r.dataset.person)}else pickResult(r.dataset.id)});
+  box.insertAdjacentHTML('beforeend',pHtml);
+  box.querySelectorAll('.result').forEach(r=>r.onclick=()=>{if(r.dataset.pile){const b=pileById(r.dataset.pile);$('searchBox').close();if(b)openEditor(b);return}if(r.dataset.person){$('searchBox').close();openPerson(r.dataset.person)}else pickResult(r.dataset.id)});
   box.querySelectorAll('.result').forEach((r,i)=>r.classList.toggle('on',i===0));
 }
 function pickResult(id){const ctx=[...searchHits];$('searchBox').close();openBook(id,ctx)}
@@ -1537,11 +1619,12 @@ function yearsForForm(sel){
 }
 $('bookYear').addEventListener('change',()=>{const o=$('bookYear').value==='other';$('bookYearCustom').hidden=!o;if(o){$('bookYearCustom').value=$('bookYearCustom').value||String(NOW.getFullYear()+6);$('bookYearCustom').focus()}});
 function formYear(){if($('bookYear').value!=='other')return Number($('bookYear').value);const y=Math.round(Number($('bookYearCustom').value));return y>=1900&&y<=2200?y:NaN}
-function setEditorMore(open){$('editorMore').hidden=!open;$('moreToggle').setAttribute('aria-expanded',String(open));$('moreLabel').textContent=open?'收起選填欄位':'作者、標籤、珍藏、讀完的感覺、筆記'}
+function setEditorMore(open){$('editorMore').hidden=!open;$('moreToggle').setAttribute('aria-expanded',String(open));$('moreLabel').textContent=open?'收起選填欄位':(editStatus==='done'?'作者、標籤、珍藏、讀完的感覺、筆記':'作者、譯者、標籤、筆記')}
 $('moreToggle').onclick=()=>{const open=$('editorMore').hidden;setEditorMore(open);ls.set('editor-more',open?'1':'0');if(open)setTimeout(()=>{$('editorMore').scrollIntoView({block:'nearest',behavior:'smooth'});$('bookAuthor').focus({preventScroll:true})},60)};
 function openEditor(b=null,opts={}){
   editFromView=!!opts.fromView;
-  yearsForForm(b?.year||currentYear);
+  editStatus=opts.finish?'done':(b?(b.status||'done'):(opts.status||'done'));editSource=b?.source||'';$('bookDue').value=b?.due||'';renderSrcChips();
+  yearsForForm(b?.year||(opts.finish?NOW.getFullYear():currentYear));
   pendingCover=b?.cover||'';pendingCrop=cropOf(b||{});pendingCoverSource=b?.coverSource||'';pendingOriginal=b?.coverOriginal||'';
   $('formTitle').innerHTML=b?'編輯閱讀紀錄'+(batchModeActive?`<span class="batch-pill">補封面 ${batchIndex+1} / ${batchQueue.length}</span>`:''):'放一本書上架';
   $('formSub').textContent=b?`《${b.title}》`:'記下書名和讀完的月份就可以了，其他都能之後再補。';
@@ -1551,7 +1634,7 @@ function openEditor(b=null,opts={}){
   setEditorMore(!!b||ls.get('editor-more')==='1');
   $('bookAuthor').value=b?.author||'';
   $('bookTranslator').value=b?.translator||'';
-  const defMonth=b?b.month:(Number(currentYear)===NOW.getFullYear()?`${NOW.getMonth()+1}月`:'');
+  const defMonth=b&&b.month?b.month:((opts.finish||Number(currentYear)===NOW.getFullYear())?`${NOW.getMonth()+1}月`:'');
   $('bookMonthCustom').value='';setMonth(defMonth);
   editTags=[...(b?.tags||[])];renderTags();
   $('bookFav').checked=!!b?.favorite;editFeel=normFeel(b?.feel);renderFeelChips();
@@ -1560,6 +1643,8 @@ function openEditor(b=null,opts={}){
   updatePreview();$('skipBatch').hidden=!batchModeActive;
   $('coverStatus').textContent=b?.cover?'已有封面，可以拖曳左邊的圖重新調整位置，或換一張。':'到博客來找到封面後，用螢幕剪取框選封面，回來按 Ctrl＋V 貼上。';
   syncCoverButtons();updateBooksLink();
+  if(opts.finish)setEditorMore(true);
+  applyStatusUI(b,opts);
   const d=$('editor');if(!d.open)d.showModal();
   if(!b)setTimeout(()=>$('bookTitle').focus(),50);
 }
@@ -1655,16 +1740,18 @@ $('mBatch').onclick=batchFillCurrentYearCovers;
 /* ---- 儲存 ---- */
 $('editForm').onsubmit=async e=>{
   e.preventDefault();
+  if(editStatus!=='done'){await savePileFromEditor();return}
   const title=$('bookTitle').value.trim(),month=$('bookMonth').value.trim(),err=$('formErr');
   if(!title||!month){err.hidden=false;err.textContent=!title?'請填寫書名。':'請選一個月份，或在「其他」裡寫下月份。';(!title?$('bookTitle'):$('monthChips')).scrollIntoView({block:'center'});return}
   if(!Number.isFinite(formYear())){err.hidden=false;err.textContent='年份請填 1900 到 2200 之間的數字。';$('bookYearCustom').focus();return}
   if($('tagInput').value.trim())addTag($('tagInput').value);
-  const old=byId($('bookId').value), isNew=!old;
+  const old=anyById($('bookId').value), isNew=!old||!isDone(old);
   const btn=$('saveBtn');btn.disabled=true;
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
   const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
   if(editFeel)b.feel=editFeel;else delete b.feel;
+  delete b.status;delete b.due;if(editSource)b.source=editSource;else delete b.source;
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
@@ -1674,7 +1761,7 @@ $('editForm').onsubmit=async e=>{
   if(batchModeActive){toast('已儲存，前往下一本');batchIndex++;currentYear=b.year;render(false);await openBatchBook();return}
   $('editor').close();
   const yearChanged=currentYear!==b.year;currentYear=b.year;
-  if(view==='treasure'&&!b.favorite)setView('shelf');else render(yearChanged);
+  if(view==='pile'||(view==='treasure'&&!b.favorite))setView('shelf');else render(yearChanged);
   if(editFromView&&$('bookView').open){if(!viewCtx.includes(b.id))viewCtx=[b.id];viewIdx=viewCtx.indexOf(b.id);renderSpread();toast('已儲存')}
   else if(isNew){
     const el=document.querySelector(`#stage [data-id="${CSS.escape(b.id)}"]`);
@@ -1682,7 +1769,29 @@ $('editForm').onsubmit=async e=>{
     showTicketNudge(b);
   }else toast('已儲存');
 };
-$('addBtn').onclick=()=>openEditor();$('addTab').onclick=()=>openEditor();
+async function savePileFromEditor(){
+  const title=$('bookTitle').value.trim(),err=$('formErr');
+  if(!title){err.hidden=false;err.textContent='請填寫書名。';$('bookTitle').scrollIntoView({block:'center'});return}
+  if($('tagInput').value.trim())addTag($('tagInput').value);
+  const old=anyById($('bookId').value),btn=$('saveBtn');btn.disabled=true;
+  let cover=pendingCover||'';
+  if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
+  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom,status:editStatus,addedAt:old?.addedAt||Date.now()};
+  delete b.year;delete b.month;
+  if(editSource)b.source=editSource;else delete b.source;
+  const due=$('bookDue').value;if(editSource==='library'&&due)b.due=due;else delete b.due;
+  if(editStatus==='reading'&&(!old||old.status!=='reading'))b.startedAt=Date.now();
+  if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
+  if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
+  if(cover)b.coverTidied=true;
+  try{await saveBook(b)}catch(ex){btn.disabled=false;err.hidden=false;err.textContent='沒有存進去：'+ex.message;return}
+  btn.disabled=false;markDirty();await reload();$('editor').close();
+  if($('bookView').open)$('bookView').close();
+  if(view!=='pile')setView('pile');else render(false);
+  const el=document.querySelector(`.pcard[data-pid="${CSS.escape(b.id)}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});el.classList.add('arrive')}
+  toast(!old?`已放進書堆的「${PILE_LABEL[editStatus]}」`:isDone(old)?`《${title}》移回書堆`:'已儲存');
+}
+$('addBtn').onclick=()=>view==='pile'?openEditor(null,{status:'todo'}):openEditor();$('addTab').onclick=()=>view==='pile'?openEditor(null,{status:'todo'}):openEditor();
 $('closeEditor').onclick=()=>{$('editor').close();stopBatch()};
 $('cancelEditor').onclick=()=>{$('editor').close();stopBatch()};
 $('editor').addEventListener('cancel',()=>stopBatch());
@@ -1712,12 +1821,12 @@ async function backup(){
   const btn=$('exportJsonBtn');btn.disabled=true;
   try{
     const out=[];let embedded=0,linkOnly=0,fixed=0;
-    for(const {coverOriginal,...b} of books){
+    for(const {coverOriginal,...b} of [...books,...pile]){
       const o={...b};
       if(isRemoteCover(o.cover)){
         // 封面只存了網址：先抓下來存成圖片本身，備份才完整
         const d=await localizeCover(o.cover);
-        if(/^data:image/.test(d)){o.cover=d;fixed++;const cur=byId(b.id);if(cur){cur.cover=d;await putBook(cur)}}else linkOnly++;
+        if(/^data:image/.test(d)){o.cover=d;fixed++;const cur=anyById(b.id);if(cur){cur.cover=d;await putBook(cur)}}else linkOnly++;
       }
       if(/^data:image/.test(o.cover||''))embedded++;
       out.push(o);
@@ -2014,7 +2123,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 /* ================= 啟動 ================= */
 (async()=>{
   const savedTheme=ls.get('shelf-theme');if(savedTheme==='dark'||savedTheme==='light')document.documentElement.dataset.theme=savedTheme;syncLamp();
-  const savedView=ls.get('shelf-view');if(['shelf','wall','treasure','quotes'].includes(savedView)){view=savedView;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===view))}
+  const savedView=ls.get('shelf-view');if(['shelf','wall','treasure','quotes','pile'].includes(savedView))view=savedView;markViewTabs(view);
   try{await openDB()}catch{memMode=true;$('storageNotice').hidden=false}
   try{await seed()}catch{memMode=true;$('storageNotice').hidden=false;mem.clear();await seed()}
   /* 從示範連結進來：直接進示範，不先載入、也不顯示你自己的書 */
@@ -2473,6 +2582,109 @@ function drawQuote(){
 }
 $('qdClose').onclick=()=>$('qDrawBox').close();
 
+/* ================= 書堆：想讀、待讀、在讀 ================= */
+const PILE_ST=[
+  {k:'reading',l:'在讀',hint:'正在翻的書',act:'讀完了',empty:'還沒有正在讀的書'},
+  {k:'todo',l:'待讀',hint:'書在手邊，還沒翻開',act:'開始讀',empty:''},
+  {k:'want',l:'想讀',hint:'還沒拿到，先記下來',act:'拿到了',empty:''}
+];
+const PILE_LABEL={reading:'在讀',todo:'待讀',want:'想讀',done:'讀完了'};
+const PILE_SRC=[{k:'library',l:'圖書館'},{k:'bought',l:'自己買的'},{k:'ebook',l:'電子書'},{k:'borrowed',l:'跟朋友借'}];
+const PILE_NEXT={want:'todo',todo:'reading'};
+function isDone(b){return !b.status||b.status==='done'}
+function pileById(id){return pile.find(x=>String(x.id)===String(id))}
+function anyById(id){return byId(id)||pileById(id)}
+function srcLabel(k){return PILE_SRC.find(s=>s.k===k)?.l||''}
+/* 到期日：回傳剩幾天與顯示文字 */
+function dueInfo(b){
+  if(!b||!b.due||b.source!=='library')return null;
+  const m=String(b.due).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return null;
+  const due=new Date(Number(m[1]),Number(m[2])-1,Number(m[3])),t=new Date();t.setHours(0,0,0,0);
+  const d=Math.round((due-t)/864e5);
+  const text=d<0?`逾期 ${-d} 天`:d===0?'今天到期':d===1?'明天到期':d<=7?`還剩 ${d} 天`:`${Number(m[2])}/${Number(m[3])} 到期`;
+  return {d,text,level:d<0?'over':d<=3?'soon':''};
+}
+function pileUrgent(){return pile.filter(b=>{const i=dueInfo(b);return i&&i.d<=3}).sort((a,b)=>dueInfo(a).d-dueInfo(b).d)}
+function pileList(k){
+  const l=pile.filter(b=>b.status===k);
+  if(k==='todo')return l.sort((a,b)=>{const x=dueInfo(a),y=dueInfo(b);if(x&&y)return x.d-y.d;if(x)return -1;if(y)return 1;return (b.addedAt||0)-(a.addedAt||0)});
+  if(k==='reading')return l.sort((a,b)=>(b.startedAt||0)-(a.startedAt||0));
+  return l.sort((a,b)=>(b.addedAt||0)-(a.addedAt||0));
+}
+function pileCover(b){
+  if(b.cover)return `<img src="${esc(b.cover)}" alt="" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`;
+  return `<span class="pc-gen" style="--h:${hue(b.title)}"><span>${esc(spineTitle(b.title))}</span></span>`;
+}
+function pileCard(b){
+  const s=PILE_ST.find(x=>x.k===b.status),due=dueInfo(b);
+  const chips=[b.source?`<span class="pchip">${esc(srcLabel(b.source))}</span>`:'',due?`<span class="pchip due ${due.level}">${esc(due.text)}</span>`:''].join('');
+  return `<article class="pcard" data-pid="${esc(b.id)}">
+    <button type="button" class="pc-open" data-open="${esc(b.id)}" aria-label="編輯《${esc(b.title)}》"><span class="pc-cover">${pileCover(b)}</span><span class="pc-txt"><b>${esc(b.title)}</b>${b.author?`<small>${esc(b.author)}</small>`:''}${chips?`<span class="pchips">${chips}</span>`:''}</span></button>
+    <button type="button" class="btn sm ${b.status==='reading'?'primary':''} pc-act" data-act="${esc(b.id)}">${b.status==='reading'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>':''}${esc(s.act)}</button>
+  </article>`;
+}
+function renderPile(st){
+  stageCtx=[];
+  const n=pile.length,urgent=pileUrgent();
+  const head=`<div class="pile-head"><div><h2>書堆<small>${n?`${n} 本`:''}</small></h2><p class="pile-tag">積讀書堆・借來的、買來的、還沒翻開的，都先在這裡排隊。</p></div><button type="button" class="btn primary" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div>`;
+  if(!n){
+    st.innerHTML=`<section class="pile">${head}<div class="empty pile-empty"><p>書堆還是空的。</p><p class="hint">圖書館借來的、買了還沒看的、朋友推薦想讀的，都可以先放這裡。<br>開始讀就移到「在讀」，讀完了再放上書架，順便印一張票根。</p></div></section>`;
+  }else{
+    const alert=urgent.length?`<div class="pile-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg><span>${urgent.some(b=>dueInfo(b).d<0)?'有書已經逾期了':'有書快到期了'}：${urgent.slice(0,3).map(b=>`《${esc(b.title)}》${esc(dueInfo(b).text)}`).join('、')}${urgent.length>3?` 等 ${urgent.length} 本`:''}</span></div>`:'';
+    const groups=PILE_ST.map(s=>{const l=pileList(s.k);if(!l.length&&s.k!=='reading')return '';
+      return `<div class="pile-group" data-st="${s.k}"><h3>${s.l}<small>${l.length?l.length+' 本':''}</small><span class="pg-hint">${s.hint}</span></h3>${l.length?`<div class="pile-list">${l.map(pileCard).join('')}</div>`:`<p class="pile-none">${s.empty}，從下面挑一本開始吧。</p>`}</div>`}).join('');
+    st.innerHTML=`<section class="pile">${head}${alert}${groups}</section>`;
+  }
+  $('pileAdd').onclick=()=>openEditor(null,{status:'todo'});
+  st.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>{const b=pileById(el.dataset.open);if(b)openEditor(b)});
+  st.querySelectorAll('[data-act]').forEach(el=>el.onclick=()=>pileAdvance(el.dataset.act,el));
+}
+async function pileAdvance(id,el){
+  const b=pileById(id);if(!b)return;
+  if(b.status==='reading'){openEditor(b,{finish:true});return}
+  const to=PILE_NEXT[b.status];if(!to)return;
+  b.status=to;if(to==='reading')b.startedAt=Date.now();
+  const card=el?.closest('.pcard');
+  if(card&&!reduceMotion()){card.classList.add('leaving');await new Promise(r=>setTimeout(r,220))}
+  await saveBook(b);markDirty();await reload();render(false);
+  const moved=document.querySelector(`.pcard[data-pid="${CSS.escape(id)}"]`);if(moved){moved.classList.add('arrive');moved.scrollIntoView({block:'nearest',behavior:reduceMotion()?'auto':'smooth'})}
+  toast(`《${b.title}》移到「${PILE_LABEL[to]}」`);
+}
+function updatePileDot(){const u=pileUrgent().length;document.querySelectorAll('[data-view="pile"]').forEach(x=>x.classList.toggle('has-dot',u>0))}
+
+/* ---- 編輯器裡的狀態切換 ---- */
+var editStatus='done',editSource='';
+function renderSrcChips(){
+  $('srcChips').innerHTML=PILE_SRC.map(s=>`<button type="button" data-src="${s.k}" class="${s.k===editSource?'on':''}" aria-pressed="${s.k===editSource}">${s.l}</button>`).join('');
+  $('srcChips').querySelectorAll('button').forEach(x=>x.onclick=()=>{editSource=editSource===x.dataset.src?'':x.dataset.src;renderSrcChips();$('dueField').hidden=editSource!=='library'});
+  $('dueField').hidden=editSource!=='library';
+}
+function applyStatusUI(b,opts={}){
+  const done=editStatus==='done';
+  $('statusSeg').querySelectorAll('button').forEach(x=>{x.classList.toggle('on',x.dataset.st===editStatus);x.setAttribute('aria-checked',String(x.dataset.st===editStatus))});
+  $('doneRow').hidden=!done;$('pileFields').hidden=done;
+  $('favField').hidden=!done;$('feelField').hidden=!done;
+  $('moreLabel').textContent=$('editorMore').hidden?(done?'作者、標籤、珍藏、讀完的感覺、筆記':'作者、譯者、標籤、筆記'):'收起選填欄位';
+  const wasPile=b&&!isDone(b);
+  if(opts.finish){$('formTitle').textContent='讀完了！';$('formSub').textContent=`《${b.title}》要放上哪一個月的書架？順便留下讀完的感覺吧。`;$('saveBtn').textContent='放上書架'}
+  else if(!b){$('formTitle').textContent=done?'放一本書上架':'加進書堆';$('formSub').textContent=done?'記下書名和讀完的月份就可以了，其他都能之後再補。':'書名就夠了，讀完的時候再補上月份和感覺。';$('saveBtn').textContent=done?'放上書架':'放進書堆'}
+  else if(wasPile){$('formTitle').textContent=done?'讀完了！':'書堆裡的書';$('saveBtn').textContent=done?'放上書架':'儲存'}
+  else $('saveBtn').textContent=done?'儲存':'移回書堆';
+  $('pileDel').hidden=!(b&&!isDone(b));
+}
+$('statusSeg').innerHTML=[['done','讀完了'],['reading','在讀'],['todo','待讀'],['want','想讀']].map(([k,l])=>`<button type="button" role="radio" data-st="${k}">${l}</button>`).join('');
+$('statusSeg').querySelectorAll('button').forEach(x=>x.onclick=()=>{
+  editStatus=x.dataset.st;
+  if(editStatus==='done'&&!$('bookMonth').value.trim()){yearsForForm(NOW.getFullYear());setMonth(`${NOW.getMonth()+1}月`)}
+  applyStatusUI(anyById($('bookId').value)||null);
+});
+$('pileDel').onclick=async()=>{
+  const b=pileById($('bookId').value);if(!b)return;
+  const ok=await ask({title:`把《${b.title}》從書堆移除？`,body:'這本書的紀錄會刪除。',buttons:[{label:'取消',value:false},{label:'移除',value:true,cls:'primary'}]});
+  if(!ok)return;
+  await removeBook(b.id);markDirty();await reload();$('editor').close();render(false);toast('已從書堆移除');
+};
+
 /* ================= 示範書櫃（資料只在記憶體，不寫入書房、不同步） ================= */
 var demoMode=false,demoGoals={},demoPrevView='shelf';
 const demoStore=new Map();
@@ -2519,11 +2731,23 @@ function demoData(){
   ].filter(r=>r[0]<Y||r[1]<=M);
   return rows.map((r,i)=>{const [year,m,title,author,translator,tags,fav,feel,note,quotes]=r;
     const b={id:'d'+(1000+i),title,year,month:m+'月',author,translator,tags,favorite:!!fav,feel,note,cover:'',coverX:50,coverY:50,coverZoom:1,updatedAt:Date.now()};
-    if(quotes.length)b.quotes=quotes;return b});
+    if(quotes.length)b.quotes=quotes;return b}).concat(demoPile());
+}
+function demoPile(){
+  const d=n=>{const t=new Date();t.setDate(t.getDate()+n);return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`};
+  const T=Date.now(),H=36e5;
+  return [
+    {id:'dp1',title:'夜行的貓與月亮',author:'森川夏帆',translator:'陳若微',status:'reading',source:'bought',startedAt:T-30*H,addedAt:T-200*H},
+    {id:'dp2',title:'城市散步學',author:'何思遠',status:'todo',source:'library',due:d(2),addedAt:T-100*H},
+    {id:'dp3',title:'海風吹過的書店',author:'林以安',status:'todo',source:'library',due:d(12),addedAt:T-90*H},
+    {id:'dp4',title:'給自己的十堂理財課',author:'黃子珩',status:'todo',source:'ebook',addedAt:T-60*H},
+    {id:'dp5',title:'北方之北',author:'Ingrid Holm',translator:'李安',status:'want',addedAt:T-20*H},
+    {id:'dp6',title:'我們的植物日記',author:'葉小禾',status:'want',source:'borrowed',addedAt:T-10*H}
+  ].map(b=>({tags:[],cover:'',coverX:50,coverY:50,coverZoom:1,updatedAt:T,...b}));
 }
 async function enterDemo(opts={}){
   if(demoMode)return;
-  books=[];demoMode=true;demoPrevView=view;view='shelf';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view==='shelf'));demoStore.clear();demoData().forEach(b=>demoStore.set(b.id,b));
+  books=[];demoMode=true;demoPrevView=view;view='shelf';markViewTabs('shelf');demoStore.clear();demoData().forEach(b=>demoStore.set(b.id,b));
   const Y=new Date().getFullYear();demoGoals={[Y]:{n:30,t:Date.now()}};
   document.documentElement.classList.add('is-demo');$('demoBanner').hidden=false;
   ['bookView','editor','searchBox','reviewBox'].forEach(id=>{const d=$(id);if(d&&d.open)d.close()});
@@ -2533,7 +2757,7 @@ async function enterDemo(opts={}){
 async function exitDemo(opts={}){
   if(!demoMode)return;
   demoMode=false;demoStore.clear();demoGoals={};
-  {const sv=ls.get('shelf-view');view=['shelf','wall','treasure','quotes'].includes(sv)?sv:demoPrevView||'shelf';document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===view))}
+  {const sv=ls.get('shelf-view');view=['shelf','wall','treasure','quotes','pile'].includes(sv)?sv:demoPrevView||'shelf';markViewTabs(view)}
   document.documentElement.classList.remove('is-demo');$('demoBanner').hidden=true;
   ['bookView','editor','searchBox','reviewBox','quoteBox','videoBox','qDrawBox','personBox','goalBox'].forEach(id=>{const d=$(id);if(d&&d.open)d.close()});
   if(/[?&]demo=/.test(location.search))history.replaceState(null,'',location.pathname+location.hash);
