@@ -515,16 +515,28 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 #quoteBox.p-ready #qcKinds{display:none}
 #quoteBox.p-done .vacts{animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
 @media (prefers-reduced-motion:reduce){.tk-go{animation:none}#quoteBox.p-run .tkp{animation:none}}
-.tk-nudge{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:20px;width:min(460px,calc(100vw - 24px));background:var(--paper);border:1px solid var(--rule);box-shadow:0 18px 40px -12px var(--shadow);font-size:14px;transform:translateX(-50%);max-width:calc(100vw - 24px)}
-.tk-nudge.in{animation:nudgeIn .45s cubic-bezier(.2,.8,.2,1) both}
-@keyframes nudgeIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}
-.tk-nudge .tk-ic{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
-.tk-nudge .tk-ic svg{width:22px;height:22px}
-.tk-nudge .tk-txt{display:flex;flex-direction:column;min-width:0;line-height:1.35}
-.tk-nudge .tk-txt b{font-family:var(--f-display);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tk-nudge .tk-txt small{font-size:12px;color:var(--ink-soft)}
+.tk-nudge{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:16px;padding:16px 18px 18px 16px;border-radius:22px;width:min(580px,calc(100vw - 24px));background:var(--paper);border:1.5px solid color-mix(in srgb,var(--accent) 45%,var(--rule));box-shadow:0 26px 60px -16px var(--shadow),0 0 0 6px color-mix(in srgb,var(--accent) 10%,transparent);transform:translateX(-50%);overflow:hidden}
 .tk-nudge[hidden]{display:none}
-@media (max-width:640px){.tk-nudge{bottom:calc(84px + env(safe-area-inset-bottom,0px));font-size:13px;flex-wrap:wrap}.tk-nudge .tk-txt{flex:1}}
+.tk-nudge.in{animation:nudgeIn .6s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes nudgeIn{from{opacity:0;transform:translate(-50%,40px) scale(.94)}to{opacity:1;transform:translateX(-50%)}}
+.tkn-art{position:relative;flex:none;width:58px;height:84px;margin-right:8px}
+.tkn-art img,.tkn-art .tkn-blank{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:3px 6px 6px 3px;box-shadow:0 6px 14px -4px var(--shadow);z-index:1}
+.tkn-art .tkn-blank{background:var(--accent);display:flex;align-items:center;justify-content:center;color:var(--accent-ink);font-family:var(--f-display);font-size:13px;padding:6px;text-align:center;line-height:1.3;overflow:hidden}
+.tkn-art::after{content:"";position:absolute;right:-12px;bottom:-4px;width:30px;height:36px;border-radius:4px;background:#efe8d8;border:1px solid rgba(0,0,0,.08);transform:rotate(12deg);z-index:0;box-shadow:0 4px 8px -3px var(--shadow);-webkit-mask:radial-gradient(circle 5px at 0 70%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 70%,transparent 98%,#000) right/51% 100% no-repeat}
+.tk-nudge .tk-txt{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.4;gap:1px}
+.tkn-kick{font-size:12px;letter-spacing:.14em;color:var(--accent);font-weight:600}
+.tk-nudge .tk-txt b{font-family:var(--f-display);font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-nudge .tk-txt small{font-size:13.5px;color:var(--ink-soft)}
+.tkn-go{height:48px;padding:0 20px;font-size:15px;gap:8px;flex:none;white-space:nowrap;position:relative;overflow:hidden}
+.tkn-go svg{width:20px;height:20px}
+.tkn-go::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);animation:tknShine 2.8s ease-in-out .8s infinite}
+@keyframes tknShine{0%{left:-60%}45%,100%{left:130%}}
+.tkn-x{position:absolute;top:6px;right:6px;width:30px;height:30px;font-size:18px}
+.tkn-timer{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--accent);opacity:.55;transform-origin:left;animation:tknTime 15s linear both}
+.tk-nudge:hover .tkn-timer,.tk-nudge:focus-within .tkn-timer{animation-play-state:paused}
+@keyframes tknTime{to{transform:scaleX(0)}}
+@media (max-width:640px){.tk-nudge{bottom:calc(80px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;gap:12px 14px;padding:14px 14px 16px}.tkn-art{width:48px;height:70px}.tk-nudge .tk-txt{padding-right:24px}.tk-nudge .tk-txt b{font-size:17px}.tkn-go{width:100%;justify-content:center}}
+@media (prefers-reduced-motion:reduce){.tkn-go::after{display:none}.tk-nudge.in{animation:none}}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -928,7 +940,7 @@ a.btn.primary{color:var(--accent-ink)}
   </div>
 </dialog>
 
-<div class="tk-nudge" id="tkNudge" hidden role="status"><span class="tk-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg></span><span class="tk-txt"><b id="tkNudgeTitle"></b><small id="tkNudgeText"></small></span><button type="button" class="btn sm primary" id="tkNudgeGo">印一張讀完票根</button><button type="button" class="x" id="tkNudgeX" aria-label="不用了">×</button></div>
+<div class="tk-nudge" id="tkNudge" hidden role="status" aria-live="polite"><div class="tkn-art" id="tkNudgeArt" aria-hidden="true"></div><div class="tk-txt"><span class="tkn-kick">放上書架了</span><b id="tkNudgeTitle"></b><small id="tkNudgeText"></small></div><button type="button" class="btn primary tkn-go" id="tkNudgeGo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg>印一張讀完票根</button><button type="button" class="x tkn-x" id="tkNudgeX" aria-label="不用了">×</button><i class="tkn-timer" id="tkNudgeTimer"></i></div>
 
 <!-- 隨手抽一句 -->
 <dialog id="qDrawBox" aria-label="隨手抽一句">
@@ -2622,16 +2634,16 @@ function tkStampRotated(T,b,info,px){const ss=172,sc=tkStampCanvas(T,b,info,px),
 function vSpacedLeft(ctx,text,x,y,sp){const al=ctx.textAlign;ctx.textAlign='left';[...text].forEach(c=>{ctx.fillText(c,x,y);x+=ctx.measureText(c).width+sp});ctx.textAlign=al}
 function vSpacedRight(ctx,text,x,y,sp){const ch=[...text];const w=ch.reduce((a,c)=>a+ctx.measureText(c).width,0)+sp*(ch.length-1);vSpacedLeft(ctx,text,x-w,y,sp)}
 function tkRand(seed){let h=1779033703^seed.length;for(const c of seed){h=Math.imul(h^c.charCodeAt(0),3432918353);h=h<<13|h>>>19}return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return((h^=h>>>16)>>>0)/4294967296}}
-let tkNudgeTimer=null;
 function showTicketNudge(b){
-  const el=$('tkNudge');if(!el)return;clearTimeout(tkNudgeTimer);
+  const el=$('tkNudge');if(!el)return;
   const info=ticketInfo(b);
-  $('tkNudgeTitle').textContent=`《${b.title}》放上書架了`;$('tkNudgeText').textContent=`這是你 ${b.year} 年讀完的第 ${info.n} 本`;
-  el.hidden=false;el.classList.remove('in');void el.offsetWidth;el.classList.add('in');
+  $('tkNudgeArt').innerHTML=b.cover?`<img src="${esc(b.cover)}" alt="">`:`<span class="tkn-blank">${esc(String(b.title).slice(0,8))}</span>`;
+  $('tkNudgeTitle').textContent=`《${b.title}》`;$('tkNudgeText').textContent=`這是你 ${b.year} 年讀完的第 ${info.n} 本，印一張票根留念吧`;
+  el.hidden=false;el.classList.remove('in');const t=$('tkNudgeTimer');t.style.animation='none';void el.offsetWidth;t.style.animation='';el.classList.add('in');
+  t.onanimationend=()=>{el.hidden=true};
   $('tkNudgeGo').onclick=()=>{el.hidden=true;openImageCard(b.id,{kind:'ticket',print:true})};
-  tkNudgeTimer=setTimeout(()=>{el.hidden=true},12000);
 }
-$('tkNudgeX').onclick=()=>{$('tkNudge').hidden=true;clearTimeout(tkNudgeTimer)};
+$('tkNudgeX').onclick=()=>{$('tkNudge').hidden=true};
 
 /* ================= 回顧影片（IG 9:16） ================= */
 const VW=1080, VH=1920, VFPS=30;
