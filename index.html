@@ -833,6 +833,106 @@ html[data-view="pile"] #intro{display:none}
   .pe-steps li{min-width:0}
   .pe-steps li+li::before{display:none}
 }
+
+/* ===== 書堆 v2：統計卡、篩選、封面牆 ===== */
+.st-want{--sc:#a8675c}.st-todo{--sc:#9a6f22}.st-reading{--sc:var(--accent)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .st-want{--sc:#d39a8f}:root:not([data-theme="light"]) .st-todo{--sc:#d8ad5c}}
+:root[data-theme="dark"] .st-want{--sc:#d39a8f}:root[data-theme="dark"] .st-todo{--sc:#d8ad5c}
+.pile{padding:24px clamp(16px,3vw,32px) 28px}
+.pile-top{margin-bottom:18px}
+.pile-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pile-title h2{font-family:var(--f-display);font-size:30px;margin:0;letter-spacing:.1em}
+.pile-title .pk{display:inline-block;padding:4px 14px;border-radius:999px;background:var(--wall-2);color:var(--ink-soft);font-size:13px;font-weight:600;letter-spacing:.12em}
+.pile .pile-tag{display:block;margin:8px 0 0;font-size:14.5px;line-height:1.7;color:var(--ink-soft)}
+.pile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.pstat{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 14px;border-radius:14px;border:1.5px solid transparent;background:color-mix(in srgb,var(--sc) 11%,var(--paper));color:var(--sc);text-align:left;transition:border-color .15s,transform .15s}
+.pstat:hover{transform:translateY(-1px)}
+.pstat.on{border-color:var(--sc)}
+.pstat .ps-l{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600}
+.pstat .ps-l svg{width:18px;height:18px}
+.pstat b{font-family:var(--f-num,Georgia),serif;font-size:28px;line-height:1;color:var(--ink);font-weight:600;padding-left:2px}
+.pile-tools{display:flex;align-items:center;gap:10px;margin:20px 0 14px;flex-wrap:wrap}
+.pile-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding:2px}
+.pile-chips::-webkit-scrollbar{display:none}
+.pile-chips button{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);font-size:14px;color:var(--ink)}
+.pile-chips button small{font-size:12.5px;color:var(--ink-soft)}
+.pile-chips button.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pile-chips button.on small{color:inherit;opacity:.85}
+.pile-tr{display:flex;align-items:center;gap:8px;margin-left:auto}
+.pile-sort select{height:36px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:13.5px;padding:0 30px 0 14px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 16px) 16px,calc(100% - 11px) 16px;background-size:5px 5px;background-repeat:no-repeat}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pile-lay{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.pile-lay:hover{background:var(--wall-2)}
+.pile-lay svg{width:20px;height:20px}
+.pile-add-d svg{width:15px;height:15px}
+.pile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:16px 14px}
+.ptile{display:flex;flex-direction:column;gap:6px;min-width:0;border-radius:10px;transition:opacity .2s,transform .2s}
+.ptile.leaving{opacity:0;transform:scale(.94)}
+.ptile.arrive .pt-cover{animation:pcArrive .7s cubic-bezier(.2,.9,.3,1.2)}
+.pt-cover{position:relative;display:block;width:100%;aspect-ratio:2/3;border-radius:3px 8px 8px 3px;overflow:hidden;background:var(--wall-2);box-shadow:0 8px 18px -10px var(--shadow),0 1px 2px var(--shadow)}
+.pt-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.pt-gen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14% 12%;background:linear-gradient(90deg,rgba(0,0,0,.18),rgba(0,0,0,0) 8%),hsl(var(--h) 26% 40%);color:#f5efe2;font-family:var(--f-display);font-size:15px;line-height:1.4;text-align:center;letter-spacing:.06em;overflow:hidden}
+.pt-gen span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.pt-due{position:absolute;left:6px;top:6px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:var(--paper);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.2)}
+.pt-due.soon{background:#f3e3bd;color:#5d4410}
+.pt-due.over{background:var(--ribbon);color:#fff}
+.pt-meta{display:flex;align-items:flex-start;gap:2px;min-width:0}
+.pt-title{flex:1;min-width:0;font-size:14px;line-height:1.35;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:2px}
+.pt-more{flex:none;width:26px;height:26px;margin:-2px -6px 0 0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink-soft)}
+.pt-more:hover{background:var(--wall-2);color:var(--ink)}
+.pt-more svg{width:16px;height:16px;fill:currentColor}
+.pst{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;padding:2px 9px 2px 7px;border-radius:7px;background:color-mix(in srgb,var(--sc) 12%,var(--paper));color:var(--sc);font-size:12px;font-weight:600;white-space:nowrap}
+.pst svg{width:14px;height:14px}
+.pcard{background:var(--wall)}
+.pcard.st-reading{background:color-mix(in srgb,var(--accent) 8%,var(--paper));border-color:color-mix(in srgb,var(--accent) 35%,var(--rule))}
+.pchips .pst{padding:1px 8px 1px 6px;font-size:11.5px}
+.pile-list.flat{margin-top:4px}
+.pile-menu{position:fixed;z-index:60;min-width:190px;padding:6px;border-radius:14px;background:var(--paper);border:1px solid var(--rule);box-shadow:0 18px 40px -12px var(--shadow);animation:pmIn .14s ease-out}
+@keyframes pmIn{from{opacity:0;transform:translateY(-4px)}}
+.pile-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:9px;font-size:14px;color:var(--ink);text-align:left}
+.pile-menu button:hover,.pile-menu button:focus-visible{background:var(--wall-2);outline:none}
+.pile-menu svg{width:18px;height:18px;flex:none;color:var(--ink-soft)}
+.pile-menu .pm-main{font-weight:600;color:var(--accent)}
+.pile-menu .pm-main svg{color:var(--accent)}
+.pile-menu .pm-del,.pile-menu .pm-del svg{color:var(--ribbon)}
+.pile-menu hr{border:0;border-top:1px solid var(--rule);margin:5px 4px}
+/* 空狀態 */
+.pile-empty{padding:26px 6px 6px}
+.pe-illu{width:128px;height:auto;display:block;margin:0 auto}
+.pe-title{margin:18px 0 6px;font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--ink);letter-spacing:.06em}
+.pe-text{font-size:14.5px}
+.pe-add{margin:20px auto 0;height:48px;padding:0 26px;font-size:16px;gap:8px}
+.pe-add svg{width:17px;height:17px}
+.pe-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:560px;margin:28px auto 0;padding:22px 0 0;border-top:1px solid var(--rule)}
+.pe-steps li{background:none;padding:4px 2px;min-width:0;gap:3px}
+.pe-steps li+li::before{display:none}
+.pe-steps li svg{width:24px;height:24px;color:var(--ink-soft);margin-bottom:4px}
+.pe-steps li b{font-size:17px}
+.pe-steps li span{font-size:13px;color:var(--ink-soft)}
+.pe-steps li:last-child{background:none}
+.pe-steps li:last-child b{color:var(--ink)}
+@media (max-width:640px){
+  .pile{padding:18px 14px 22px}
+  .pile-title h2{font-size:28px}
+  .pile-stats{gap:8px}
+  .pstat{padding:10px 12px}
+  .pstat b{font-size:24px}
+  .pile-tools{gap:8px;margin:16px -14px 12px;padding:0 14px}
+  .pile-chips{flex-basis:100%;margin:0 -14px;padding:2px 14px}
+  .pile-tr{margin-left:0;width:100%;justify-content:flex-end}
+  .pile-add-d{display:none}
+  .pile-grid{grid-template-columns:repeat(4,1fr);gap:12px 8px}
+  .pt-title{font-size:11.5px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;min-height:2.6em}
+  .pt-gen{font-size:11.5px;padding:12% 8%}
+  .pt-due{left:3px;top:3px;font-size:9.5px;padding:1px 5px}
+  .pst{font-size:10.5px;padding:1px 6px 1px 4px;gap:2px;border-radius:6px}
+  .pst svg{width:12px;height:12px}
+  .pt-more{width:22px;height:22px;margin-right:-5px}
+  .pe-steps{grid-template-columns:repeat(4,1fr);max-width:none}
+  .pe-steps li b{font-size:15px}
+  .pe-steps li span{font-size:12px}
+}
+@media (max-width:360px){.pile-grid{grid-template-columns:repeat(3,1fr)}}
 </style>
 
 </head>
@@ -1865,7 +1965,7 @@ async function savePileFromEditor(){
   btn.disabled=false;markDirty();await reload();$('editor').close();
   if($('bookView').open)$('bookView').close();
   if(view!=='pile')setView('pile');else render(false);
-  const el=document.querySelector(`.pcard[data-pid="${CSS.escape(b.id)}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});el.classList.add('arrive')}
+  const el=document.querySelector(`#stage [data-pid="${CSS.escape(b.id)}"]`);if(el){el.scrollIntoView({block:'center',behavior:reduceMotion()?'auto':'smooth'});el.classList.add('arrive')}
   toast(!old?`已放進書堆的「${PILE_LABEL[editStatus]}」`:isDone(old)?`《${title}》移回書堆`:'已儲存');
 }
 $('addBtn').onclick=()=>view==='pile'?openEditor(null,{status:'todo'}):openEditor();$('addTab').onclick=()=>view==='pile'?openEditor(null,{status:'todo'}):openEditor();
@@ -2693,39 +2793,102 @@ function pileCover(b){
   if(b.cover)return `<img src="${esc(b.cover)}" alt="" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`;
   return `<span class="pc-gen" style="--h:${hue(b.title)}"><span>${esc(spineTitle(b.title))}</span></span>`;
 }
+const PILE_IC={
+  want:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z"/></svg>',
+  todo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h11v17h-11a1.5 1.5 0 0 1-1.5-1.5V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M5 17.5a1.5 1.5 0 0 1 1.5-1.5h11"/></svg>',
+  reading:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg>',
+  done:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.2 12.3 2.6 2.6 5-5.4"/></svg>'
+};
+const PILE_SORTS=[{k:'status',l:'依狀態'},{k:'added',l:'新增順序'},{k:'due',l:'到期日'},{k:'title',l:'書名'}];
+var pileFilter=['want','todo','reading'].includes(ls.get('pile-filter'))?ls.get('pile-filter'):'all';
+var pileSort=PILE_SORTS.some(s=>s.k===ls.get('pile-sort'))?ls.get('pile-sort'):'status';
+var pileLayout=ls.get('pile-layout')==='list'?'list':'grid';
+const PILE_ORDER={reading:0,todo:1,want:2};
+function pileSorted(){
+  let l=pile.filter(b=>pileFilter==='all'||b.status===pileFilter);
+  if(pileSort==='status')return PILE_ST.flatMap(s=>pileList(s.k)).filter(b=>l.includes(b));
+  if(pileSort==='added')return l.sort((a,b)=>(b.addedAt||0)-(a.addedAt||0));
+  if(pileSort==='title')return l.sort((a,b)=>a.title.localeCompare(b.title,'zh-Hant'));
+  return l.sort((a,b)=>{const x=dueInfo(a),y=dueInfo(b);if(x&&y)return x.d-y.d;if(x)return -1;if(y)return 1;return PILE_ORDER[a.status]-PILE_ORDER[b.status]||(b.addedAt||0)-(a.addedAt||0)});
+}
+function stBadge(s){return `<span class="pst st-${s}">${PILE_IC[s]}${PILE_LABEL[s]}</span>`}
 function pileCard(b){
   const s=PILE_ST.find(x=>x.k===b.status),due=dueInfo(b);
-  const chips=[b.source?`<span class="pchip">${esc(srcLabel(b.source))}</span>`:'',due?`<span class="pchip due ${due.level}">${esc(due.text)}</span>`:''].join('');
-  return `<article class="pcard" data-pid="${esc(b.id)}">
-    <button type="button" class="pc-open" data-open="${esc(b.id)}" aria-label="編輯《${esc(b.title)}》"><span class="pc-cover">${pileCover(b)}</span><span class="pc-txt"><b>${esc(b.title)}</b>${b.author?`<small>${esc(b.author)}</small>`:''}${chips?`<span class="pchips">${chips}</span>`:''}</span></button>
+  const chips=[stBadge(b.status),b.source?`<span class="pchip">${esc(srcLabel(b.source))}</span>`:'',due?`<span class="pchip due ${due.level}">${esc(due.text)}</span>`:''].join('');
+  return `<article class="pcard st-${b.status}" data-pid="${esc(b.id)}">
+    <button type="button" class="pc-open" data-open="${esc(b.id)}" aria-label="編輯《${esc(b.title)}》"><span class="pc-cover">${pileCover(b)}</span><span class="pc-txt"><b>${esc(b.title)}</b>${b.author?`<small>${esc(b.author)}</small>`:''}<span class="pchips">${chips}</span></span></button>
     <button type="button" class="btn sm ${b.status==='reading'?'primary':''} pc-act" data-act="${esc(b.id)}">${b.status==='reading'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>':''}${esc(s.act)}</button>
   </article>`;
 }
+function pileTile(b){
+  const due=dueInfo(b);
+  return `<article class="ptile st-${b.status}" data-pid="${esc(b.id)}">
+    <button type="button" class="pt-cover" data-open="${esc(b.id)}" aria-label="編輯《${esc(b.title)}》">${b.cover?`<img src="${esc(b.cover)}" alt="" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`:`<span class="pt-gen" style="--h:${hue(b.title)}"><span>${esc(spineTitle(b.title))}</span></span>`}${due?`<span class="pt-due ${due.level}">${esc(due.text)}</span>`:''}</button>
+    <div class="pt-meta"><span class="pt-title">${esc(b.title)}</span><button type="button" class="pt-more" data-more="${esc(b.id)}" aria-label="《${esc(b.title)}》的更多動作" aria-haspopup="menu"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5.5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="18.5" r="1.7"/></svg></button></div>
+    ${stBadge(b.status)}
+  </article>`;
+}
+const PILE_ILLU=`<svg class="pe-illu" viewBox="0 0 120 92" aria-hidden="true"><path d="M20 30l3.2 7.8L31 41l-7.8 3.2L20 52l-3.2-7.8L9 41l7.8-3.2z" fill="#c9a45c"/><g stroke="#2f4a4c" stroke-width="3" stroke-linejoin="round"><rect x="40" y="62" width="58" height="20" rx="4" fill="#e3cfa1"/><rect x="86" y="62" width="6" height="20" fill="#b0604f" stroke="none"/><rect x="42" y="40" width="54" height="18" rx="4" fill="#efe6d2" transform="rotate(-4 69 49)"/><rect x="38" y="16" width="56" height="20" rx="4" fill="#a9bdb5" transform="rotate(4 66 26)"/></g></svg>`;
 function renderPile(st){
   stageCtx=[];
-  const n=pile.length,urgent=pileUrgent();
-  const head=`<div class="pile-head"><div><h2>書堆<small>${n?`${n} 本`:''}</small></h2><p class="pile-tag"><span class="pk">積讀書堆</span><span class="nw">借來的、買來的、還沒翻開的，</span><span class="nw">都先在這裡排隊。</span></p></div><button type="button" class="btn primary" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div>`;
+  const n=pile.length,urgent=pileUrgent(),cnt=k=>pile.filter(b=>b.status===k).length;
+  const head=`<div class="pile-top"><div class="pile-title"><h2>書堆</h2><span class="pk">積讀書堆</span></div><p class="pile-tag"><span class="nw">那些還沒翻開的故事，</span><span class="nw">先在這裡排隊。</span></p>`;
   if(!n){
-    st.innerHTML=`<section class="pile">${head}<div class="pile-empty"><svg class="pe-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="15" width="16" height="4.5" rx="1"/><rect x="5.5" y="10" width="13" height="4.5" rx="1" transform="rotate(-4 12 12)"/><rect x="4.5" y="4.8" width="14" height="4.5" rx="1" transform="rotate(3 12 7)"/></svg><p class="pe-title">書堆還是空的</p><p class="pe-text"><span class="nw">圖書館借來的、</span><span class="nw">買了還沒看的、</span><span class="nw">朋友推薦想讀的，</span><span class="nw">都可以先放這裡。</span></p><ol class="pe-steps"><li><b>想讀</b><span>先記下來</span></li><li><b>待讀</b><span>書在手邊</span></li><li><b>在讀</b><span>正在翻</span></li><li><b>讀完</b><span>放上書架、印票根</span></li></ol></div></section>`;
-  }else{
-    const alert=urgent.length?`<div class="pile-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg><span>${urgent.some(b=>dueInfo(b).d<0)?'有書已經逾期了':'有書快到期了'}：${urgent.slice(0,3).map(b=>`《${esc(b.title)}》${esc(dueInfo(b).text)}`).join('、')}${urgent.length>3?` 等 ${urgent.length} 本`:''}</span></div>`:'';
-    const groups=PILE_ST.map(s=>{const l=pileList(s.k);if(!l.length&&s.k!=='reading')return '';
-      return `<div class="pile-group" data-st="${s.k}"><h3>${s.l}<small>${l.length?l.length+' 本':''}</small><span class="pg-hint">${s.hint}</span></h3>${l.length?`<div class="pile-list">${l.map(pileCard).join('')}</div>`:`<p class="pile-none">${s.empty}，從下面挑一本開始吧。</p>`}</div>`}).join('');
-    st.innerHTML=`<section class="pile">${head}${alert}${groups}</section>`;
+    st.innerHTML=`<section class="pile">${head}</div><div class="pile-empty">${PILE_ILLU}<p class="pe-title">你的書堆還是空的</p><p class="pe-text"><span class="nw">從第一本想讀的書開始，</span><span class="nw">慢慢收藏閱讀日常。</span></p><button type="button" class="btn primary pe-add" id="pileAdd"><svg><use href="#i-plus"/></svg>加進第一本書</button><ol class="pe-steps">${[['want','想讀','先收藏'],['todo','待讀','等翻開'],['reading','在讀','閱讀中'],['done','讀完','已完成']].map(([k,l,s])=>`<li>${PILE_IC[k]}<b>${l}</b><span>${s}</span></li>`).join('')}</ol></div></section>`;
+    $('pileAdd').onclick=()=>openEditor(null,{status:'want'});return;
   }
-  $('pileAdd').onclick=()=>openEditor(null,{status:'todo'});
+  const stats=`<div class="pile-stats">${['want','todo','reading'].map(k=>`<button type="button" class="pstat st-${k}${pileFilter===k?' on':''}" data-filter="${k}" aria-pressed="${pileFilter===k}"><span class="ps-l">${PILE_IC[k]}${PILE_LABEL[k]}</span><b>${cnt(k)}</b></button>`).join('')}</div></div>`;
+  const alert=urgent.length?`<div class="pile-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg><span>${urgent.some(b=>dueInfo(b).d<0)?'有書已經逾期了':'有書快到期了'}：${urgent.slice(0,3).map(b=>`《${esc(b.title)}》${esc(dueInfo(b).text)}`).join('、')}${urgent.length>3?` 等 ${urgent.length} 本`:''}</span></div>`:'';
+  const tools=`<div class="pile-tools"><div class="pile-chips" role="group" aria-label="篩選">${[['all','全部',n],['want','想讀',cnt('want')],['todo','待讀',cnt('todo')],['reading','在讀',cnt('reading')]].map(([k,l,c])=>`<button type="button" data-filter="${k}" class="${pileFilter===k?'on':''}" aria-pressed="${pileFilter===k}">${l}<small>${c}</small></button>`).join('')}</div>
+    <div class="pile-tr"><label class="pile-sort"><span class="sr">排序</span><select id="pileSortSel">${PILE_SORTS.map(s=>`<option value="${s.k}"${s.k===pileSort?' selected':''}>${s.l}</option>`).join('')}</select></label>
+    <button type="button" class="pile-lay" id="pileLay" aria-label="${pileLayout==='grid'?'改成列表':'改成封面'}" title="${pileLayout==='grid'?'改成列表':'改成封面'}">${pileLayout==='grid'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>'}</button>
+    <button type="button" class="btn sm primary pile-add-d" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div></div>`;
+  const list=pileSorted();
+  let body;
+  if(!list.length)body=`<p class="pile-none">沒有${PILE_LABEL[pileFilter]}的書。</p>`;
+  else if(pileLayout==='grid')body=`<div class="pile-grid">${list.map(pileTile).join('')}</div>`;
+  else if(pileSort==='status'&&pileFilter==='all')body=PILE_ST.map(s=>{const l=list.filter(b=>b.status===s.k);if(!l.length)return '';return `<div class="pile-group" data-st="${s.k}"><h3>${s.l}<small>${l.length} 本</small><span class="pg-hint">${s.hint}</span></h3><div class="pile-list">${l.map(pileCard).join('')}</div></div>`}).join('');
+  else body=`<div class="pile-list flat">${list.map(pileCard).join('')}</div>`;
+  st.innerHTML=`<section class="pile">${head}${stats}${alert}${tools}${body}</section>`;
+  $('pileAdd').onclick=()=>openEditor(null,{status:pileFilter==='all'?'todo':pileFilter});
+  st.querySelectorAll('[data-filter]').forEach(el=>el.onclick=()=>{const f=el.dataset.filter;pileFilter=pileFilter===f&&el.classList.contains('pstat')?'all':f;ls.set('pile-filter',pileFilter);renderStage()});
+  $('pileSortSel').onchange=e=>{pileSort=e.target.value;ls.set('pile-sort',pileSort);renderStage()};
+  $('pileLay').onclick=()=>{pileLayout=pileLayout==='grid'?'list':'grid';ls.set('pile-layout',pileLayout);renderStage()};
   st.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>{const b=pileById(el.dataset.open);if(b)openEditor(b)});
   st.querySelectorAll('[data-act]').forEach(el=>el.onclick=()=>pileAdvance(el.dataset.act,el));
+  st.querySelectorAll('[data-more]').forEach(el=>el.onclick=e=>{e.stopPropagation();openPileMenu(el.dataset.more,el)});
+}
+/* ---- 封面上的 ⋮ 選單 ---- */
+function closePileMenu(){const m=$('pileMenu');if(m){m.remove();document.removeEventListener('click',closePileMenu);window.removeEventListener('scroll',closePileMenu,true)}}
+function openPileMenu(id,anchor){
+  const was=$('pileMenu')?.dataset.id;closePileMenu();if(was===id)return;
+  const b=pileById(id);if(!b)return;const s=PILE_ST.find(x=>x.k===b.status);
+  const m=document.createElement('div');m.className='pile-menu';m.id='pileMenu';m.dataset.id=id;m.setAttribute('role','menu');
+  const others=['reading','todo','want'].filter(k=>k!==b.status);
+  m.innerHTML=`<button type="button" role="menuitem" class="pm-main" data-pm="next">${b.status==='reading'?PILE_IC.done:PILE_IC[PILE_NEXT[b.status]]}${esc(s.act)}</button>${others.map(k=>`<button type="button" role="menuitem" data-pm="to:${k}">${PILE_IC[k]}改成${PILE_LABEL[k]}</button>`).join('')}<hr><button type="button" role="menuitem" data-pm="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5l1-4.5L16 4.5l3.5 3.5L9 18.5z"/></svg>編輯</button><button type="button" role="menuitem" class="pm-del" data-pm="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/></svg>從書堆移除</button>`;
+  document.body.appendChild(m);
+  const r=anchor.getBoundingClientRect(),mw=m.offsetWidth,mh=m.offsetHeight;
+  let x=Math.min(window.innerWidth-mw-8,Math.max(8,r.right-mw)),y=r.bottom+6;if(y+mh>window.innerHeight-8)y=Math.max(8,r.top-mh-6);
+  m.style.left=x+'px';m.style.top=y+'px';
+  m.querySelectorAll('[data-pm]').forEach(x=>x.onclick=async e=>{e.stopPropagation();const a=x.dataset.pm;closePileMenu();
+    if(a==='next')pileAdvance(id,anchor);
+    else if(a==='edit')openEditor(b);
+    else if(a==='del')pileRemove(b);
+    else if(a.startsWith('to:')){const to=a.slice(3);b.status=to;if(to==='reading')b.startedAt=Date.now();await saveBook(b);markDirty();await reload();render(false);toast(`《${b.title}》改成「${PILE_LABEL[to]}」`)}
+  });
+  setTimeout(()=>{document.addEventListener('click',closePileMenu);window.addEventListener('scroll',closePileMenu,true)},0);
+  m.querySelector('button').focus();
+  m.addEventListener('keydown',e=>{if(e.key==='Escape'){closePileMenu();anchor.focus()}});
 }
 async function pileAdvance(id,el){
   const b=pileById(id);if(!b)return;
   if(b.status==='reading'){openEditor(b,{finish:true});return}
   const to=PILE_NEXT[b.status];if(!to)return;
   b.status=to;if(to==='reading')b.startedAt=Date.now();
-  const card=el?.closest('.pcard');
+  const card=el?.closest('[data-pid]');
   if(card&&!reduceMotion()){card.classList.add('leaving');await new Promise(r=>setTimeout(r,220))}
   await saveBook(b);markDirty();await reload();render(false);
-  const moved=document.querySelector(`.pcard[data-pid="${CSS.escape(id)}"]`);if(moved){moved.classList.add('arrive');moved.scrollIntoView({block:'nearest',behavior:reduceMotion()?'auto':'smooth'})}
+  const moved=document.querySelector(`[data-pid="${CSS.escape(id)}"]`);if(moved){moved.classList.add('arrive');moved.scrollIntoView({block:'nearest',behavior:reduceMotion()?'auto':'smooth'})}
   toast(`《${b.title}》移到「${PILE_LABEL[to]}」`);
 }
 function updatePileDot(){const u=pileUrgent().length;document.querySelectorAll('[data-view="pile"]').forEach(x=>x.classList.toggle('has-dot',u>0))}
@@ -2756,12 +2919,13 @@ $('statusSeg').querySelectorAll('button').forEach(x=>x.onclick=()=>{
   if(editStatus==='done'&&!$('bookMonth').value.trim()){yearsForForm(NOW.getFullYear());setMonth(`${NOW.getMonth()+1}月`)}
   applyStatusUI(anyById($('bookId').value)||null);
 });
-$('pileDel').onclick=async()=>{
-  const b=pileById($('bookId').value);if(!b)return;
+async function pileRemove(b){
+  if(!b)return;
   const ok=await ask({title:`把《${b.title}》從書堆移除？`,body:'這本書的紀錄會刪除。',buttons:[{label:'取消',value:false},{label:'移除',value:true,cls:'primary'}]});
   if(!ok)return;
-  await removeBook(b.id);markDirty();await reload();$('editor').close();render(false);toast('已從書堆移除');
-};
+  await removeBook(b.id);markDirty();await reload();if($('editor').open)$('editor').close();render(false);toast('已從書堆移除');
+}
+$('pileDel').onclick=()=>pileRemove(pileById($('bookId').value));
 
 /* ================= 標籤管理：改名、合併、刪除、常用、顏色、看同標籤的書 ================= */
 const TAG_COLORS=[
