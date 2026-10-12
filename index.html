@@ -170,12 +170,13 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 .tile .sub{font-size:11px;color:var(--ink-soft);margin-top:-6px}
 
 /* 珍藏 */
-.treasure{border-radius:16px;padding:28px clamp(16px,3vw,36px) 34px;background:radial-gradient(90% 70% at 50% 0%,color-mix(in srgb,var(--ribbon) 16%,transparent),transparent 70%),var(--paper);border:1px solid var(--rule)}
+.treasure{border-radius:16px;padding:28px clamp(16px,3vw,36px) 34px;background:radial-gradient(80% 60% at 50% 0%,color-mix(in srgb,var(--accent) 7%,transparent),transparent 70%),var(--paper);border:1px solid var(--rule)}
 .treasure-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:22px}
-.treasure-head h2{font-family:var(--f-display);font-size:28px;margin:0;letter-spacing:.1em}
+.treasure-head h2{font-family:var(--f-display);font-size:28px;margin:0;letter-spacing:.1em;display:inline-flex;align-items:center;gap:10px}
+.treasure-head h2 svg{width:14px;height:20px;fill:var(--ribbon)}
 .treasure-head p{margin:0;color:var(--ink-soft);font-size:14px}
 .t-year{display:grid;grid-template-columns:90px minmax(0,1fr);gap:16px;padding:18px 0;border-top:1px solid var(--rule)}
-.t-year .y{font-family:var(--f-num);font-style:italic;font-size:34px;line-height:1;color:var(--ribbon)}
+.t-year .y{font-family:var(--f-num);font-style:italic;font-weight:500;font-size:34px;line-height:1;color:var(--brass)}
 .t-year .y small{display:block;font-family:var(--f-body);font-style:normal;font-size:12px;color:var(--ink-soft);margin-top:6px}
 .t-year .wall{grid-template-columns:repeat(auto-fill,minmax(112px,1fr))}
 
@@ -475,12 +476,16 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .qcstage.print::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0));z-index:2}
 .qcstage.print canvas{animation:tkPrint 1.7s cubic-bezier(.2,.7,.2,1) both}
 @keyframes tkPrint{0%{transform:translateY(-102%)}70%{transform:translateY(2%)}100%{transform:none}}
-.tk-nudge{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px;border-radius:999px;background:var(--paper);border:1px solid var(--rule);box-shadow:0 18px 40px -12px var(--shadow);font-size:14px;transform:translateX(-50%);max-width:calc(100vw - 24px)}
+.tk-nudge{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:12px;padding:10px 10px 10px 10px;border-radius:20px;width:min(460px,calc(100vw - 24px));background:var(--paper);border:1px solid var(--rule);box-shadow:0 18px 40px -12px var(--shadow);font-size:14px;transform:translateX(-50%);max-width:calc(100vw - 24px)}
 .tk-nudge.in{animation:nudgeIn .45s cubic-bezier(.2,.8,.2,1) both}
 @keyframes nudgeIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}
-.tk-nudge span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-nudge .tk-ic{width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.tk-nudge .tk-ic svg{width:22px;height:22px}
+.tk-nudge .tk-txt{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.tk-nudge .tk-txt b{font-family:var(--f-display);font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-nudge .tk-txt small{font-size:12px;color:var(--ink-soft)}
 .tk-nudge[hidden]{display:none}
-@media (max-width:640px){.tk-nudge{bottom:calc(140px + env(safe-area-inset-bottom,0px));font-size:13px}}
+@media (max-width:640px){.tk-nudge{bottom:calc(84px + env(safe-area-inset-bottom,0px));font-size:13px;flex-wrap:wrap}.tk-nudge .tk-txt{flex:1}}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -883,7 +888,7 @@ a.btn.primary{color:var(--accent-ink)}
   </div>
 </dialog>
 
-<div class="tk-nudge" id="tkNudge" hidden role="status"><span id="tkNudgeText"></span><button type="button" class="btn sm primary" id="tkNudgeGo">印一張讀完票根</button><button type="button" class="x" id="tkNudgeX" aria-label="不用了">×</button></div>
+<div class="tk-nudge" id="tkNudge" hidden role="status"><span class="tk-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg></span><span class="tk-txt"><b id="tkNudgeTitle"></b><small id="tkNudgeText"></small></span><button type="button" class="btn sm primary" id="tkNudgeGo">印一張讀完票根</button><button type="button" class="x" id="tkNudgeX" aria-label="不用了">×</button></div>
 
 <!-- 隨手抽一句 -->
 <dialog id="qDrawBox" aria-label="隨手抽一句">
@@ -1220,7 +1225,7 @@ function renderTreasure(st){
   const years=[...new Set(favs.map(b=>Number(b.year)))].sort((a,b)=>b-a);
   stageCtx=[];
   const rows=years.map(y=>{const items=favs.filter(b=>Number(b.year)===y).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||sortInMonth(a,b));stageCtx.push(...items.map(b=>b.id));return `<div class="t-year"><div class="y">${y}<small>${items.length} 本</small></div><div class="wall">${items.map(b=>tileEl(b,monthLabel(b.month))).join('')}</div></div>`}).join('');
-  st.innerHTML=`<section class="treasure"><div class="treasure-head"><h2>珍藏</h2><p>${favs.length?`這些年來，一共有 ${favs.length} 本書讓你想留在身邊。`:'還沒有珍藏的書。翻開一本書，按「放進珍藏」就會出現在這裡。'}</p></div>${rows}</section>`;
+  st.innerHTML=`<section class="treasure"><div class="treasure-head"><h2><svg viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg>珍藏</h2><p>${favs.length?`這些年來，一共有 ${favs.length} 本書讓你想留在身邊。`:'還沒有珍藏的書。翻開一本書，按「放進珍藏」就會出現在這裡。'}</p></div>${rows}</section>`;
   st.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>pullAndOpen(el,el.dataset.id,stageCtx));
 }
 function setYear(y){if(y===currentYear)return;currentYear=y;render()}
@@ -1618,7 +1623,6 @@ $('editForm').onsubmit=async e=>{
   else if(isNew){
     const el=document.querySelector(`#stage [data-id="${CSS.escape(b.id)}"]`);
     if(el){el.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'center',inline:'center'});el.classList.add('drop');setTimeout(()=>el.classList.remove('drop'),900)}
-    toast(`《${b.title}》放上 ${b.year} 年${monthLabel(b.month)}的書架了`);
     showTicketNudge(b);
   }else toast('已儲存');
 };
@@ -2487,10 +2491,10 @@ let tkNudgeTimer=null;
 function showTicketNudge(b){
   const el=$('tkNudge');if(!el)return;clearTimeout(tkNudgeTimer);
   const info=ticketInfo(b);
-  $('tkNudgeText').textContent=`這是你 ${b.year} 年讀完的第 ${info.n} 本`;
+  $('tkNudgeTitle').textContent=`《${b.title}》放上書架了`;$('tkNudgeText').textContent=`這是你 ${b.year} 年讀完的第 ${info.n} 本`;
   el.hidden=false;el.classList.remove('in');void el.offsetWidth;el.classList.add('in');
   $('tkNudgeGo').onclick=()=>{el.hidden=true;openImageCard(b.id,{kind:'ticket',print:true})};
-  tkNudgeTimer=setTimeout(()=>{el.hidden=true},9000);
+  tkNudgeTimer=setTimeout(()=>{el.hidden=true},12000);
 }
 $('tkNudgeX').onclick=()=>{$('tkNudge').hidden=true;clearTimeout(tkNudgeTimer)};
 
