@@ -769,6 +769,70 @@ html[data-view="pile"] #intro{display:none}
   .pile-group h3 .pg-hint{display:none}
 }
 @media (prefers-reduced-motion:reduce){.pcard.arrive{animation:none}}
+
+/* ===== 標籤顏色與管理 ===== */
+.chip.tagc{background:color-mix(in srgb,var(--tc) 14%,var(--paper));border-color:color-mix(in srgb,var(--tc) 45%,transparent);color:color-mix(in srgb,var(--tc) 60%,var(--ink))}
+.chip.pinned{font-weight:600}
+.tag-title{font-family:var(--f-display)}
+.tag-title.tagc{color:color-mix(in srgb,var(--tc) 70%,var(--ink))}
+.tag-lab{display:flex;align-items:baseline;gap:10px}
+.tag-lab label{margin:0}
+.link-btn{font-size:12.5px;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.tm-sheet{max-width:560px}
+#tmCount{margin-left:6px;color:var(--ink-soft)}
+#tmSearch{width:100%;height:40px;border-radius:10px;border:1px solid var(--rule);background:var(--paper);padding:0 12px;margin-bottom:10px;color:var(--ink);font-size:15px}
+#tmSearch[hidden]{display:none}
+.tm-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-soft);margin:0 0 8px}
+.tm-legend span{display:inline-flex;align-items:center;gap:5px}
+.tm-legend svg{width:14px;height:14px;fill:var(--brass)}
+.tm-row{display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:6px 8px;padding:7px 0;border-bottom:1px solid var(--rule)}
+.tm-row:last-child{border-bottom:0}
+.tm-dot{width:26px;height:26px;border-radius:50%;border:2px dashed var(--rule);background:transparent;flex:none}
+.tm-dot[style]{border:0;background:var(--tc);box-shadow:inset 0 0 0 2px color-mix(in srgb,#fff 25%,transparent)}
+.tm-dot.sample{display:inline-block;width:12px;height:12px;border:0;background:#2f6f73}
+.tm-name{min-width:0;height:38px;border-radius:8px;border:1px solid transparent;background:transparent;padding:0 10px;font-family:var(--f-display);font-size:16px;color:var(--ink)}
+.tm-name:hover{border-color:var(--rule)}
+.tm-name:focus{border-color:var(--accent);background:var(--paper);outline:none}
+.tm-n{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--ink-soft);padding:6px 8px;border-radius:8px;white-space:nowrap}
+.tm-n:hover{background:var(--wall-2);color:var(--ink)}
+.tm-n span{font-size:16px;line-height:1}
+.tm-pin,.tm-del{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft)}
+.tm-pin svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.tm-pin.on{color:var(--brass)}
+.tm-pin.on svg{fill:var(--brass)}
+.tm-del svg{width:18px;height:18px}
+.tm-pin:hover,.tm-del:hover{background:var(--wall-2)}
+.tm-del:hover{color:var(--ribbon)}
+.tm-pal{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;padding:6px 0 4px 2px}
+.tm-pal button{width:30px;height:30px;border-radius:50%;background:var(--tc);border:2px solid transparent;box-shadow:0 0 0 1px var(--rule)}
+.tm-pal button.on{border-color:var(--paper);box-shadow:0 0 0 2px var(--ink)}
+.tm-pal button.none{background:var(--paper);color:var(--ink-soft);font-size:15px}
+.tm-none{color:var(--ink-soft);font-size:14px;text-align:center;padding:16px 0}
+.tm-empty{padding:24px 6px}
+.tm-empty .hint{line-height:1.8}
+
+/* 書堆文字排版 */
+.pile-tag{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0;letter-spacing:0;text-wrap:pretty}
+.pile-tag .pk{display:inline-block;margin-right:10px;padding:1px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);font-size:12.5px;font-weight:600;letter-spacing:.08em}
+.nw{display:inline-block}
+.pile-empty{text-align:center;padding:30px 8px 10px;color:var(--ink-soft)}
+.pe-ic{width:44px;height:44px;color:var(--ink-soft);opacity:.7}
+.pe-title{margin:8px 0 6px;font-family:var(--f-display);font-size:20px;color:var(--ink);letter-spacing:.06em}
+.pe-text{margin:0 auto;max-width:30em;font-size:14px;line-height:1.75;letter-spacing:0}
+.pe-steps{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:20px auto 0;padding:0;max-width:520px;counter-reset:s}
+.pe-steps li{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:92px;padding:10px 12px;border-radius:12px;background:var(--wall);font-size:12px;line-height:1.4}
+.pe-steps li b{font-family:var(--f-display);font-size:16px;color:var(--ink);letter-spacing:.06em}
+.pe-steps li:last-child{background:color-mix(in srgb,var(--accent) 12%,var(--paper))}
+.pe-steps li:last-child b{color:var(--accent)}
+.pe-steps li+li::before{content:"›";position:absolute;left:-8px;top:50%;transform:translate(-50%,-50%);color:var(--ink-soft);font-size:14px}
+@media (max-width:640px){
+  .pile-head h2{font-size:26px}
+  .pile-tag{font-size:13.5px}
+  .pile-tag{display:block;line-height:1.7}.pile-tag .pk{display:table;margin:0 0 6px}
+  .pe-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;max-width:300px}
+  .pe-steps li{min-width:0}
+  .pe-steps li+li::before{display:none}
+}
 </style>
 
 </head>
@@ -807,6 +871,8 @@ html[data-view="pile"] #intro{display:none}
     <button type="button" id="mSync">保存與同步<span>Google 帳號</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel</span></button>
+    <hr>
+    <button type="button" id="mTags">管理標籤<span>改名、合併、顏色</span></button>
     <hr>
     <button type="button" id="mBatch">逐本補上封面<span id="mBatchCount"></span></button>
     <button type="button" id="mTidy">整理全部封面<span>去白邊、書背</span></button>
@@ -951,7 +1017,7 @@ html[data-view="pile"] #intro{display:none}
         <div class="feel-chips" id="feelChips" role="radiogroup" aria-label="讀完的感覺"></div>
       </div>
       <div class="field">
-        <label for="tagInput">標籤</label>
+        <span class="lab tag-lab"><label for="tagInput">標籤</label><button type="button" class="link-btn" id="tagMgrLink">管理標籤</button></span>
         <div class="tagbox" id="tagBox"><input id="tagInput" maxlength="16" autocomplete="off" placeholder="輸入後按 Enter，例如：小說、理財"></div>
         <div class="chips" id="tagSuggest"></div>
       </div>
@@ -1000,6 +1066,18 @@ html[data-view="pile"] #intro{display:none}
   <div class="sheet person-sheet">
     <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="personName"></h3><p class="psum" id="personSum"></p></div><button type="button" class="x" id="personClose" aria-label="關閉">×</button></div>
     <div class="sheet-body" id="personList"></div>
+  </div>
+</dialog>
+
+<!-- 管理標籤 -->
+<dialog id="tagMgr" class="bottom" aria-labelledby="tmTitle">
+  <div class="sheet tm-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="tmTitle">管理標籤</h3><p>點名稱可以改名，改成已經有的名稱就會合併。<span id="tmCount"></span></p></div><button type="button" class="x" id="tmClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <input id="tmSearch" type="search" placeholder="找標籤" aria-label="找標籤" hidden>
+      <div class="tm-legend"><span><i class="tm-dot sample"></i>顏色</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>常用：新增書時排最前面</span></div>
+      <div id="tmList"></div>
+    </div>
   </div>
 </dialog>
 
@@ -1405,7 +1483,7 @@ function renderSpread(){
       <h2>${esc(b.title)}</h2>
       ${b.author||b.translator?`<p class="author">${[b.author?personLinks(b.author):'',b.translator?personLinks(b.translator,' 譯'):''].filter(Boolean).join('<span class="psep">　</span>')}</p>`:''}
       ${normFeel(b.feel)?`<button type="button" class="feel-pill f${FEELS.indexOf(normFeel(b.feel))}" data-feel="${esc(normFeel(b.feel))}">${esc(normFeel(b.feel))}</button>`:''}
-      ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip" data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
+      ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip${tagClass(t)}"${tagStyle(t)} data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
       <button type="button" class="fav-toggle ${b.favorite?'on':''}" id="bvFav" aria-pressed="${b.favorite}"><svg viewBox="0 0 14 20" aria-hidden="true"><path d="M1 1h12v18l-6-4.5L1 19z"/></svg><span>${b.favorite?'已放進珍藏':'放進珍藏'}</span></button>
       <div class="lined ${note?'':'placeholder'}">${note?esc(note):'還沒寫下感想。按「編輯」，留一句話給以後的自己。'}</div>
       ${quotesHtml(b)}
@@ -1431,7 +1509,7 @@ function renderSpread(){
     $('bvDelYes').onclick=async()=>{await removeBook(b.id);markDirty();await reload();viewCtx.splice(viewIdx,1);viewIdx=Math.min(viewIdx,viewCtx.length-1);render(false);toast(`已刪除《${b.title}》`);if(!viewCtx.length)$('bookView').close();else renderSpread()};
   };
   $('bvAgain')?.addEventListener('click',()=>{$('bookView').close();drawOne()});
-  stage.querySelectorAll('[data-tag]').forEach(c=>c.onclick=()=>{$('bookView').close();openSearch(c.dataset.tag)});
+  stage.querySelectorAll('[data-tag]').forEach(c=>c.onclick=()=>openTag(c.dataset.tag));
   bindQuotes(b);
   stage.querySelectorAll('[data-feel]').forEach(c=>c.onclick=()=>{$('bookView').close();openSearch(c.dataset.feel)});
   stage.querySelectorAll('[data-person]').forEach(c=>c.onclick=()=>{$('bookView').close();openPerson(c.dataset.person)});
@@ -1573,13 +1651,12 @@ $('reviewBtn').onclick=openReview;$('reviewTab').onclick=openReview;
 
 /* ================= 新增／編輯 ================= */
 let editFromView=false;
-function allTags(){const c={};books.forEach(b=>b.tags.forEach(t=>c[t]=(c[t]||0)+1));return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
 function renderTags(){
   const box=$('tagBox'),input=$('tagInput');
   box.querySelectorAll('.chip').forEach(c=>c.remove());
-  editTags.forEach((t,i)=>{const s=document.createElement('span');s.className='chip';s.innerHTML=`${esc(t)}<button type="button" aria-label="移除標籤 ${esc(t)}">×</button>`;s.querySelector('button').onclick=()=>{editTags.splice(i,1);renderTags()};box.insertBefore(s,input)});
-  const sug=allTags().filter(t=>!editTags.includes(t)).slice(0,12);
-  $('tagSuggest').innerHTML=sug.map(t=>`<button type="button" class="chip" data-t="${esc(t)}">+ ${esc(t)}</button>`).join('');
+  editTags.forEach((t,i)=>{const s=document.createElement('span');s.className='chip'+tagClass(t);const tc=tagColor(t);if(tc)s.style.setProperty('--tc',tc);s.innerHTML=`${esc(t)}<button type="button" aria-label="移除標籤 ${esc(t)}">×</button>`;s.querySelector('button').onclick=()=>{editTags.splice(i,1);renderTags()};box.insertBefore(s,input)});
+  const sug=allTags().filter(t=>!editTags.includes(t)).slice(0,14);
+  $('tagSuggest').innerHTML=sug.map(t=>`<button type="button" class="chip${tagClass(t)}${tagMeta(t).p?' pinned':''}"${tagStyle(t)} data-t="${esc(t)}">${tagMeta(t).p?'★':'+'} ${esc(t)}</button>`).join('');
   $('tagSuggest').querySelectorAll('button').forEach(b=>b.onclick=()=>{addTag(b.dataset.t)});
 }
 function addTag(t){t=String(t||'').replace(/^#/,'').trim();if(t&&!editTags.includes(t)&&editTags.length<8)editTags.push(t);$('tagInput').value='';renderTags()}
@@ -1831,7 +1908,7 @@ async function backup(){
       if(/^data:image/.test(o.cover||''))embedded++;
       out.push(o);
     }
-    const payload={format:'my-reading-shelf',version:3,app:'頁間日子',exportedAt:new Date().toISOString(),books:out,goals:goalsAll()};
+    const payload={format:'my-reading-shelf',version:3,app:'頁間日子',exportedAt:new Date().toISOString(),books:out,goals:goalsAll(),tagmeta:tagMetaAll()};
     download(new Blob([JSON.stringify(payload)],{type:'application/json'}),`頁間日子備份-${stamp()}.json`);exported();
     const noCover=out.length-embedded-linkOnly;
     notify('備份已匯出',`共 ${out.length} 本書，其中 ${embedded} 本的封面圖片已一起存進檔案。`+(noCover?`\n${noCover} 本本來就沒有封面。`:'')+(linkOnly?`\n有 ${linkOnly} 本的封面只能存成網址（來源網站不允許下載），換裝置後可能無法顯示，建議重新貼上這幾本的封面。`:'')+(fixed?`\n另外有 ${fixed} 本原本只存網址的封面，已順便轉存成圖片。`:''));
@@ -1929,6 +2006,7 @@ async function importBackup(file){
   const choice=await ask({title:`讀到 ${incoming.length} 本書`,body:`${coverLine}\n\n・合併：新的書加進來；已經有的書只補上缺少的封面、作者、筆記和標籤。\n・取代：清掉目前所有紀錄，改用這份備份。`,buttons:[{label:'取消',value:null},{label:'取代整個書房',value:'replace',cls:'danger'},{label:'合併',value:'merge',cls:'primary'}]});
   if(!choice)return;
   if(raw&&raw.goals&&typeof raw.goals==='object')saveGoals(mergeGoals(goalsAll(),raw.goals));
+  if(raw&&raw.tagmeta&&typeof raw.tagmeta==='object')saveTagMeta(mergeTagMeta(tagMetaAll(),raw.tagmeta));
   const r=await writeImport(incoming,choice==='replace');
   toast(choice==='replace'?`已還原 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`);
 }
@@ -1958,7 +2036,7 @@ $('mClear').onclick=async()=>{
   if(!ok)return;
   clearTimeout(syncState.timer);
   await clearAll();
-  for(const k of ['shelf-deleted','sync-last','sync-cfg','g-token','shelf-dirty','tidy-dismissed','shelf-last-export','login-dismissed','shelf-goals'])ls.set(k,'');
+  for(const k of ['shelf-deleted','sync-last','sync-cfg','g-token','shelf-dirty','tidy-dismissed','shelf-last-export','login-dismissed','shelf-goals','shelf-tagmeta'])ls.set(k,'');
   await reload();currentYear=NOW.getFullYear();setSyncStatus('off');render();toast('書房已清空');
 };
 function normHeader(v){return String(v??'').trim().toLowerCase().replace(/[\s　:_：()（）]/g,'')}
@@ -2626,9 +2704,9 @@ function pileCard(b){
 function renderPile(st){
   stageCtx=[];
   const n=pile.length,urgent=pileUrgent();
-  const head=`<div class="pile-head"><div><h2>書堆<small>${n?`${n} 本`:''}</small></h2><p class="pile-tag">積讀書堆・借來的、買來的、還沒翻開的，都先在這裡排隊。</p></div><button type="button" class="btn primary" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div>`;
+  const head=`<div class="pile-head"><div><h2>書堆<small>${n?`${n} 本`:''}</small></h2><p class="pile-tag"><span class="pk">積讀書堆</span><span class="nw">借來的、買來的、還沒翻開的，</span><span class="nw">都先在這裡排隊。</span></p></div><button type="button" class="btn primary" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div>`;
   if(!n){
-    st.innerHTML=`<section class="pile">${head}<div class="empty pile-empty"><p>書堆還是空的。</p><p class="hint">圖書館借來的、買了還沒看的、朋友推薦想讀的，都可以先放這裡。<br>開始讀就移到「在讀」，讀完了再放上書架，順便印一張票根。</p></div></section>`;
+    st.innerHTML=`<section class="pile">${head}<div class="pile-empty"><svg class="pe-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="15" width="16" height="4.5" rx="1"/><rect x="5.5" y="10" width="13" height="4.5" rx="1" transform="rotate(-4 12 12)"/><rect x="4.5" y="4.8" width="14" height="4.5" rx="1" transform="rotate(3 12 7)"/></svg><p class="pe-title">書堆還是空的</p><p class="pe-text"><span class="nw">圖書館借來的、</span><span class="nw">買了還沒看的、</span><span class="nw">朋友推薦想讀的，</span><span class="nw">都可以先放這裡。</span></p><ol class="pe-steps"><li><b>想讀</b><span>先記下來</span></li><li><b>待讀</b><span>書在手邊</span></li><li><b>在讀</b><span>正在翻</span></li><li><b>讀完</b><span>放上書架、印票根</span></li></ol></div></section>`;
   }else{
     const alert=urgent.length?`<div class="pile-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg><span>${urgent.some(b=>dueInfo(b).d<0)?'有書已經逾期了':'有書快到期了'}：${urgent.slice(0,3).map(b=>`《${esc(b.title)}》${esc(dueInfo(b).text)}`).join('、')}${urgent.length>3?` 等 ${urgent.length} 本`:''}</span></div>`:'';
     const groups=PILE_ST.map(s=>{const l=pileList(s.k);if(!l.length&&s.k!=='reading')return '';
@@ -2684,6 +2762,107 @@ $('pileDel').onclick=async()=>{
   if(!ok)return;
   await removeBook(b.id);markDirty();await reload();$('editor').close();render(false);toast('已從書堆移除');
 };
+
+/* ================= 標籤管理：改名、合併、刪除、常用、顏色、看同標籤的書 ================= */
+const TAG_COLORS=[
+  {k:'teal',c:'#2f6f73',l:'青綠'},{k:'brass',c:'#9a6f22',l:'黃銅'},{k:'brick',c:'#A94F48',l:'磚紅'},{k:'plum',c:'#7a4e7e',l:'梅紫'},
+  {k:'moss',c:'#5d7a3a',l:'苔綠'},{k:'slate',c:'#4a6280',l:'石板藍'},{k:'rose',c:'#b0607a',l:'玫瑰'},{k:'clay',c:'#8a6a52',l:'陶土'}
+];
+function tagMetaAll(){if(demoMode)return demoTagMeta;try{const m=JSON.parse(ls.get('shelf-tagmeta')||'{}');return m&&typeof m==='object'?m:{}}catch{return {}}}
+var demoTagMeta={};
+function saveTagMeta(m){const o={};Object.keys(m).sort().forEach(k=>{const v=m[k];if(v&&typeof v==='object')o[k]={c:v.c||'',p:!!v.p,t:Number(v.t)||0}});if(demoMode){demoTagMeta=o;return}ls.set('shelf-tagmeta',JSON.stringify(o))}
+function mergeTagMeta(a,b){const o={...(a||{})};for(const [k,v] of Object.entries(b||{}))if(v&&(!o[k]||(Number(v.t)||0)>(Number(o[k].t)||0)))o[k]=v;return o}
+function tagMeta(t){return tagMetaAll()[t]||{}}
+function setTagMeta(t,patch){const m=tagMetaAll();m[t]={...(m[t]||{}),...patch,t:Date.now()};saveTagMeta(m);markDirty();if(typeof scheduleSync==='function')scheduleSync()}
+function tagColor(t){const k=tagMeta(t).c;return TAG_COLORS.find(x=>x.k===k)?.c||''}
+function tagStyle(t){const c=tagColor(t);return c?` style="--tc:${c}"`:''}
+function tagClass(t){return tagColor(t)?' tagc':''}
+function tagCounts(){const c=new Map();[...books,...pile].forEach(b=>(b.tags||[]).forEach(t=>c.set(t,(c.get(t)||0)+1)));return c}
+/* 常用（釘選）的排前面，其次依使用次數 */
+function allTags(){const c=tagCounts(),m=tagMetaAll();return [...c.keys()].sort((a,b)=>(m[b]?.p?1:0)-(m[a]?.p?1:0)||c.get(b)-c.get(a)||a.localeCompare(b,'zh-Hant'))}
+
+/* ---- 看同一個標籤的所有書 ---- */
+function openTag(name){
+  const done=books.filter(b=>b.tags.includes(name)).sort((x,y)=>Number(y.year)-Number(x.year)||monthNum(y.month)-monthNum(x.month)||orderKey(y)-orderKey(x));
+  const inPile=pile.filter(b=>(b.tags||[]).includes(name));
+  if(!done.length&&!inPile.length){toast(`沒有書貼著「${name}」`);return}
+  const ids=done.map(b=>b.id),ys=[...new Set(done.map(b=>Number(b.year)))].sort((a,b)=>a-b),fav=done.filter(b=>b.favorite).length;
+  $('personName').innerHTML=`<span class="tag-title${tagClass(name)}"${tagStyle(name)}>#${esc(name)}</span>`;
+  $('personSum').innerHTML=done.length?`讀過 <em>${done.length}</em> 本，${ys.length>1?`從 ${ys[0]} 到 ${ys.at(-1)} 年`:`都在 ${ys[0]} 年`}${fav?`，其中 <em>${fav}</em> 本放進了珍藏`:''}。${inPile.length?`<span class="delta">書堆裡還有 ${inPile.length} 本</span>`:''}`:`書堆裡有 <em>${inPile.length}</em> 本，還沒有讀完的。`;
+  const groups=[];done.forEach(b=>{const y=Number(b.year);let g=groups.at(-1);if(!g||g.y!==y)groups.push(g={y,items:[]});g.items.push(b)});
+  $('personList').innerHTML=groups.map(g=>`<div class="p-year"><div class="y">${g.y}</div><div class="wall">${g.items.map(b=>tileEl(b,monthLabel(b.month))).join('')}</div></div>`).join('')
+    +(inPile.length?`<div class="p-year"><div class="y" style="font-size:20px">書堆</div><div class="wall">${inPile.map(b=>`<button type="button" class="tile" data-pile="${esc(b.id)}"><span class="cover">${coverInner(b)}</span><span class="cap">${esc(b.title)}</span><span class="sub">${esc(PILE_LABEL[b.status]||'')}</span></button>`).join('')}</div></div>`:'');
+  $('personList').querySelectorAll('.tile[data-id]').forEach(t=>t.onclick=()=>{$('personBox').close();openBook(t.dataset.id,ids)});
+  $('personList').querySelectorAll('.tile[data-pile]').forEach(t=>t.onclick=()=>{$('personBox').close();const b=pileById(t.dataset.pile);if(b)openEditor(b)});
+  if(!$('personBox').open)$('personBox').showModal();$('personList').scrollTop=0;
+}
+
+/* ---- 改名／合併／刪除：一次改所有用到這個標籤的書 ---- */
+async function retagBooks(from,to){
+  let n=0;
+  for(const b of [...books,...pile]){
+    const tags=b.tags||[];if(!tags.includes(from))continue;
+    let next=tags.map(t=>t===from?to:t).filter(Boolean);next=[...new Set(next)];
+    b.tags=next;await saveBook(b);n++;
+  }
+  const m=tagMetaAll();
+  if(m[from]){if(to&&!m[to])m[to]={...m[from],t:Date.now()};delete m[from];saveTagMeta(m)}
+  markDirty();await reload();render(false);return n;
+}
+async function renameTag(from,raw){
+  const to=String(raw||'').replace(/^#/,'').trim().slice(0,16);
+  if(!to||to===from)return false;
+  const c=tagCounts();
+  if(c.has(to)){
+    const ok=await ask({title:`合併到「${to}」？`,body:`「${from}」的 ${c.get(from)} 本書會改貼「${to}」，「${from}」這個標籤會消失。`,buttons:[{label:'取消',value:false},{label:'合併',value:true,cls:'primary'}]});
+    if(!ok)return false;
+    await retagBooks(from,to);toast(`已合併到「${to}」`);return true;
+  }
+  const n=await retagBooks(from,to);toast(`已改名，${n} 本書一起更新`);return true;
+}
+async function deleteTag(t){
+  const n=tagCounts().get(t)||0;
+  const ok=await ask({title:`刪除標籤「${t}」？`,body:`會從 ${n} 本書上拿掉這個標籤，書本身不會被刪除。`,buttons:[{label:'取消',value:false},{label:'刪除',value:true,cls:'primary'}]});
+  if(!ok)return;
+  await retagBooks(t,'');toast(`已刪除「${t}」`);renderTagMgr();
+}
+
+/* ---- 管理標籤面板 ---- */
+var tmFilter='',tmPalette=null;
+function openTagMgr(){tmFilter='';tmPalette=null;$('tmSearch').value='';renderTagMgr();$('tagMgr').showModal()}
+function renderTagMgr(){
+  const c=tagCounts(),m=tagMetaAll(),q=tmFilter.trim().toLowerCase();
+  const list=allTags().filter(t=>!q||t.toLowerCase().includes(q));
+  $('tmCount').textContent=c.size?`共 ${c.size} 個標籤`:'';
+  $('tmSearch').hidden=c.size<8;
+  const box=$('tmList');
+  if(!c.size){box.innerHTML=`<div class="empty tm-empty"><p>還沒有任何標籤。</p><p class="hint">編輯一本書，在「標籤」欄位輸入後按 Enter 就能貼上。<br>例如：小說、日本、圖書館借的、想推薦給媽媽。</p></div>`;return}
+  if(!list.length){box.innerHTML=`<p class="tm-none">沒有符合「${esc(tmFilter)}」的標籤。</p>`;return}
+  box.innerHTML=list.map(t=>{const meta=m[t]||{},col=tagColor(t);return `<div class="tm-row" data-t="${esc(t)}">
+    <button type="button" class="tm-dot" data-color="${esc(t)}" aria-label="選擇「${esc(t)}」的顏色"${col?` style="--tc:${col}"`:''}></button>
+    <input class="tm-name" value="${esc(t)}" maxlength="16" aria-label="標籤名稱，改完按 Enter">
+    <button type="button" class="tm-n" data-view-tag="${esc(t)}" aria-label="看貼著「${esc(t)}」的 ${c.get(t)} 本書">${c.get(t)} 本<span aria-hidden="true">›</span></button>
+    <button type="button" class="tm-pin${meta.p?' on':''}" data-pin="${esc(t)}" aria-pressed="${!!meta.p}" title="${meta.p?'取消常用':'設為常用'}" aria-label="${meta.p?'取消常用':'設為常用'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg></button>
+    <button type="button" class="tm-del" data-del="${esc(t)}" aria-label="刪除「${esc(t)}」"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M10 7V4.5h4V7M7 7l1 12.5h8L17 7"/></svg></button>
+    ${tmPalette===t?`<div class="tm-pal">${TAG_COLORS.map(x=>`<button type="button" data-pick="${x.k}" style="--tc:${x.c}" class="${meta.c===x.k?'on':''}" aria-label="${x.l}" title="${x.l}"></button>`).join('')}<button type="button" data-pick="" class="none${!meta.c?' on':''}" aria-label="不用顏色" title="不用顏色">×</button></div>`:''}
+  </div>`}).join('');
+  box.querySelectorAll('.tm-name').forEach(inp=>{
+    const t=inp.closest('.tm-row').dataset.t;
+    const commit=async()=>{if(inp.dataset.busy)return;const v=inp.value.trim();if(!v||v===t){inp.value=t;return}inp.dataset.busy='1';const ok=await renameTag(t,v);delete inp.dataset.busy;if(ok)renderTagMgr();else inp.value=t};
+    inp.addEventListener('keydown',e=>{if(e.isComposing)return;if(e.key==='Enter'){e.preventDefault();inp.blur()}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();inp.value=t;inp.blur()}});
+    inp.addEventListener('blur',commit);
+  });
+  box.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{tmPalette=tmPalette===b.dataset.color?null:b.dataset.color;renderTagMgr()});
+  box.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>{const t=b.closest('.tm-row').dataset.t;setTagMeta(t,{c:b.dataset.pick});tmPalette=null;renderTagMgr();refreshTagViews()});
+  box.querySelectorAll('[data-pin]').forEach(b=>b.onclick=()=>{const t=b.dataset.pin;const p=!tagMeta(t).p;setTagMeta(t,{p});toast(p?`「${t}」設為常用，新增書時會排在最前面`:`「${t}」取消常用`);renderTagMgr()});
+  box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteTag(b.dataset.del));
+  box.querySelectorAll('[data-view-tag]').forEach(b=>b.onclick=()=>openTag(b.dataset.viewTag));
+}
+function refreshTagViews(){if($('bookView').open)renderSpread();if($('editor').open)renderTags()}
+$('tmSearch').addEventListener('input',e=>{tmFilter=e.target.value;renderTagMgr()});
+$('tmClose').onclick=()=>$('tagMgr').close();
+$('mTags').onclick=()=>{closeMenu();openTagMgr()};
+$('tagMgrLink').onclick=()=>openTagMgr();
 
 /* ================= 示範書櫃（資料只在記憶體，不寫入書房、不同步） ================= */
 var demoMode=false,demoGoals={},demoPrevView='shelf';
@@ -2748,7 +2927,7 @@ function demoPile(){
 async function enterDemo(opts={}){
   if(demoMode)return;
   books=[];demoMode=true;demoPrevView=view;view='shelf';markViewTabs('shelf');demoStore.clear();demoData().forEach(b=>demoStore.set(b.id,b));
-  const Y=new Date().getFullYear();demoGoals={[Y]:{n:30,t:Date.now()}};
+  const Y=new Date().getFullYear();demoGoals={[Y]:{n:30,t:Date.now()}};demoTagMeta={'小說':{c:'teal',p:true,t:1},'散文':{c:'brass',p:true,t:1},'日本':{c:'rose',t:1},'推理':{c:'slate',t:1},'理財':{c:'moss',t:1}};
   document.documentElement.classList.add('is-demo');$('demoBanner').hidden=false;
   ['bookView','editor','searchBox','reviewBox'].forEach(id=>{const d=$(id);if(d&&d.open)d.close()});
   await reload();currentYear=Y;render();if(!opts.boot)window.scrollTo({top:0,behavior:'smooth'});
@@ -2756,7 +2935,7 @@ async function enterDemo(opts={}){
 }
 async function exitDemo(opts={}){
   if(!demoMode)return;
-  demoMode=false;demoStore.clear();demoGoals={};
+  demoMode=false;demoStore.clear();demoGoals={};demoTagMeta={};
   {const sv=ls.get('shelf-view');view=['shelf','wall','treasure','quotes','pile'].includes(sv)?sv:demoPrevView||'shelf';markViewTabs(view)}
   document.documentElement.classList.remove('is-demo');$('demoBanner').hidden=true;
   ['bookView','editor','searchBox','reviewBox','quoteBox','videoBox','qDrawBox','personBox','goalBox'].forEach(id=>{const d=$(id);if(d&&d.open)d.close()});
@@ -3414,6 +3593,8 @@ async function syncOnce(be,{replace=false}={}){
   const remote=remoteData||{books:[],deleted:{}};
   const localGoals=goalsSorted(goalsAll()),goals=mergeGoals(localGoals,remote.goals);
   const goalsChanged=JSON.stringify(goals)!==JSON.stringify(localGoals);if(goalsChanged)saveGoals(goals);
+  const tmSort=o=>JSON.stringify(Object.keys(o||{}).sort().map(k=>[k,o[k]]));
+  const localTM=tagMetaAll(),tagmeta=mergeTagMeta(localTM,remote.tagmeta);const tmChanged=tmSort(tagmeta)!==tmSort(localTM);if(tmChanged)saveTagMeta(tagmeta);
   const remoteCovers=await be.listCovers();
   const del={...(remote.deleted||{})};for(const [id,t] of Object.entries(tombstones()))del[id]=Math.max(del[id]||0,t);
   const local=(await getAll()).map(normalizeBook);
@@ -3460,11 +3641,11 @@ async function syncOnce(be,{replace=false}={}){
     await be.writeCover(b.coverRef,bytes,b.title);remoteCovers.add(b.coverRef);
   }
   outBooks.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
-  const payload={format:'pages-between-days-sync',version:1,books:outBooks,deleted:pruneTombstones(del),goals};
-  const same=remoteData&&JSON.stringify({b:sortBooks(remote.books||[]),d:remote.deleted||{},g:goalsSorted(remote.goals||{})})===JSON.stringify({b:outBooks,d:payload.deleted,g:goals});
+  const payload={format:'pages-between-days-sync',version:1,books:outBooks,deleted:pruneTombstones(del),goals,tagmeta:tagMetaAll()};
+  const same=remoteData&&JSON.stringify({b:sortBooks(remote.books||[]),d:remote.deleted||{},g:goalsSorted(remote.goals||{}),m:tmSort(remote.tagmeta)})===JSON.stringify({b:outBooks,d:payload.deleted,g:goals,m:tmSort(payload.tagmeta)});
   if(!same){payload.updatedAt=new Date().toISOString();await be.writeShelf(payload,ver)}
   setTombstones(payload.deleted);
-  if(localChanged){await reload();render(false)}else if(goalsChanged)renderGoalRow();
+  if(localChanged||tmChanged){await reload();render(false)}else if(goalsChanged)renderGoalRow();
 }
 function sortBooks(a){return [...a].sort((x,y)=>String(x.id).localeCompare(String(y.id)))}
 function pruneTombstones(d){const cut=Date.now()-400*864e5;const o={};for(const [k,v] of Object.entries(d))if(v>cut)o[k]=v;return o}
