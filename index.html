@@ -392,6 +392,9 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 .qbtn.del:hover{color:var(--ribbon)}
 .qsheet{width:min(520px,calc(100vw - 32px))}
 .qcstage{position:relative;width:min(300px,64vw);aspect-ratio:1080/1350;margin:0 auto 14px;border-radius:10px;overflow:hidden;box-shadow:0 14px 30px var(--shadow);background:var(--wall-2);transition:aspect-ratio .2s}
+.qcstage.tk{background:transparent;box-shadow:none;border-radius:0;overflow:visible;width:min(260px,58vw)}
+.qcstage.tk.print{overflow:hidden}
+.qcstage.tk canvas{filter:drop-shadow(0 12px 18px var(--shadow))}
 .qcstage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .qcstage.loading canvas{opacity:0}
 .qcstage.loading::after{content:"準備中…";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-soft)}
@@ -2226,9 +2229,9 @@ async function openImageCard(bookId,opts={}){
   if(opts.print&&!reduceMotion()){void st.offsetWidth;st.classList.add('print')}
 }
 function qcControls(){
-  const k=qcState.kind;
+  const k=qcState.kind;$('qcStage').classList.toggle('tk',k==='ticket');
   $('qcTitle').textContent=k==='ticket'?'讀完票根':'金句卡';
-  $('qcSub').textContent=k==='ticket'?'替讀完的這本書蓋個章，存到相簿就能發到 IG。':'做成圖片，存到相簿就能發到 IG。';
+  $('qcSub').textContent=k==='ticket'?'替讀完的這本書蓋個章。存下來的是透明背景的票根，可以放到照片或限時動態上。':'做成圖片，存到相簿就能發到 IG。';
   $('qcKinds').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
   $('qcKinds').hidden=$('qcKinds').children.length<2;
   $('qcSizes').hidden=k==='ticket';
@@ -2242,7 +2245,8 @@ function qcControls(){
 function drawQC(){
   const b=byId(qcState.bookId);if(!b||!qcState.assets)return;
   const c=$('qcCanvas'),ctx=c.getContext('2d');
-  if(qcState.kind==='ticket'){c.width=1080;c.height=1350;$('qcStage').style.aspectRatio='1080/1350';drawTicket(ctx,1080,1350,qcState.tkTheme,b,qcState.assets,ticketInfo(b));return}
+  if(qcState.kind==='ticket'){c.width=Math.round(TK_W*TK_SCALE);c.height=Math.round(TK_H*TK_SCALE);$('qcStage').style.aspectRatio=`${TK_W}/${TK_H}`;drawTicket(ctx,TK_W,TK_H,qcState.tkTheme,b,qcState.assets,ticketInfo(b),{bare:true,scale:TK_SCALE});return}
+  ctx.setTransform(1,0,0,1,0,0);
   const q=quotesOf(b).find(x=>x.id===qcState.quoteId)||quotesOf(b)[0];if(!q)return;
   const S=QC_SIZES.find(s=>s.k===qcState.size);c.width=S.w;c.height=S.h;
   $('qcStage').style.aspectRatio=`${S.w}/${S.h}`;
@@ -2416,16 +2420,20 @@ function tkPath(ctx,x,y,w,h,r,tearY,notch){
   ctx.lineTo(x,tearY+notch);ctx.arc(x,tearY,notch,Math.PI/2,-Math.PI/2,true);
   ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
 }
-function drawTicket(ctx,W,H,theme,b,A,info){
-  const T=TK_THEMES[theme]||TK_THEMES.paper;
-  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';ctx.textAlign='center';
-  /* 背景 */
-  ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
-  const g=ctx.createRadialGradient(W*.3,H*.15,0,W*.3,H*.15,W*1.2);g.addColorStop(0,theme==='night'?'rgba(134,192,182,.10)':'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+const TK_W=756,TK_H=1161,TK_SCALE=1.5;
+function drawTicket(ctx,W,H,theme,b,A,info,opts={}){
+  /* opts.bare：只畫票根本體，背景透明、不傾斜、沒有陰影 */
+  const T=TK_THEMES[theme]||TK_THEMES.paper,SC=opts.scale||1,bare=!!opts.bare;
+  ctx.setTransform(SC,0,0,SC,0,0);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';ctx.textAlign='center';
+  ctx.clearRect(0,0,W,H);
+  if(!bare){
+    ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
+    const g=ctx.createRadialGradient(W*.3,H*.15,0,W*.3,H*.15,W*1.2);g.addColorStop(0,theme==='night'?'rgba(134,192,182,.10)':'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  }
   /* 票本體 */
-  const tw=Math.round(W*.70),th=Math.round(H*.86),tx=(W-tw)/2,ty=(H-th)/2,stubH=Math.round(th*.17),tearY=ty+th-stubH,notch=26,r=18;
-  ctx.save();ctx.translate(W/2,H/2);ctx.rotate(-1.2*Math.PI/180);ctx.translate(-W/2,-H/2);
-  ctx.save();ctx.shadowColor=theme==='night'?'rgba(0,0,0,.6)':'rgba(40,48,40,.22)';ctx.shadowBlur=50;ctx.shadowOffsetY=24;
+  const tw=bare?W:Math.round(W*.70),th=bare?H:Math.round(H*.86),tx=(W-tw)/2,ty=(H-th)/2,stubH=Math.round(th*.17),tearY=ty+th-stubH,notch=26,r=18;
+  ctx.save();if(!bare){ctx.translate(W/2,H/2);ctx.rotate(-1.2*Math.PI/180);ctx.translate(-W/2,-H/2)}
+  ctx.save();if(!bare){ctx.shadowColor=theme==='night'?'rgba(0,0,0,.6)':'rgba(40,48,40,.22)';ctx.shadowBlur=50;ctx.shadowOffsetY=24}
   tkPath(ctx,tx,ty,tw,th,r,tearY,notch);ctx.fillStyle=T.tk;ctx.fill();ctx.restore();
   ctx.save();tkPath(ctx,tx,ty,tw,th,r,tearY,notch);ctx.clip();
   /* 紙紋 */
