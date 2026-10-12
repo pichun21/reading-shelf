@@ -2402,13 +2402,16 @@ function qcShareUI(){
   $('qcShare').innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3.5M7.5 8 12 3.5 16.5 8"/><path d="M5 12v7.5h14V12"/></svg>分享到 LINE、IG、FB…`;
   $('qcDownload').textContent=ok?'存成圖片':'下載圖片';
   $('qcHint').innerHTML=!ok?'下載後，到 LINE、IG 或 FB 選擇這張圖片上傳就可以了。'
-    :tk&&!story?'在分享選單點 LINE、Instagram 或 Facebook。想發 IG 限動又不想要透明背景，可以切換到上面的「限時動態 9:16」。'
-    :'在分享選單點 Instagram，再選「限時動態」就能直接發；也可以點 LINE 或 Facebook。';
+    :tk&&!story?'在分享選單點 LINE 或 Facebook。要發 IG：切到「限時動態 9:16」再分享；如果選單裡沒有 Instagram，點「儲存影像」，再到 IG 從相簿選這張。'
+    :'在分享選單點 Instagram、LINE 或 Facebook。選單裡沒有 Instagram 的話，點「儲存影像」，再到 IG 從相簿選這張。';
 }
-function qcBlob(){return new Promise(r=>$('qcCanvas').toBlob(r,'image/png'))}
-function qcName(){const b=byId(qcState.bookId);return `頁間日子-${qcState.kind==='ticket'?(qcState.tkSize==='story'?'讀完票根限動':'讀完票根'):'金句'}-${String(b?.title||'').replace(/[\\/:*?"<>|]/g,'').slice(0,24)}.png`}
+/* 透明票根一定要 PNG；其他（限動版、金句卡）沒有透明，用 JPG：檔案小、IG 也比較認得 */
+function qcIsPng(){return qcState.kind==='ticket'&&qcState.tkSize!=='story'}
+function qcType(){return qcIsPng()?'image/png':'image/jpeg'}
+function qcBlob(){return new Promise(r=>$('qcCanvas').toBlob(r,qcType(),.92))}
+function qcName(){const b=byId(qcState.bookId);return `頁間日子-${qcState.kind==='ticket'?(qcState.tkSize==='story'?'讀完票根限動':'讀完票根'):'金句'}-${String(b?.title||'').replace(/[\\/:*?"<>|]/g,'').slice(0,24)}.${qcIsPng()?'png':'jpg'}`}
 $('qcShare').onclick=async()=>{
-  const blob=await qcBlob();if(!blob)return;const file=new File([blob],qcName(),{type:'image/png'});
+  const blob=await qcBlob();if(!blob)return;const file=new File([blob],qcName(),{type:qcType()});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]})}catch(e){if(e&&e.name!=='AbortError')toast('沒辦法開啟分享，請改用「下載圖片」')}}
   else{download(blob,qcName());toast('這個瀏覽器不支援分享，已改為下載')}
 };
