@@ -470,6 +470,17 @@ button.chip:hover{border-color:var(--ink-soft);color:var(--ink)}
 @media (max-width:640px){.demo-banner{position:static}}
 .demo-link{margin-top:14px;font-size:14px;color:var(--accent);text-decoration:underline;text-underline-offset:4px}
 .is-demo #loginBanner,.is-demo #tidyBanner{display:none!important}
+.seg[hidden]{display:none}
+.seg-kind button.on{background:var(--accent);color:var(--accent-ink)}
+.qcstage.print::before{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0));z-index:2}
+.qcstage.print canvas{animation:tkPrint 1.7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes tkPrint{0%{transform:translateY(-102%)}70%{transform:translateY(2%)}100%{transform:none}}
+.tk-nudge{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 18px;border-radius:999px;background:var(--paper);border:1px solid var(--rule);box-shadow:0 18px 40px -12px var(--shadow);font-size:14px;transform:translateX(-50%);max-width:calc(100vw - 24px)}
+.tk-nudge.in{animation:nudgeIn .45s cubic-bezier(.2,.8,.2,1) both}
+@keyframes nudgeIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translateX(-50%)}}
+.tk-nudge span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-nudge[hidden]{display:none}
+@media (max-width:640px){.tk-nudge{bottom:calc(140px + env(safe-area-inset-bottom,0px));font-size:13px}}
 .goal-row{margin-top:14px;min-height:8px}
 .goal{display:inline-flex;align-items:center;gap:12px;position:relative;padding:4px 14px 4px 4px;border-radius:999px;text-align:left;color:var(--ink)}
 .goal:hover{background:var(--wall-2)}
@@ -861,16 +872,18 @@ a.btn.primary{color:var(--accent-ink)}
 </dialog>
 
 <!-- 金句卡 -->
-<dialog id="quoteBox" class="bottom" aria-label="金句卡">
+<dialog id="quoteBox" class="bottom" aria-labelledby="qcTitle">
   <div class="sheet qsheet">
-    <div class="sheet-head"><div style="flex:1"><h3>金句卡</h3><p>做成圖片，存到相簿就能發到 IG。</p></div><button type="button" class="x" id="qcClose" aria-label="關閉">×</button></div>
+    <div class="sheet-head"><div style="flex:1"><h3 id="qcTitle">金句卡</h3><p id="qcSub">做成圖片，存到相簿就能發到 IG。</p></div><button type="button" class="x" id="qcClose" aria-label="關閉">×</button></div>
     <div class="sheet-body">
       <div class="qcstage" id="qcStage"><canvas id="qcCanvas" width="1080" height="1350"></canvas></div>
-      <div class="qcopts"><div class="seg" id="qcSizes"></div><div class="seg" id="qcThemes"></div></div>
+      <div class="qcopts"><div class="seg seg-kind" id="qcKinds"></div><div class="seg" id="qcSizes"></div><div class="seg" id="qcThemes"></div></div>
       <div class="vacts"><button type="button" class="btn primary" id="qcShare">分享或存到相簿</button><button type="button" class="btn" id="qcDownload">下載圖片</button></div>
     </div>
   </div>
 </dialog>
+
+<div class="tk-nudge" id="tkNudge" hidden role="status"><span id="tkNudgeText"></span><button type="button" class="btn sm primary" id="tkNudgeGo">印一張讀完票根</button><button type="button" class="x" id="tkNudgeX" aria-label="不用了">×</button></div>
 
 <!-- 隨手抽一句 -->
 <dialog id="qDrawBox" aria-label="隨手抽一句">
@@ -1259,6 +1272,7 @@ function renderSpread(){
       ${quotesHtml(b)}
       <div class="page-actions" id="bvActions">
         <button type="button" class="btn sm primary" id="bvEdit">編輯</button>
+        <button type="button" class="btn sm" id="bvImg">做成圖片</button>
         <button type="button" class="btn sm danger" id="bvDel">刪除</button>
         ${recallMode?'<button type="button" class="btn sm" id="bvAgain">再抽一本</button>':''}
         <span style="margin-left:auto;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums">${viewCtx.length>1?`${viewIdx+1} / ${viewCtx.length}`:''}</span>
@@ -1270,6 +1284,7 @@ function renderSpread(){
   $('bvClose').onclick=()=>$('bookView').close();
   $('bvPrev').onclick=()=>turn(-1);$('bvNext').onclick=()=>turn(1);
   $('bvEdit').onclick=()=>openEditor(b,{fromView:true});
+  $('bvImg').onclick=()=>openImageCard(b.id,{kind:'ticket'});
   $('bvFav').onclick=async()=>{b.favorite=!b.favorite;await saveBook(stripRuntime(b));markDirty();await reload();renderSpread();renderIntro(false);renderStage();toast(b.favorite?`《${b.title}》放進珍藏了`:'已從珍藏移出')};
   $('bvDel').onclick=()=>{
     $('bvActions').innerHTML=`<span class="confirm-del">確定要把這本書從書房移走嗎？</span><span style="flex:1"></span><button type="button" class="btn sm" id="bvDelNo">取消</button><button type="button" class="btn sm danger solid" id="bvDelYes">確定刪除</button>`;
@@ -1604,6 +1619,7 @@ $('editForm').onsubmit=async e=>{
     const el=document.querySelector(`#stage [data-id="${CSS.escape(b.id)}"]`);
     if(el){el.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'center',inline:'center'});el.classList.add('drop');setTimeout(()=>el.classList.remove('drop'),900)}
     toast(`《${b.title}》放上 ${b.year} 年${monthLabel(b.month)}的書架了`);
+    showTicketNudge(b);
   }else toast('已儲存');
 };
 $('addBtn').onclick=()=>openEditor();$('addTab').onclick=()=>openEditor();
@@ -2188,27 +2204,48 @@ function drawQuoteCard(ctx,W,H,theme,b,q,A){
 }
 function wrapQuoteNewlines(ctx,text,maxW){return String(text).split('\n').flatMap(p=>p.trim()?vWrap(ctx,p.trim(),maxW):[''])}
 
-async function openQuoteCard(bookId,quoteId){
-  const b=byId(bookId),q=quotesOf(b).find(x=>x.id===quoteId);if(!b||!q)return;
-  qcState={...qcState,bookId,quoteId,assets:null};
-  $('qcThemes').innerHTML=QC_THEMES.map(t=>`<button type="button" data-t="${t.k}" class="${t.k===qcState.theme?'on':''}">${t.l}</button>`).join('');
+const TK_THEME_LIST=[{k:'paper',l:'紙張'},{k:'night',l:'夜晚'}];
+function openQuoteCard(bookId,quoteId){return openImageCard(bookId,{kind:'quote',quoteId})}
+async function openImageCard(bookId,opts={}){
+  const b=byId(bookId);if(!b)return;
+  const qs=quotesOf(b);let kind=opts.kind||'ticket';if(kind==='quote'&&!qs.length)kind='ticket';
+  qcState={...qcState,bookId,kind,quoteId:opts.quoteId||qs[0]?.id||null,assets:null,tkTheme:qcState.tkTheme||'paper'};
+  $('qcKinds').innerHTML=`<button type="button" data-k="ticket">讀完票根</button>`+(qs.length?`<button type="button" data-k="quote">金句卡</button>`:'');
+  $('qcKinds').querySelectorAll('button').forEach(x=>x.onclick=()=>{qcState.kind=x.dataset.k;qcControls();drawQC()});
+  qcControls();
+  const st=$('qcStage');st.classList.remove('print');
+  if(!$('quoteBox').open)$('quoteBox').showModal();st.classList.add('loading');
+  const allText=[...qs.map(q=>q.text),b.note||'',b.title,b.author||'',b.translator||'','讀完票根第本年READING TICKET ADMIT ONE READER 意猶未盡值得重讀好看普通不合胃口沒讀完'].join('');
+  qcState.assets=await qcAssets(b,{text:allText});
+  if(qcState.theme==='cover'&&!qcState.assets.tone)qcState.theme='night';
+  qcControls();st.classList.remove('loading');drawQC();
+  if(opts.print&&!reduceMotion()){void st.offsetWidth;st.classList.add('print')}
+}
+function qcControls(){
+  const k=qcState.kind;
+  $('qcTitle').textContent=k==='ticket'?'讀完票根':'金句卡';
+  $('qcSub').textContent=k==='ticket'?'替讀完的這本書蓋個章，存到相簿就能發到 IG。':'做成圖片，存到相簿就能發到 IG。';
+  $('qcKinds').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
+  $('qcKinds').hidden=$('qcKinds').children.length<2;
+  $('qcSizes').hidden=k==='ticket';
+  const list=k==='ticket'?TK_THEME_LIST:QC_THEMES.filter(t=>t.k!=='cover'||qcState.assets?.tone||!qcState.assets);
+  const cur=k==='ticket'?qcState.tkTheme:qcState.theme;
+  $('qcThemes').innerHTML=list.map(t=>`<button type="button" data-t="${t.k}" class="${t.k===cur?'on':''}">${t.l}</button>`).join('');
+  $('qcThemes').querySelectorAll('button').forEach(x=>x.onclick=()=>{if(qcState.kind==='ticket')qcState.tkTheme=x.dataset.t;else qcState.theme=x.dataset.t;qcControls();drawQC()});
   $('qcSizes').innerHTML=QC_SIZES.map(s=>`<button type="button" data-s="${s.k}" class="${s.k===qcState.size?'on':''}">${s.l}</button>`).join('');
-  $('qcThemes').querySelectorAll('button').forEach(x=>x.onclick=()=>{qcState.theme=x.dataset.t;$('qcThemes').querySelectorAll('button').forEach(y=>y.classList.toggle('on',y===x));drawQC()});
-  $('qcSizes').querySelectorAll('button').forEach(x=>x.onclick=()=>{qcState.size=x.dataset.s;$('qcSizes').querySelectorAll('button').forEach(y=>y.classList.toggle('on',y===x));drawQC()});
-  $('quoteBox').showModal();$('qcStage').classList.add('loading');
-  qcState.assets=await qcAssets(b,q);
-  const coverBtn=$('qcThemes').querySelector('[data-t="cover"]');if(coverBtn)coverBtn.hidden=!qcState.assets.tone;
-  if(qcState.theme==='cover'&&!qcState.assets.tone){qcState.theme='night';$('qcThemes').querySelectorAll('button').forEach(y=>y.classList.toggle('on',y.dataset.t==='night'))}
-  $('qcStage').classList.remove('loading');drawQC();
+  $('qcSizes').querySelectorAll('button').forEach(x=>x.onclick=()=>{qcState.size=x.dataset.s;qcControls();drawQC()});
 }
 function drawQC(){
-  const b=byId(qcState.bookId),q=quotesOf(b).find(x=>x.id===qcState.quoteId);if(!b||!q||!qcState.assets)return;
-  const S=QC_SIZES.find(s=>s.k===qcState.size),c=$('qcCanvas');c.width=S.w;c.height=S.h;
+  const b=byId(qcState.bookId);if(!b||!qcState.assets)return;
+  const c=$('qcCanvas'),ctx=c.getContext('2d');
+  if(qcState.kind==='ticket'){c.width=1080;c.height=1350;$('qcStage').style.aspectRatio='1080/1350';drawTicket(ctx,1080,1350,qcState.tkTheme,b,qcState.assets,ticketInfo(b));return}
+  const q=quotesOf(b).find(x=>x.id===qcState.quoteId)||quotesOf(b)[0];if(!q)return;
+  const S=QC_SIZES.find(s=>s.k===qcState.size);c.width=S.w;c.height=S.h;
   $('qcStage').style.aspectRatio=`${S.w}/${S.h}`;
-  drawQuoteCard(c.getContext('2d'),S.w,S.h,qcState.theme,b,q,qcState.assets);
+  drawQuoteCard(ctx,S.w,S.h,qcState.theme,b,q,qcState.assets);
 }
 function qcBlob(){return new Promise(r=>$('qcCanvas').toBlob(r,'image/png'))}
-function qcName(){const b=byId(qcState.bookId);return `頁間日子-金句-${String(b?.title||'').replace(/[\\/:*?"<>|]/g,'').slice(0,24)}.png`}
+function qcName(){const b=byId(qcState.bookId);return `頁間日子-${qcState.kind==='ticket'?'讀完票根':'金句'}-${String(b?.title||'').replace(/[\\/:*?"<>|]/g,'').slice(0,24)}.png`}
 $('qcShare').onclick=async()=>{
   const blob=await qcBlob();if(!blob)return;const file=new File([blob],qcName(),{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]})}catch(e){if(e&&e.name!=='AbortError')toast('沒辦法開啟分享，請改用「下載圖片」')}}
@@ -2352,6 +2389,110 @@ document.addEventListener('click',async e=>{
   await exitDemo({quiet:true});
   if(DEMO_GUARD[el.id])el.click();else toast('已離開示範書櫃，回到你的書房');
 },true);
+
+/* ================= 讀完票根 ================= */
+const TK_THEMES={
+  paper:{bg:'#e4e8e1',bg2:'#d6dbd2',tk:'#f8f5ec',tk2:'#efe9da',ink:'#1d2526',soft:'rgba(29,37,38,.64)',mute:'rgba(29,37,38,.42)',line:'#c9c1ad',acc:'#1f5a5e',brass:'#9a6f22',stamp:'#A94F48',word:'#1d2526'},
+  night:{bg:'#0d1112',bg2:'#151b1c',tk:'#22282a',tk2:'#1b2022',ink:'#f1e9d8',soft:'rgba(241,233,216,.72)',mute:'rgba(241,233,216,.45)',line:'#3c4547',acc:'#86c0b6',brass:'#d8ad5c',stamp:'#D17B73',word:'#f1e9d8'}
+};
+function ticketInfo(b){
+  const list=yearBooks(b.year).sort((a,c)=>monthNum(a.month)-monthNum(c.month)||sortInMonth(a,c));
+  const n=Math.max(1,list.findIndex(x=>x.id===b.id)+1);
+  const qs=quotesOf(b);
+  const line=qs.length?qs[0].text:(String(b.note||'').trim()||'');
+  return {n,total:list.length,line,isQuote:!!qs.length,page:qs[0]?.page||'',feel:normFeel(b.feel)};
+}
+function tkPath(ctx,x,y,w,h,r,tearY,notch){
+  /* 票的外形：圓角＋撕線兩側的半圓缺口 */
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,tearY-notch);ctx.arc(x+w,tearY,notch,-Math.PI/2,Math.PI/2,true);
+  ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,tearY+notch);ctx.arc(x,tearY,notch,Math.PI/2,-Math.PI/2,true);
+  ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+}
+function drawTicket(ctx,W,H,theme,b,A,info){
+  const T=TK_THEMES[theme]||TK_THEMES.paper;
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';ctx.textAlign='center';
+  /* 背景 */
+  ctx.fillStyle=T.bg;ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(W*.3,H*.15,0,W*.3,H*.15,W*1.2);g.addColorStop(0,theme==='night'?'rgba(134,192,182,.10)':'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* 票本體 */
+  const tw=Math.round(W*.70),th=Math.round(H*.86),tx=(W-tw)/2,ty=(H-th)/2,stubH=Math.round(th*.17),tearY=ty+th-stubH,notch=26,r=18;
+  ctx.save();ctx.translate(W/2,H/2);ctx.rotate(-1.2*Math.PI/180);ctx.translate(-W/2,-H/2);
+  ctx.save();ctx.shadowColor=theme==='night'?'rgba(0,0,0,.6)':'rgba(40,48,40,.22)';ctx.shadowBlur=50;ctx.shadowOffsetY=24;
+  tkPath(ctx,tx,ty,tw,th,r,tearY,notch);ctx.fillStyle=T.tk;ctx.fill();ctx.restore();
+  ctx.save();tkPath(ctx,tx,ty,tw,th,r,tearY,notch);ctx.clip();
+  /* 紙紋 */
+  const pg=ctx.createLinearGradient(0,ty,0,ty+th);pg.addColorStop(0,'rgba(255,255,255,.18)');pg.addColorStop(1,'rgba(0,0,0,.03)');ctx.fillStyle=pg;ctx.fillRect(tx,ty,tw,th);
+  ctx.fillStyle=T.tk2;ctx.fillRect(tx,tearY,tw,stubH);
+  ctx.restore();
+  /* 內框 */
+  ctx.strokeStyle=T.line;ctx.lineWidth=1.5;vRound(ctx,tx+18,ty+18,tw-36,tearY-ty-36,10);ctx.stroke();
+  const P=tx+48,R=tx+tw-48,cx=W/2;
+  /* 抬頭：LOGO＋編號 */
+  const ih=56,iw=A.icon?ih*A.icon.naturalWidth/A.icon.naturalHeight:0,word=tintCanvas(A.word,T.word),wh=40,ww=word?word.width*wh/word.height:0;
+  if(A.icon)ctx.drawImage(A.icon,P,ty+44,iw,ih);
+  if(word)ctx.drawImage(word,P+iw+12,ty+44+(ih-wh)/2+2,ww,wh);
+  ctx.textAlign='right';ctx.fillStyle=T.mute;ctx.font=`500 22px ${VF.b}`;vSpacedRight(ctx,'READING TICKET',R,ty+66,3);
+  ctx.fillStyle=T.brass;ctx.font=`italic 500 34px ${VF.n}`;ctx.fillText(`No. ${b.year}–${String(info.n).padStart(3,'0')}`,R,ty+100);
+  ctx.textAlign='center';
+  ctx.strokeStyle=T.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P,ty+128);ctx.lineTo(R,ty+128);ctx.stroke();
+  /* 封面 */
+  const cw=Math.round(tw*.36),ch=Math.round(cw*1.5),cy=ty+170;
+  vCover(ctx,b,A.cover,cx-cw/2,cy,cw,ch);
+  if(b.favorite){ctx.fillStyle=T.stamp;const rx=cx+cw/2-46,ry=cy-8;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx+26,ry);ctx.lineTo(rx+26,ry+70);ctx.lineTo(rx+13,ry+58);ctx.lineTo(rx,ry+70);ctx.closePath();ctx.fill()}
+  /* 書名、作者、日期 */
+  let y=cy+ch+78;
+  ctx.fillStyle=T.ink;ctx.font=`700 50px ${VF.d}`;
+  const tl=vWrap(ctx,b.title,R-P-20).slice(0,2);tl.forEach(l=>{ctx.fillText(l,cx,y);y+=64});
+  const by=[b.author,b.translator?b.translator+' 譯':''].filter(Boolean).join('　');
+  if(by){ctx.fillStyle=T.soft;ctx.font=`400 28px ${VF.b}`;ctx.fillText(vWrapRaw(ctx,by,R-P)[0],cx,y-6);y+=46}
+  ctx.fillStyle=T.acc;ctx.font=`400 28px ${VF.b}`;vSpaced(ctx,`${b.year} 年 ${monthLabel(b.month)}讀完`,cx,y+4,4);y+=40;
+  /* 一句話 */
+  if(info.line){
+    const maxY=tearY-(info.isQuote&&info.page?96:60);ctx.font=`400 32px ${VF.d}`;let ls=wrapQuoteNewlines(ctx,info.line,R-P-40);const lh=50,room=Math.max(1,Math.floor((maxY-y-30)/lh));
+    if(ls.length>room){ls=ls.slice(0,room);ls[room-1]=ls[room-1].replace(/.{0,2}$/,'…')}
+    let yy=y+30+((maxY-y-30)-ls.length*lh)/2+lh*.7;
+    ctx.fillStyle=T.acc;ctx.globalAlpha=.55;ctx.font=`italic 500 90px ${VF.n}`;ctx.fillText('“',cx,yy-lh*.25);ctx.globalAlpha=1;
+    yy+=36;ctx.fillStyle=T.ink;ctx.font=`400 32px ${VF.d}`;ls.forEach(l=>{ctx.fillText(l,cx,yy);yy+=lh});
+    if(info.isQuote&&info.page){ctx.fillStyle=T.mute;ctx.font=`italic 500 26px ${VF.n}`;ctx.fillText(`p. ${info.page}`,cx,yy+4)}
+  }
+  /* 撕線 */
+  ctx.save();ctx.setLineDash([12,10]);ctx.strokeStyle=T.line;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(tx+notch+10,tearY);ctx.lineTo(tx+tw-notch-10,tearY);ctx.stroke();ctx.restore();
+  /* 存根 */
+  const sy=tearY+stubH/2;
+  ctx.textAlign='left';ctx.fillStyle=T.mute;ctx.font=`500 22px ${VF.b}`;vSpacedLeft(ctx,'ADMIT ONE READER',P,sy-22,3);
+  ctx.fillStyle=T.ink;ctx.font=`700 40px ${VF.d}`;ctx.fillText(`${b.year} 年第 ${info.n} 本`,P,sy+30);
+  /* 印章：讀完的感覺（先畫在小畫布上，再做出印泥不均的斑駁感） */
+  const stampTxt=info.feel||'讀完了',sr=74,sx=R-sr+6,syy=sy+2,ss=sr*2+24;
+  const sc=document.createElement('canvas');sc.width=sc.height=ss*2;const s2=sc.getContext('2d');s2.scale(2,2);s2.translate(ss/2,ss/2);
+  s2.strokeStyle=T.stamp;s2.fillStyle=T.stamp;s2.textAlign='center';s2.textBaseline='alphabetic';
+  s2.lineWidth=4.5;s2.beginPath();s2.arc(0,0,sr,0,Math.PI*2);s2.stroke();s2.lineWidth=1.6;s2.beginPath();s2.arc(0,0,sr-10,0,Math.PI*2);s2.stroke();
+  s2.font=`500 15px ${VF.b}`;vSpaced(s2,'頁間日子',0,-34,4);
+  const fs=stampTxt.length>3?32:38;s2.font=`700 ${fs}px ${VF.d}`;s2.fillText(stampTxt,0,fs*.36);
+  s2.font=`italic 500 20px ${VF.n}`;s2.fillText(`${b.year}.${String(monthNum(b.month)||'').padStart(2,'0')}`,0,46);
+  const rnd=tkRand(String(b.id)+stampTxt);s2.globalCompositeOperation='destination-out';
+  for(let k=0;k<260;k++){const a=rnd()*Math.PI*2,d=Math.sqrt(rnd())*(sr+6),r2=rnd()<.85?.6+rnd()*1.6:2+rnd()*3.5;s2.globalAlpha=.25+rnd()*.65;s2.beginPath();s2.arc(Math.cos(a)*d,Math.sin(a)*d,r2,0,Math.PI*2);s2.fill()}
+  const fa=rnd()*Math.PI*2;s2.globalAlpha=.35;const fg=s2.createLinearGradient(Math.cos(fa)*sr,Math.sin(fa)*sr,-Math.cos(fa)*sr,-Math.sin(fa)*sr);fg.addColorStop(0,'rgba(0,0,0,.9)');fg.addColorStop(.45,'rgba(0,0,0,0)');s2.fillStyle=fg;s2.fillRect(-ss/2,-ss/2,ss,ss);
+  ctx.save();ctx.translate(sx,syy);ctx.rotate(-12*Math.PI/180);ctx.globalAlpha=.92;ctx.drawImage(sc,-ss/2,-ss/2,ss,ss);ctx.restore();
+  ctx.restore();
+  ctx.textAlign='center';
+}
+function vSpacedLeft(ctx,text,x,y,sp){const al=ctx.textAlign;ctx.textAlign='left';[...text].forEach(c=>{ctx.fillText(c,x,y);x+=ctx.measureText(c).width+sp});ctx.textAlign=al}
+function vSpacedRight(ctx,text,x,y,sp){const ch=[...text];const w=ch.reduce((a,c)=>a+ctx.measureText(c).width,0)+sp*(ch.length-1);vSpacedLeft(ctx,text,x-w,y,sp)}
+function tkRand(seed){let h=1779033703^seed.length;for(const c of seed){h=Math.imul(h^c.charCodeAt(0),3432918353);h=h<<13|h>>>19}return()=>{h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return((h^=h>>>16)>>>0)/4294967296}}
+let tkNudgeTimer=null;
+function showTicketNudge(b){
+  const el=$('tkNudge');if(!el)return;clearTimeout(tkNudgeTimer);
+  const info=ticketInfo(b);
+  $('tkNudgeText').textContent=`這是你 ${b.year} 年讀完的第 ${info.n} 本`;
+  el.hidden=false;el.classList.remove('in');void el.offsetWidth;el.classList.add('in');
+  $('tkNudgeGo').onclick=()=>{el.hidden=true;openImageCard(b.id,{kind:'ticket',print:true})};
+  tkNudgeTimer=setTimeout(()=>{el.hidden=true},9000);
+}
+$('tkNudgeX').onclick=()=>{$('tkNudge').hidden=true;clearTimeout(tkNudgeTimer)};
 
 /* ================= 回顧影片（IG 9:16） ================= */
 const VW=1080, VH=1920, VFPS=30;
