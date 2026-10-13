@@ -81,12 +81,12 @@ img{max-width:100%}
 kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border-radius:4px;padding:0 5px;color:var(--ink-soft)}
 
 /* 選單 */
-.menu{position:absolute;right:max(16px,calc((100vw - 1240px)/2));top:calc(100% + 6px);width:280px;background:var(--paper);border:1px solid var(--rule);border-radius:14px;box-shadow:0 18px 40px var(--shadow);padding:6px;z-index:30}
-.menu button{display:flex;width:100%;text-align:left;padding:10px 12px;border-radius:9px;gap:10px;align-items:baseline}
+.menu{position:absolute;right:max(16px,calc((100vw - 1240px)/2));top:calc(100% + 6px);width:min(300px,calc(100vw - 24px));background:var(--paper);border:1px solid var(--rule);border-radius:14px;box-shadow:0 18px 40px var(--shadow);padding:6px;z-index:30}
+.menu button{display:flex;white-space:nowrap;width:100%;text-align:left;padding:10px 12px;border-radius:9px;gap:10px;align-items:baseline}
 .menu button:hover{background:var(--wall)}
-.menu button span{font-size:12px;color:var(--ink-soft);margin-left:auto}
+.menu button span{font-size:12px;color:var(--ink-soft);margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;text-align:right}
 .menu hr{border:0;border-top:1px solid var(--rule);margin:6px 4px}
-.menu .backup-note{font-size:12px;color:var(--ink-soft);padding:6px 12px 8px;line-height:1.5}
+.menu .backup-note{font-size:12px;color:var(--ink-soft);padding:6px 12px 8px;line-height:1.5;text-wrap:balance}
 .menu .backup-note.warn{color:var(--ribbon)}
 
 .wrap{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding-inline:16px;padding-block:0 120px}
@@ -2343,7 +2343,7 @@ $('editor').addEventListener('cancel',()=>stopBatch());
 
 /* ================= 選單、備份提醒 ================= */
 function closeMenu(){$('menu').hidden=true;$('menuBtn').setAttribute('aria-expanded','false')}
-$('menuBtn').onclick=e=>{e.stopPropagation();const m=$('menu');m.hidden=!m.hidden;$('menuBtn').setAttribute('aria-expanded',String(!m.hidden));updateBackupUI()};
+$('menuBtn').onclick=e=>{e.stopPropagation();const m=$('menu');m.hidden=!m.hidden;$('menuBtn').setAttribute('aria-expanded',String(!m.hidden));updateBackupUI();if(typeof albMenuLabel==='function')albMenuLabel()};
 document.addEventListener('click',e=>{if(!$('menu').hidden&&!$('menu').contains(e.target))closeMenu()});
 function updateBackupUI(){
   const last=Number(ls.get('shelf-last-export'))||0, dirty=Number(ls.get('shelf-dirty'))||0;
@@ -2352,7 +2352,7 @@ function updateBackupUI(){
   const warn=!synced&&dirty>0&&(!last||days>=30);
   const note=$('backupNote');
   note.textContent=last?`上次匯出備份：${new Date(last).toLocaleDateString('zh-TW')}（${days?days+' 天前':'今天'}）${dirty?`，之後改了 ${dirty} 次`:''}`:`還沒有匯出過備份。書房的資料只存在這個瀏覽器裡。`;
-  if(synced)note.textContent=`已同步到${syncCfg().type==='google'?' Google 雲端硬碟':' GitHub'}（${new Date(Number(ls.get('sync-last'))).toLocaleString('zh-TW',{hour12:false})}）。匯出備份可以再多留一份。`;
+  if(synced)note.textContent=`已同步到${syncCfg().type==='google'?' Google 雲端硬碟':' GitHub'}（${new Date(Number(ls.get('sync-last'))).toLocaleString('zh-TW',{hour12:false})}）`;
   note.className='backup-note'+(warn?' warn':'');
   $('backupDot').hidden=!warn;
   const miss=yearBooks().filter(b=>!b.cover).length;$('mBatchCount').textContent=miss?`${miss} 本沒封面`:'都有封面';
@@ -3841,7 +3841,7 @@ albEl('albSim').onclick=()=>{
 function albCelebrateIn(i){albRender(true);albBusy=false}
 $('mAlbum').onclick=()=>{closeMenu();albYear=null;albOpenDialog()};
 function albLatestYear(){const ys=albYears();return ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1]}
-function albMenuLabel(){const y=albLatestYear(),o=albOwned(albYearCount(y)+(demoMode?albDemoExtra:0));const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`${y} 年　已收藏 ${o}／${ALB_STAMPS.length} 枚郵票`}
+function albMenuLabel(){const y=albLatestYear(),o=albOwned(albYearCount(y)+(demoMode?albDemoExtra:0));const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`${y} 年・${o}／${ALB_STAMPS.length} 枚`}
 albMenuLabel();
 
 /* ---- 讀完一本書：剛好湊滿 4 本時，蓋章慶祝 ---- */
@@ -3887,6 +3887,7 @@ albEl('albYPrev').onclick=()=>albSwitchYear(-1);albEl('albYNext').onclick=()=>al
 
 /* ---- 書架頁上的郵票進度：讓人每天看到「再一本就有新郵票」 ---- */
 function renderStampRow(){
+  albMenuLabel();
   const el=$('stampRow');if(!el)return;
   const y=Number(currentYear);
   if(!y||y<ALB_FIRST||view==='pile'){el.hidden=true;return}
