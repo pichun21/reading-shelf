@@ -1131,8 +1131,8 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 @media (max-width:640px){.pst .pic{height:13px;width:15px}.pstat .ps-l .pic{height:22px;width:26px}}
 :root[data-theme="dark"] .pic,:root[data-theme="dark"] .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pic,:root:not([data-theme="light"]) .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}}
-/* 翻開／闔上的過程中先把內頁的字和進度條藏起來，避免 Safari 把它們畫到封面前面（會看到一條線） */
-.alb-stage.moving .alb-page>*{visibility:hidden}
+/* 翻開／闔上的過程中只先藏起進度條（它在 Safari 會被畫到封面前面，變成一條線），其餘內頁照常看得到 */
+.alb-stage.moving .alb-prog .track{visibility:hidden}
 .alb-cover{transform:translateZ(2px)}
 .alb-stage[data-state="open"] .alb-cover{transform:rotateY(-171deg) translateZ(2px)}
 .alb-prog .bar{transition:none}
@@ -3497,10 +3497,19 @@ const albClear=()=>{albT.forEach(clearTimeout);albT=[]};
 
 /* ---- 音效：用 WebAudio 現場合成（翻開的布面聲、翻頁沙沙、蓋章的悶響） ---- */
 var albAC=null;
+/* iPad／iPhone 的 Safari：音效一定要在手指碰到畫面的當下「解鎖」，之後由計時器播的聲音才出得來 */
+function albUnlock(){
+  try{
+    albAC=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();
+    const ac=albAC;if(ac.state!=='running')ac.resume();
+    const s=ac.createBufferSource();s.buffer=ac.createBuffer(1,1,22050);s.connect(ac.destination);s.start(0);
+  }catch(_){}
+}
+document.addEventListener('pointerdown',albUnlock,{passive:true});document.addEventListener('touchend',albUnlock,{passive:true});document.addEventListener('click',albUnlock,{passive:true});
 function albSound(kind){
   if(albMuted)return;
   try{
-    albAC=albAC||tkAC||new (window.AudioContext||window.webkitAudioContext)();const ac=albAC;if(ac.state==='suspended')ac.resume();
+    albAC=albAC||tkAC||new (window.AudioContext||window.webkitAudioContext)();const ac=albAC;if(ac.state!=='running'){try{ac.resume()}catch(_){}}
     const out=ac.createGain();out.gain.value=.75;out.connect(ac.destination);const t0=ac.currentTime+.01,sr=ac.sampleRate;
     const noise=(sec,fn)=>{const len=Math.ceil(sr*sec),buf=ac.createBuffer(1,len,sr),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*fn(i/len);return buf};
     const play=(buf,at,type,f0,f1,q,gain)=>{const s=ac.createBufferSource();s.buffer=buf;const f=ac.createBiquadFilter();f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,at);if(f1)f.frequency.exponentialRampToValueAtTime(f1,at+buf.duration);const g=ac.createGain();g.gain.value=gain;s.connect(f).connect(g).connect(out);s.start(at)};
@@ -3517,8 +3526,8 @@ function albSound(kind){
       play(noise(.32,p=>Math.sin(Math.min(1,p*1.25)*Math.PI*.9)*.8),t0,'bandpass',3400,1500,.7,.42);
       play(noise(.05,p=>1-p),t0+.27,'highpass',2200,0,.6,.12);
     }else if(kind==='stamp'){                            /* 郵票貼上去：紙張的聲音——輕輕一壓，再一點紙面摩擦 */
-      play(noise(.07,p=>Math.pow(1-p,1.8)),t0,'bandpass',2600,1800,.8,.32);
-      play(noise(.16,p=>Math.sin(p*Math.PI)*Math.pow(1-p,.6)*.8),t0+.015,'bandpass',4200,2400,.6,.22);
+      play(noise(.07,p=>Math.pow(1-p,1.8)),t0,'bandpass',2600,1800,.8,.5);
+      play(noise(.16,p=>Math.sin(p*Math.PI)*Math.pow(1-p,.6)*.8),t0+.015,'bandpass',4200,2400,.6,.4);
       play(noise(.03,p=>1-p),t0+.06,'highpass',3000,0,.7,.16);
       thump(t0+.01,140,95,.07,.07);
     }else if(kind==='chime'){                            /* 新郵票解鎖：兩個輕輕的鈴聲 */
