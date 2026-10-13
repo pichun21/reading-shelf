@@ -24,6 +24,7 @@
   --wall:#e4e8e1; --wall-2:#d6dbd2; --paper:#f7f6f1; --paper-2:#eeede6;
   --ink:#1d2526; --ink-soft:#59645f; --rule:#c5cbc1;
   --wood-hi:#d9b68a; --wood:#b48a5c; --wood-lo:#7e5a37;
+  --dim:rgba(0,0,0,0); --back:rgba(70,42,20,.60); --case-glow:rgba(255,224,165,.20);
   --accent:#1f5a5e; --accent-ink:#ffffff; --brass:#9a6f22; --ribbon:#b8233c;
   --glow:rgba(255,226,170,0); --veil:rgba(20,26,26,.42); --shadow:rgba(32,38,32,.20);
   --f-display:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
@@ -39,6 +40,7 @@
     --wall:#141819; --wall-2:#1b2022; --paper:#22282a; --paper-2:#1b2022;
     --ink:#ece4d4; --ink-soft:#a59e90; --rule:#343c3e;
     --wood-hi:#6e4c31; --wood:#4f3420; --wood-lo:#2a1a0f;
+    --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,190,110,.10);
     --accent:#86c0b6; --accent-ink:#0f1a1a; --brass:#d8ad5c; --ribbon:#e05a6f;
     --glow:rgba(255,196,120,.17); --veil:rgba(4,6,7,.66); --shadow:rgba(0,0,0,.55);
     color-scheme:dark;
@@ -48,6 +50,7 @@
   --wall:#141819; --wall-2:#1b2022; --paper:#22282a; --paper-2:#1b2022;
   --ink:#ece4d4; --ink-soft:#a59e90; --rule:#343c3e;
   --wood-hi:#6e4c31; --wood:#4f3420; --wood-lo:#2a1a0f;
+  --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,190,110,.10);
   --accent:#86c0b6; --accent-ink:#0f1a1a; --brass:#d8ad5c; --ribbon:#e05a6f;
   --glow:rgba(255,196,120,.17); --veil:rgba(4,6,7,.66); --shadow:rgba(0,0,0,.55);
   color-scheme:dark;
@@ -124,12 +127,32 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 .views .draw svg{width:17px;height:17px}
 
 /* 書架：一座連續的書櫃，書照月份由左到右排，換行就是下一層木板 */
-.bookcase{--row:200px;position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:7px;padding:0 20px;border:12px solid var(--wood);border-bottom-width:0;border-radius:6px 6px 0 0;box-shadow:inset 0 0 0 1px var(--wood-lo),0 24px 40px -24px var(--shadow);
-  background:linear-gradient(to bottom,rgba(0,0,0,.13) 0,transparent 26px,transparent calc(100% - 16px),var(--wood-hi) calc(100% - 16px),var(--wood-hi) calc(100% - 13px),var(--wood) calc(100% - 13px),var(--wood) calc(100% - 3px),var(--wood-lo) calc(100% - 3px)) 0 0/100% var(--row) repeat-y,var(--wall-2);margin-inline:-4px}
-.slot{height:var(--row);display:flex;align-items:flex-end;padding-bottom:16px;flex:none}
-.divider{height:var(--row);display:flex;align-items:flex-end;padding-bottom:16px;margin-left:16px;flex:none;scroll-margin-top:110px}
+.bookcase{--row:203px;--fw:14px;position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:7px;padding:0 22px;border:var(--fw) solid var(--wood);border-bottom-width:0;border-radius:3px 3px 0 0;margin:0 -4px 16px;
+  box-shadow:inset 18px 0 20px -14px rgba(0,0,0,.55),inset -18px 0 20px -14px rgba(0,0,0,.55),inset 0 0 0 1px rgba(30,16,6,.55),0 0 0 1px rgba(60,35,15,.4),0 30px 40px -24px var(--shadow);
+  background-color:var(--wood);
+  background-image:
+    linear-gradient(to bottom,rgba(0,0,0,.45) 0,rgba(0,0,0,.18) 20px,rgba(0,0,0,0) 58px,rgba(0,0,0,0) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 18px),rgba(255,236,196,.26) calc(100% - 18px),rgba(255,236,196,.12) calc(100% - 15px),rgba(255,255,255,.06) calc(100% - 14px),rgba(0,0,0,.10) calc(100% - 4px),rgba(0,0,0,.5) calc(100% - 2px),rgba(0,0,0,.62) 100%),
+    radial-gradient(ellipse 75% 60% at 50% 16%,var(--case-glow),transparent 75%),
+    linear-gradient(var(--dim),var(--dim)),
+    linear-gradient(to bottom,var(--back) calc(100% - 19px),transparent calc(100% - 19px)),
+    url(stamps/wood-h.webp),
+    linear-gradient(90deg,rgba(255,236,200,.30) 0,transparent 2px,transparent calc(100% - 3px),rgba(0,0,0,.3) 100%),
+    linear-gradient(var(--dim),var(--dim)),
+    url(stamps/wood-v.webp);
+  background-size:100% var(--row),100% var(--row),100% 100%,100% var(--row),1024px calc(var(--row)*3),100% 100%,100% 100%,64px 900px;
+  background-repeat:repeat-y,repeat-y,no-repeat,repeat-y,repeat,no-repeat,no-repeat,repeat;
+  background-position:0 0;
+  background-origin:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box;
+  background-clip:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box}
+/* 頂樑（橫向木紋，略微外凸）與底座 */
+.bookcase:before,.bookcase:after{content:"";position:absolute;pointer-events:none;background:linear-gradient(to bottom,rgba(255,240,205,.5) 0,rgba(255,240,205,.12) 2px,transparent 4px,transparent calc(100% - 4px),rgba(0,0,0,.4) 100%),linear-gradient(var(--dim),var(--dim)),url(stamps/wood-h.webp) 0 0/900px 300px,var(--wood)}
+.bookcase:before{left:calc(var(--fw)*-1 - 3px);right:calc(var(--fw)*-1 - 3px);top:calc(var(--fw)*-1 - 5px);height:calc(var(--fw) + 5px);border-radius:4px 4px 0 0;box-shadow:0 3px 5px -1px rgba(0,0,0,.4),0 0 0 1px rgba(60,35,15,.35)}
+.bookcase:after{left:calc(var(--fw)*-1 + 2px);right:calc(var(--fw)*-1 + 2px);bottom:-13px;height:13px;border-radius:0 0 3px 3px;background-position:0 0,0 0,300px 120px,0 0;box-shadow:0 8px 12px -4px rgba(0,0,0,.4),inset 0 2px 3px rgba(0,0,0,.45)}
+.slot{position:relative;height:var(--row);display:flex;align-items:flex-end;padding-bottom:19px;flex:none}
+.slot:before,.divider:before{content:"";position:absolute;left:1px;right:-5px;bottom:15px;height:8px;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);pointer-events:none}
+.divider{position:relative;height:var(--row);display:flex;align-items:flex-end;padding-bottom:19px;margin-left:16px;flex:none;scroll-margin-top:110px}
 .divider:first-child{margin-left:0}
-.divider button{width:44px;height:118px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0 8px;background:var(--paper);border-top:5px solid var(--brass);border-radius:3px;box-shadow:3px 4px 10px -3px var(--shadow);transform:rotate(-3deg);transform-origin:bottom left;transition:transform .25s}
+.divider button{width:44px;height:118px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0 8px;background:var(--paper);border-top:5px solid var(--brass);border-radius:3px;box-shadow:1px 0 0 var(--paper-2),2px 1px 0 var(--rule),5px 6px 9px -3px rgba(0,0,0,.5);transform:rotate(-3deg);transform-origin:bottom left;transition:transform .25s}
 .divider button:hover{transform:rotate(0)}
 .divider .dm{font-family:var(--f-num);font-weight:600;font-size:28px;line-height:1;font-variant-numeric:lining-nums;display:flex;flex-direction:column;align-items:center;gap:3px}
 .divider .dm small{font-family:var(--f-display);font-size:13px;font-weight:700}
@@ -138,12 +161,13 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 .book{position:relative;flex:none;display:block;transform-origin:bottom center;transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .2s}
 .book:hover,.book:focus-visible{transform:translateY(-12px) rotate(-1.5deg)}
 .book.pulled{transform:translateY(-26px) scale(1.04)}
-.book .face{display:block;width:100px;height:150px;border-radius:2px 5px 5px 2px;overflow:hidden;background:var(--paper-2);box-shadow:2px 3px 0 rgba(0,0,0,.08),6px 8px 14px -4px var(--shadow);position:relative}
+.book .face{display:block;width:100px;height:150px;border-radius:2px 5px 5px 2px;overflow:hidden;background:var(--paper-2);box-shadow:1px 0 0 rgba(0,0,0,.28),3px 4px 5px -1px rgba(0,0,0,.28),10px 8px 16px -6px rgba(0,0,0,.42);position:relative}
+.book .face:before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.28) 0,transparent 2px),linear-gradient(270deg,rgba(0,0,0,.22) 0,rgba(255,255,255,.2) 1px,rgba(255,250,235,.16) 3px,transparent 4px)}
 .book .face:after{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:linear-gradient(90deg,rgba(0,0,0,.20),rgba(255,255,255,.10) 60%,transparent)}
 .book .face img,.cover img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center;user-select:none;-webkit-user-drag:none}
 .spine{display:flex;align-items:flex-start;justify-content:center;flex-direction:row;border-radius:2px 3px 3px 2px;padding:14px 0 10px;color:#f5ecda;background:
   linear-gradient(180deg,transparent 7px,rgba(255,226,160,.55) 7px 8px,transparent 8px 11px,rgba(255,226,160,.55) 11px 12px,transparent 12px calc(100% - 12px),rgba(255,226,160,.55) calc(100% - 12px) calc(100% - 11px),transparent calc(100% - 11px)),
-  linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 40%,rgba(0,0,0,.12)),hsl(var(--h) 30% 36%);box-shadow:4px 6px 12px -4px var(--shadow)}
+  linear-gradient(90deg,rgba(0,0,0,.18),rgba(255,255,255,.08) 40%,rgba(0,0,0,.12)),hsl(var(--h) 30% 36%);box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.16),2px 3px 4px -1px rgba(0,0,0,.3),9px 7px 14px -6px rgba(0,0,0,.42)}
 .spine span{writing-mode:vertical-rl;text-orientation:upright;font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.06em;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;height:calc(100% - 26px);margin-top:4px;flex:none}
 .book .spine{width:var(--sw);height:var(--sh)}
 .ribbon{position:absolute;right:16px;bottom:-15px;width:9px;height:30px;background:var(--ribbon);clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);box-shadow:none;z-index:3;transform-origin:top center;animation:sway 5s ease-in-out infinite}
@@ -151,7 +175,7 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 @keyframes sway{0%,100%{transform:rotate(0)}50%{transform:rotate(4deg)}}
 .book.drop{animation:drop .7s cubic-bezier(.3,1.4,.5,1) both}
 @keyframes drop{from{transform:translateY(-90px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
-.book.flash .face,.book.flash .spine{box-shadow:0 0 0 3px var(--brass),6px 8px 14px -4px var(--shadow)}
+.book.flash .face,.book.flash .spine{box-shadow:0 0 0 3px var(--brass),6px 8px 14px -4px rgba(0,0,0,.4)}
 
 /* 生成的封面（沒有封面圖時） */
 .gen{width:100%;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:12% 11%;background:radial-gradient(120% 80% at 30% 10%,rgba(255,255,255,.10),transparent 60%),hsl(var(--h) 30% 34%);color:#f6eedc;text-align:left}
@@ -675,7 +699,7 @@ a.btn.primary{color:var(--accent-ink)}
   .tabbar .add{color:var(--accent-ink)}
   .tabbar .add span.c{width:44px;height:30px;border-radius:999px;background:var(--accent);display:flex;align-items:center;justify-content:center}
   .tabbar .add{color:var(--accent)}
-  .bookcase{--row:156px;padding:0 10px;border-width:8px;column-gap:5px;margin-inline:-8px}
+  .bookcase{--row:159px;--fw:9px;padding:0 10px;column-gap:5px;margin-inline:-8px}
   .divider{margin-left:10px}
   .divider button{width:34px;height:92px;padding:7px 0 5px}
   .divider .dm{font-size:22px}.divider .dc{font-size:14px}
@@ -1137,6 +1161,23 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 .alb-stage[data-state="open"] .alb-cover{transform:rotateY(-171deg) translateZ(2px)}
 .alb-prog .bar{transition:none}
 .pe-illu{width:min(150px,40vw)}
+/* ---- 最後一枚（壓軸）郵票 ---- */
+.stamp.final .s-img{position:relative}
+.stamp.final:not(.locked) .s-img::after{content:"";position:absolute;inset:-3px;border-radius:3px;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,236,170,.75) 50%,transparent 65%);background-size:260% 100%;mix-blend-mode:screen;animation:albFoil 3.6s ease-in-out infinite}
+.stamp.final:not(.locked) img{filter:drop-shadow(0 0 6px rgba(214,170,70,.7)) drop-shadow(0 3px 3px #0003)}
+.stamp.final:not(.locked) .stamp-name{color:#8a5f14;font-weight:700}
+@keyframes albFoil{0%{background-position:130% 0}60%,100%{background-position:-30% 0}}
+.stamp.locked.final .mystery{border:1.5px dashed #c49a3c;background:linear-gradient(135deg,#f6e9bf55,#e6c97a33);color:#a57a1d}
+.stamp.locked.final .stamp-name{color:#a57a1d;font-weight:700}
+.albw.final .albw-kick{color:#f5d98a;letter-spacing:.3em}.albw.final .albw-stage img{filter:drop-shadow(0 0 22px rgba(255,214,120,.8))}
+@media (prefers-reduced-motion:reduce){.stamp.final:not(.locked) .s-img::after{animation:none;opacity:0}}
+/* ---- 分享進度 ---- */
+.as-sheet{max-width:520px}
+.as-fmt{display:flex;gap:6px;margin:0 0 12px}.as-fmt button{flex:1;height:38px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}.as-fmt button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.as-prev{display:flex;justify-content:center;background:var(--wall);border-radius:12px;padding:12px}.as-prev img{max-width:100%;max-height:52vh;border-radius:6px;box-shadow:0 8px 24px -8px var(--shadow)}
+.as-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.as-btns .btn{flex:1;min-width:140px}
+.albw-btn{flex-wrap:wrap}
+.alb-replay{text-align:center;margin:0}.alb-rp{border:0;background:none;color:var(--alb-soft);font:inherit;font-size:12.5px;padding:4px 10px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}.alb-rp[hidden]{display:none}
 </style>
 
 </head>
@@ -1402,6 +1443,19 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 </dialog>
 
 
+<!-- 分享郵票進度 -->
+<dialog id="albShare" class="bottom" aria-labelledby="asTitle">
+  <div class="sheet as-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="asTitle">分享我的閱讀進度</h3><p>一張圖，讓朋友知道你今年讀了幾本書。圖上不會出現書名。</p></div><button type="button" class="x" id="asClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <div class="as-fmt" role="tablist" aria-label="圖片尺寸"><button type="button" role="tab" data-asf="post" class="on">貼文 4:5</button><button type="button" role="tab" data-asf="story">限時動態 9:16</button></div>
+      <div class="as-prev"><img id="asImg" alt="分享圖片預覽"></div>
+      <div class="as-btns"><button type="button" class="btn primary" id="asShare">分享或存到相簿</button><button type="button" class="btn" id="asDl">下載圖片</button></div>
+      <p class="fn-note" id="asHint"></p>
+    </div>
+  </div>
+</dialog>
+
 <!-- 字體 -->
 <dialog id="fontBox" class="bottom" aria-labelledby="fnTitle">
   <div class="sheet font-sheet">
@@ -1446,6 +1500,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
           <div class="alb-prog" aria-live="polite"><p class="alb-ytitle"><button type="button" class="alb-yb" id="albYPrev" aria-label="前一年" hidden>‹</button><span id="albTotal"></span><button type="button" class="alb-yb" id="albYNext" aria-label="下一年" hidden>›</button></p><p class="small" id="albNext"></p><div class="track" id="albProg" role="progressbar" aria-label="下一枚郵票進度" aria-valuemin="0" aria-valuemax="100"><div class="bar" id="albBar"></div></div></div>
           <div class="alb-leaf" id="albLeaf"><div class="alb-grid" id="albGrid"></div></div>
           <p class="alb-note" id="albNote"></p>
+          <div class="alb-replay"><button type="button" class="alb-rp" id="albReplay">↻ 重播這一頁的蓋章</button></div>
           <div class="alb-ctl"><button type="button" class="btn sm" id="albPrev">← 上一頁</button><span class="small" id="albPageNo"></span><button type="button" class="btn sm" id="albNextPg">下一頁 →</button></div>
           <div class="alb-demo" id="albDemo" hidden><span class="small">示範書櫃：想看看蓋章的感覺？</span><button type="button" class="btn sm primary" id="albSim">模擬讀完一本 ＋</button></div>
         </section>
@@ -1462,10 +1517,10 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 <dialog id="albDetail" class="albd" aria-label="郵票放大欣賞"></dialog>
 <dialog id="albWin" class="albw" aria-label="收到一枚新郵票">
   <div class="albw-card">
-    <p class="albw-kick">收到新郵票</p>
+    <p class="albw-kick" id="albwKick">收到新郵票</p>
     <div class="albw-stage"><span class="albw-spark" id="albwSpark" aria-hidden="true"></span><img id="albwImg" alt="" draggable="false"></div>
     <h3 id="albwName"></h3><p id="albwSub"></p>
-    <div class="albw-btn"><button type="button" class="btn primary" id="albwOpen">翻開集郵冊</button><button type="button" class="btn" id="albwClose">繼續</button></div>
+    <div class="albw-btn"><button type="button" class="btn primary" id="albwOpen">翻開集郵冊</button><button type="button" class="btn" id="albwShare">分享</button><button type="button" class="btn" id="albwClose">繼續</button></div>
   </div>
 </dialog>
 <div class="alb-hint" id="albHint" hidden><button type="button" id="albHintGo"><img src="stamps/logo.webp" alt="" width="28" height="28"><span class="albh-t"><b></b><span></span></span></button><button type="button" id="albHintX" aria-label="關閉提示">×</button></div>
@@ -3473,7 +3528,7 @@ const ALB_STAMPS=[
 const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER);
 const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —'];
 const albImg=s=>`stamps/${s.f}.webp`;
-var albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
+var albForce=false,albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
 /* 集郵冊是「年度」的：每一年各有一本，只算那一年讀完的書。從 2026 年開始。 */
 const ALB_FIRST=2026;
 var albYear=null;
@@ -3542,14 +3597,15 @@ function albSound(kind){
 const albEl=id=>$(id);
 function albStampHTML(s,i,count,opts={}){
   const owned=s.n<=count;
-  if(!owned)return `<button type="button" class="stamp locked" data-i="${i}" aria-label="神祕郵票，累積讀完 ${s.n} 本解鎖"><span class="mystery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span class="stamp-name">神祕郵票</span><span class="small">累積讀完 ${s.n} 本</span></button>`;
+  const fin=i===ALB_STAMPS.length-1;
+  if(!owned)return `<button type="button" class="stamp locked${fin?' final':''}" data-i="${i}" aria-label="${fin?'壓軸郵票':'神祕郵票'}，累積讀完 ${s.n} 本解鎖"><span class="mystery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span class="stamp-name">${fin?'壓軸郵票':'神祕郵票'}</span><span class="small">累積讀完 ${s.n} 本</span></button>`;
   const land=opts.land!=null;
-  return `<button type="button" class="stamp${land?' land':''}" data-i="${i}"${land?` style="--d:${opts.land}ms"`:''} aria-label="${s.name}，已收藏"><span class="s-img"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"><i class="ring" aria-hidden="true"></i></span><span class="stamp-name">${s.name}</span><span class="postmark">${land?'<em>':''}已收藏 · ${albDate(s.n)}${land?'</em>':''}</span></button>`;
+  return `<button type="button" class="stamp${land?' land':''}${fin?' final':''}" data-i="${i}"${land?` style="--d:${opts.land}ms"`:''} aria-label="${s.name}，已收藏"><span class="s-img"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"><i class="ring" aria-hidden="true"></i></span><span class="stamp-name">${s.name}</span><span class="postmark">${land?'<em>':''}已收藏 · ${albDate(s.n)}${land?'</em>':''}</span></button>`;
 }
 function albGridHTML(page,count,animate){
   const seen=albSeen();let k=0;
   return ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).map((s,j)=>{
-    const i=page*ALB_PER+j,fresh=animate&&s.n<=count&&!seen.has(i);
+    const i=page*ALB_PER+j,fresh=animate&&s.n<=count&&(albForce||!seen.has(i));
     return albStampHTML(s,i,count,fresh?{land:260+(k++)*420}:{});
   }).join('')+Array.from({length:Math.max(0,ALB_PER-ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).length)},()=>'<div class="stamp filler" aria-hidden="true"><span class="mystery ghost"></span><span class="stamp-name">&nbsp;</span><span class="small">&nbsp;</span></div>').join('');
 }
@@ -3563,6 +3619,7 @@ function albRender(animate){
   albEl('albPageNo').textContent=`${albPage+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[albPage]||'';
   albEl('albPrev').disabled=albPage===0;albEl('albNextPg').disabled=albPage===ALB_PAGES-1;
   albEl('albGrid').innerHTML=albGridHTML(albPage,count,animate);
+  albEl('albReplay').hidden=!ALB_STAMPS.slice(albPage*ALB_PER,albPage*ALB_PER+ALB_PER).some(s=>s.n<=count);
   if(animate)albPlayLands();
 }
 /* 新郵票逐枚「蓋」上去：每一枚落下時各配一聲 */
@@ -3570,7 +3627,7 @@ function albPlayLands(){
   const seen=albSeen();
   albEl('albGrid').querySelectorAll('.stamp.land').forEach(el=>{
     const i=Number(el.dataset.i),d=parseFloat(el.style.getPropertyValue('--d'))||0;
-    if(seen.has(i))return;albMarkSeen(i);
+    if(seen.has(i)&&!albForce)return;albMarkSeen(i);
     albLater(()=>albSound('stamp'),reduceMotion()?0:d+300);
   });
 }
@@ -3608,11 +3665,13 @@ function albTurn(dir){
 var albChosen=null;
 function albDetail(i){
   const s=ALB_STAMPS[i],count=albCount(),owned=s.n<=count,d=albEl('albDetail');albChosen=s;
-  d.innerHTML=`<div class="albd-card"><p class="albd-t">${owned?s.name:'神祕郵票'} · ${s.n} 本紀念</p>${owned?`<div class="albd-art" id="albdArt"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"></div>`:'<div class="mystery big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'}<p class="small">${owned?'收藏日期：'+albDate(s.n)+'（讀完第 '+s.n+' 本）':'再讀 '+(s.n-count)+' 本就能收藏，進度跨年保留。'}</p><div class="albd-act">${owned?'<button type="button" class="btn primary" id="albdDl">下載郵票 PNG</button>':''}<button type="button" class="btn" id="albdX">收起</button></div></div>`;
+  d.innerHTML=`<div class="albd-card"><p class="albd-t">${owned?s.name:'神祕郵票'} · ${s.n} 本紀念</p>${owned?`<div class="albd-art" id="albdArt"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"></div>`:'<div class="mystery big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'}<p class="small">${owned?'收藏日期：'+albDate(s.n)+'（讀完第 '+s.n+' 本）':'再讀 '+(s.n-count)+' 本就能收藏，進度跨年保留。'}</p><div class="albd-act">${owned?'<button type="button" class="btn primary" id="albdShare">分享我的進度</button><button type="button" class="btn" id="albdReplay">重看收到郵票</button><button type="button" class="btn" id="albdDl">下載郵票 PNG</button>':''}<button type="button" class="btn" id="albdX">收起</button></div></div>`;
   if(!d.open)d.showModal();
   albEl('albdX').onclick=()=>d.close();
   if(owned){
     albEl('albdDl').onclick=()=>albDownload(s);
+    albEl('albdShare').onclick=()=>albShareOpen(i);
+    albEl('albdReplay').onclick=()=>{d.close();albCelebrate(i,null,true)};
     const art=albEl('albdArt');
     art.addEventListener('pointermove',e=>{if(reduceMotion())return;const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;art.style.transform=`perspective(700px) rotateY(${x*14}deg) rotateX(${-y*14}deg)`});
     art.addEventListener('pointerleave',()=>{art.style.transform=''});
@@ -3674,16 +3733,18 @@ function albAfterFinish(b,before,done){
   const left=ALB_STAMPS.find(s=>s.n>after);
   if(left&&albOwned(after)>0||left)albLater(()=>{if(!$('tkNudge')||$('tkNudge').hidden)toast(`再讀 ${left.n-after} 本，就能收到下一枚郵票`)},4200);
 }
-function albCelebrate(i,done){
-  const s=ALB_STAMPS[i],w=albEl('albWin');
+function albCelebrate(i,done,replay){
+  const s=ALB_STAMPS[i],w=albEl('albWin');albEl('albwOpen').hidden=!!replay;
   albEl('albwImg').src=albImg(s);albEl('albwName').textContent=s.name;
-  albEl('albwSub').textContent=`讀完第 ${s.n} 本，收進集郵冊的第 ${i+1} 枚。`;
+  const last=i===ALB_STAMPS.length-1;
+  w.classList.toggle('final',last);albEl('albwKick').textContent=last?`${albCurYear()} 年集郵冊完成`:'收到新郵票';
+  albEl('albwSub').textContent=replay&&!last?`第 ${i+1} 枚：讀完第 ${s.n} 本時收到的郵票。`:last?`整整一年，收齊了 ${ALB_STAMPS.length} 枚郵票。謝謝每一本書的陪伴。`:`讀完第 ${s.n} 本，收進集郵冊的第 ${i+1} 枚。`;
   albMarkSeen(i);
-  const sp=albEl('albwSpark');sp.innerHTML=Array.from({length:14},(_,k)=>{const a=k/14*Math.PI*2+Math.random()*.4,r=90+Math.random()*60;return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px;--s:${.6+Math.random()*.8};--dl:${Math.random()*120}ms"></i>`}).join('');
+  const sp=albEl('albwSpark');sp.innerHTML=Array.from({length:last?30:14},(_,k)=>{const a=k/(last?30:14)*Math.PI*2+Math.random()*.4,r=90+Math.random()*60;return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px;--s:${.6+Math.random()*.8};--dl:${Math.random()*120}ms"></i>`}).join('');
   w.classList.remove('go');w.showModal();void w.offsetWidth;w.classList.add('go');
-  albLater(()=>albSound('stamp'),reduceMotion()?0:620);albLater(()=>albSound('chime'),reduceMotion()?0:900);
-  const fin=open=>{w.close();if(open){albOpenDialog(i*1,true)}else done&&done()};
-  albEl('albwOpen').onclick=()=>fin(true);albEl('albwClose').onclick=()=>fin(false);
+  albLater(()=>albSound('stamp'),reduceMotion()?0:620);albLater(()=>albSound('chime'),reduceMotion()?0:900);if(last)albLater(()=>albSound('chime'),reduceMotion()?0:1500);
+  const fin=open=>{w.close();if(open&&!replay){albOpenDialog(i*1,true)}else done&&done()};
+  albEl('albwOpen').onclick=()=>fin(true);albEl('albwShare').onclick=()=>albShareOpen(i);albEl('albwClose').onclick=()=>fin(false);
   w.oncancel=e=>{e.preventDefault();fin(false)};
 }
 /* ---- 第一次更新到這版：提醒有集郵冊（只提醒一次） ---- */
@@ -3716,6 +3777,69 @@ function renderStampRow(){
   el.innerHTML=`<button type="button" id="srBtn" aria-label="打開 ${y} 年的集郵冊，已收藏 ${owned} 枚，${line}"><span class="sr-thumbs">${thumbs}</span><span class="sr-txt"><b>${y} 集郵冊　<em>${owned}／${ALB_STAMPS.length}</em></b><span>${line}</span><i class="sr-bar"><i style="width:${pct}%"></i></i></span><span class="sr-go" aria-hidden="true">›</span></button>`;
   $('srBtn').onclick=()=>{albYear=y;albOpenDialog()};
 }
+
+/* ================= 分享郵票進度（只有數字和郵票，不放書名） ================= */
+var asIdx=0,asFmt='post',asBlob=null,asBusy=false;
+const asImgCache={};
+function asLoad(src){return asImgCache[src]||(asImgCache[src]=new Promise((ok,no)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=no;m.src=src}))}
+async function albMakeCard(i,fmt){
+  const s=ALB_STAMPS[i],y=albCurYear(),n=albCount(),owned=albOwned(n),W=1080,H=fmt==='story'?1920:1350;
+  try{await document.fonts.ready}catch(_){}
+  const cs=getComputedStyle(document.documentElement),FD=cs.getPropertyValue('--f-display')||'serif',FN=cs.getPropertyValue('--f-num')||'serif',FB=cs.getPropertyValue('--f-body')||'sans-serif';
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#f8f1de');bg.addColorStop(1,'#eadfc2');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  g.globalAlpha=.07;g.strokeStyle='#7a6a45';g.lineWidth=2;for(let k=8;k<H;k+=8){g.beginPath();g.moveTo(0,k);g.lineTo(W,k);g.stroke()}g.globalAlpha=1;
+  g.strokeStyle='#b0925a';g.lineWidth=3;g.setLineDash([4,12]);g.lineCap='round';g.strokeRect(44,44,W-88,H-88);g.setLineDash([]);
+  const top=fmt==='story'?170:92,cx=W/2;
+  g.textAlign='center';g.textBaseline='alphabetic';
+  try{const lg=await asLoad('stamps/logo.webp');g.drawImage(lg,cx-190,top-4,64,64)}catch(_){}
+  g.fillStyle='#2f4a46';g.font=`700 44px ${FD}`;g.textAlign='left';g.fillText('頁間日子',cx-110,top+46);g.textAlign='center';
+  const st=await asLoad(albImg(s));const sw=fmt==='story'?800:700,sh=sw*st.naturalHeight/st.naturalWidth,sy=top+(fmt==='story'?140:110);
+  g.save();g.translate(cx,sy+sh/2);g.rotate(-.035);g.shadowColor='rgba(60,40,10,.35)';g.shadowBlur=36;g.shadowOffsetY=18;g.drawImage(st,-sw/2,-sh/2,sw,sh);g.restore();
+  let y0=sy+sh+(fmt==='story'?120:84);
+  g.fillStyle='#5b6b66';g.font=`500 40px ${FD}`;g.fillText(`${y} 年到現在，我已經讀完`,cx,y0);
+  y0+=(fmt==='story'?210:178);
+  g.fillStyle='#9a6f22';g.font=`600 ${fmt==='story'?230:200}px ${FN}`;g.fillText(String(n),cx-52,y0);
+  const nw=g.measureText(String(n)).width;g.fillStyle='#2f4a46';g.font=`700 64px ${FD}`;g.textAlign='left';g.fillText('本書',cx-52+nw/2+16,y0);g.textAlign='center';
+  y0+=(fmt==='story'?96:80);
+  g.fillStyle='#5b6b66';g.font=`400 36px ${FD}`;
+  g.fillText(i===ALB_STAMPS.length-1?`收齊 ${y} 年的 ${ALB_STAMPS.length} 枚郵票`:`收進第 ${i+1} 枚郵票・${s.name}`,cx,y0);
+  y0+=(fmt==='story'?92:72);
+  const tot=ALB_STAMPS.length,bw=38,gap=14,x0=cx-(tot*bw+(tot-1)*gap)/2;
+  for(let k=0;k<tot;k++){g.fillStyle=k<owned?'#9a6f22':'rgba(90,80,50,.18)';const x=x0+k*(bw+gap);g.beginPath();g.roundRect?g.roundRect(x,y0,bw,bw*.72,6):g.rect(x,y0,bw,bw*.72);g.fill()}
+  g.fillStyle='#7d8a84';g.font=`400 30px ${FB}`;g.fillText('shelf.needtodeco.com',cx,H-(fmt==='story'?150:92));
+  return await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
+}
+async function asRefresh(){
+  if(asBusy)return;asBusy=true;
+  try{asBlob=await albMakeCard(asIdx,asFmt);const u=URL.createObjectURL(asBlob),im=albEl('asImg');const old=im.dataset.u;im.src=u;im.dataset.u=u;if(old)setTimeout(()=>URL.revokeObjectURL(old),2000)}catch(e){asBlob=null;toast('做圖失敗，請再試一次')}
+  asBusy=false;
+}
+function asName(){return `頁間日子-${albCurYear()}-${albCount()}本-${asFmt==='story'?'限動':'貼文'}.jpg`}
+function albShareOpen(i){
+  asIdx=i;asFmt='post';
+  document.querySelectorAll('[data-asf]').forEach(b=>b.classList.toggle('on',b.dataset.asf===asFmt));
+  const ok=typeof qcShareSupported==='function'&&qcShareSupported();
+  albEl('asShare').hidden=!ok;albEl('asDl').classList.toggle('primary',!ok);
+  albEl('asHint').textContent=ok?'在分享選單點 Instagram、LINE 或 Facebook。選單裡沒有 Instagram 的話，點「儲存影像」，再到 IG 從相簿選這張。':'下載後，到 LINE、IG 或 FB 選擇這張圖片上傳就可以了。';
+  albEl('albShare').showModal();asRefresh();
+}
+document.querySelectorAll('[data-asf]').forEach(b=>b.onclick=()=>{asFmt=b.dataset.asf;document.querySelectorAll('[data-asf]').forEach(x=>x.classList.toggle('on',x===b));asRefresh()});
+albEl('asClose').onclick=()=>albEl('albShare').close();
+albEl('asShare').onclick=async()=>{
+  if(!asBlob)await asRefresh();if(!asBlob)return;const file=new File([asBlob],asName(),{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:`${albCurYear()} 年，我已經讀完 ${albCount()} 本書`})}catch(e){if(e&&e.name!=='AbortError')toast('沒辦法開啟分享，請改用「下載圖片」')}}
+  else{download(asBlob,asName());toast('這個瀏覽器不支援分享，已改為下載')}
+};
+albEl('asDl').onclick=async()=>{if(!asBlob)await asRefresh();if(asBlob)download(asBlob,asName())};
+
+/* 重播這一頁的蓋章：已經收到的郵票再蓋一次 */
+function albReplayPage(){
+  if(albBusy||!albOpenState)return;
+  const has=ALB_STAMPS.slice(albPage*ALB_PER,albPage*ALB_PER+ALB_PER).some(s=>s.n<=albCount());if(!has)return;
+  albClear();albForce=true;albRender(true);albForce=false;
+}
+albEl('albReplay').onclick=albReplayPage;
 
 /* ================= 示範書櫃（資料只在記憶體，不寫入書房、不同步） ================= */
 var demoMode=false,demoGoals={},demoPrevView='shelf';
