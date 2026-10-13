@@ -127,33 +127,34 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 .views .draw svg{width:17px;height:17px}
 
 /* 書架：一座連續的書櫃，書照月份由左到右排，換行就是下一層木板 */
-.bookcase{--row:208px;--fw:14px;--pl:24px;--th:17px;--tagw:70px;position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:7px;padding:0 22px;border:var(--fw) solid var(--wood);border-bottom-width:0;border-radius:3px 3px 0 0;margin:0 -4px 16px;
+.bookcase{--row:208px;--fw:14px;--pl:calc(var(--row)*.11538);--th:17px;--tagw:70px;position:relative;display:flex;flex-wrap:wrap;align-items:flex-end;column-gap:7px;padding:0 22px;border:var(--fw) solid var(--wood);border-bottom-width:0;border-radius:3px 3px 0 0;margin:0 -4px 16px;
   box-shadow:inset 18px 0 20px -14px rgba(0,0,0,.55),inset -18px 0 20px -14px rgba(0,0,0,.55),inset 0 0 0 1px rgba(30,16,6,.55),0 0 0 1px rgba(60,35,15,.4),0 30px 40px -24px var(--shadow);
   background-color:var(--wood);
   background-image:
     linear-gradient(to bottom,rgba(0,0,0,.5) 0,rgba(0,0,0,.14) 7px,var(--lamp) 16px,var(--lamp2) 80px,rgba(0,0,0,0) calc(100% - var(--pl) - 26px),rgba(0,0,0,0) calc(100% - var(--pl)),rgba(255,246,218,.62) calc(100% - var(--pl)),rgba(255,246,218,.62) calc(100% - var(--pl) + 1px),rgba(255,236,196,.26) calc(100% - var(--pl) + 1px),rgba(255,236,196,.12) calc(100% - var(--pl) + 4px),rgba(255,255,255,.06) calc(100% - var(--pl) + 5px),rgba(0,0,0,.10) calc(100% - 4px),rgba(0,0,0,.5) calc(100% - 2px),rgba(0,0,0,.62) 100%),
     radial-gradient(ellipse 70% 75% at 50% 38%,var(--case-glow),transparent 78%),
     linear-gradient(var(--dim),var(--dim)),
+    url(stamps/wood-back.webp),
     linear-gradient(to bottom,var(--back) calc(100% - var(--pl)),transparent calc(100% - var(--pl))),
     url(stamps/wood-h.webp),
     linear-gradient(90deg,rgba(255,236,200,.30) 0,transparent 2px,transparent calc(100% - 3px),rgba(0,0,0,.3) 100%),
     linear-gradient(var(--dim),var(--dim)),
     url(stamps/wood-v.webp);
-  background-size:100% var(--row),100% var(--row),100% 100%,100% var(--row),1024px calc(var(--row)*3),100% 100%,100% 100%,64px 900px;
-  background-repeat:repeat-y,repeat-y,no-repeat,repeat-y,repeat,no-repeat,no-repeat,repeat;
+  background-size:100% var(--row),100% var(--row),100% 100%,auto var(--row),100% var(--row),1024px calc(var(--row)*3),100% 100%,100% 100%,64px 900px;
+  background-repeat:repeat-y,repeat-y,no-repeat,repeat,repeat-y,repeat,no-repeat,no-repeat,repeat;
   background-position:0 0;
-  background-origin:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box;
-  background-clip:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box}
+  background-origin:padding-box,padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box;
+  background-clip:padding-box,padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box}
 /* 頂樑（橫向木紋，略微外凸）與底座 */
 .bookcase:before,.bookcase:after{content:"";position:absolute;pointer-events:none;background:linear-gradient(to bottom,rgba(255,240,205,.5) 0,rgba(255,240,205,.12) 2px,transparent 4px,transparent calc(100% - 4px),rgba(0,0,0,.4) 100%),linear-gradient(var(--dim),var(--dim)),url(stamps/wood-h.webp) 0 0/900px 300px,var(--wood)}
 .bookcase:before{left:calc(var(--fw)*-1 - 3px);right:calc(var(--fw)*-1 - 3px);top:calc(var(--fw)*-1 - 5px);height:calc(var(--fw) + 5px);border-radius:4px 4px 0 0;box-shadow:0 3px 5px -1px rgba(0,0,0,.4),0 0 0 1px rgba(60,35,15,.35)}
 .bookcase:after{left:calc(var(--fw)*-1 + 2px);right:calc(var(--fw)*-1 + 2px);bottom:-13px;height:13px;border-radius:0 0 3px 3px;background-position:0 0,0 0,300px 120px,0 0;box-shadow:0 8px 12px -4px rgba(0,0,0,.4),inset 0 2px 3px rgba(0,0,0,.45)}
 .slot{position:relative;height:var(--row);display:flex;align-items:flex-end;padding-bottom:var(--pl);flex:none}
 .slot:before{content:"";position:absolute;left:1px;right:-5px;bottom:calc(var(--pl) - 4px);height:8px;border-radius:50%;background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);pointer-events:none}
-.slot.gs{margin-left:12px;min-width:var(--tagw)}
+.slot.gs{margin-left:12px}.slot.solo{min-width:var(--tagw)}
 /* 月份：黃銅銘牌，貼在這組書起點下方的層板前緣 */
 .divider{position:absolute;left:0;bottom:0;height:var(--pl);z-index:6;scroll-margin-top:110px}
-.mtag{position:absolute;left:0;bottom:calc((var(--pl) - var(--th)) / 2 - 1px);height:var(--th);display:flex;align-items:center;gap:5px;padding:0 9px;white-space:nowrap;border-radius:3px;color:#46320f;font-family:var(--f-display);font-variant-numeric:lining-nums tabular-nums;font-size:12px;line-height:1;font-weight:700;letter-spacing:.03em;text-shadow:0 1px 0 rgba(255,238,190,.55);
+.mtag{position:absolute;left:0;bottom:calc((var(--pl) - var(--th)) / 2 - 1px);height:var(--th);display:flex;align-items:center;gap:5px;padding:0 9px;white-space:nowrap;border-radius:3px;color:#46320f;font-family:var(--f-display);font-variant-numeric:lining-nums tabular-nums;font-size:12px;line-height:1;font-weight:600;letter-spacing:.03em;text-shadow:0 1px 0 rgba(255,238,190,.55);
   background:linear-gradient(180deg,rgba(255,244,205,.5),rgba(255,244,205,0) 45%,rgba(60,38,8,.18)),linear-gradient(90deg,#c9ad74,#b8985f 50%,#c3a56c);box-shadow:inset 0 0 0 1px rgba(110,80,30,.55),inset 0 1px 0 rgba(255,246,214,.6),0 1px 1px rgba(0,0,0,.45),0 2px 4px -1px rgba(0,0,0,.35);transition:filter .2s,transform .15s}
 .mtag:before,.mtag:after{content:"";position:absolute;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e8d6a6,#7a5c26);box-shadow:0 .5px 0 rgba(255,240,200,.4)}
 .mtag:before{left:3px}.mtag:after{right:3px}
@@ -161,7 +162,7 @@ html[data-theme="dark"] .mtag{filter:brightness(.8) saturate(.85)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mtag{filter:brightness(.8) saturate(.85)}}
 .mtag:hover{filter:brightness(1.07)}.mtag:active{transform:translateY(1px)}
 .mtag:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.mt-m,.mt-c{display:block;line-height:1;font-size:12px;padding-top:1px}
+.mt-t{display:block;line-height:1;font-size:12px;font-weight:inherit;padding-top:1px;font-synthesis:none}
 .mt-d{width:3px;height:3px;border-radius:50%;background:rgba(70,50,15,.6);flex:none}
 .book{position:relative;flex:none;display:block;transform-origin:bottom center;transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .2s}
 .book:hover,.book:focus-visible{transform:translateY(-12px) rotate(-1.5deg)}
@@ -704,8 +705,8 @@ a.btn.primary{color:var(--accent-ink)}
   .tabbar .add{color:var(--accent-ink)}
   .tabbar .add span.c{width:44px;height:30px;border-radius:999px;background:var(--accent);display:flex;align-items:center;justify-content:center}
   .tabbar .add{color:var(--accent)}
-  .bookcase{--row:162px;--fw:9px;--pl:21px;--th:15px;--tagw:60px;padding:0 10px;column-gap:5px;margin-inline:-8px}
-  .mtag{font-size:11px;padding:0 7px;gap:4px}.mt-m,.mt-c{font-size:11px}.slot.gs{margin-left:8px}
+  .bookcase{--row:170px;--fw:9px;--th:14px;--tagw:60px;padding:0 10px;column-gap:5px;margin-inline:-8px}
+  .mtag{font-size:11px;padding:0 7px;gap:4px}.mt-t{font-size:11px}.slot.gs{margin-left:8px}
   .book .face{width:78px;height:117px}
   .book .spine{height:calc(var(--sh) * .78);width:calc(var(--sw) * .86)}
   .spine span{font-size:12px}
@@ -1872,7 +1873,7 @@ function renderStage(){
     st.innerHTML=groups.map(g=>`<section class="wall-month" data-mnum="${monthNum(g.month)}"><h3>${esc(monthLabel(g.month))}<small>${g.items.length} 本</small></h3><div class="wall">${g.items.map(b=>tileEl(b,b.author||monthLabel(b.month))).join('')}</div></section>`).join('');
   }else{
     const asc=[...groups].reverse();stageCtx=asc.flatMap(g=>g.items.map(b=>b.id));
-    st.innerHTML=`<div class="bookcase">${asc.map(g=>{const m=monthNum(g.month);const num=/^\d{1,2}\s*月?$/.test(String(g.month).trim());const tag=`<div class="divider" data-mnum="${m}"><button type="button" class="mtag" data-jump="${m}" aria-label="${esc(monthLabel(g.month))}，${g.items.length} 本"><span class="mt-m">${num?m+'月':esc(g.month)}</span><i class="mt-d"></i><span class="mt-c">${g.items.length}本</span></button></div>`;return g.items.map((b,k)=>`<div class="slot${k===0?' gs':''}" data-of="${m}">${k===0?tag:''}${bookEl(b)}</div>`).join('')}).join('')}</div>`;
+    st.innerHTML=`<div class="bookcase">${asc.map(g=>{const m=monthNum(g.month);const num=/^\d{1,2}\s*月?$/.test(String(g.month).trim());const tag=`<div class="divider" data-mnum="${m}"><button type="button" class="mtag" data-jump="${m}" aria-label="${esc(monthLabel(g.month))}，${g.items.length} 本"><span class="mt-t">${num?m+'月':esc(g.month)}\u2002·\u2002${g.items.length}本</span></button></div>`;return g.items.map((b,k)=>`<div class="slot${k===0?' gs':''}${g.items.length===1?' solo':''}" data-of="${m}">${k===0?tag:''}${bookEl(b)}</div>`).join('')}).join('')}</div>`;
     st.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>flashMonth(Number(b.dataset.jump)));
   }
   st.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>pullAndOpen(el,el.dataset.id,stageCtx));
