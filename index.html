@@ -229,6 +229,11 @@ html[data-theme="dark"] .mtag{filter:brightness(.8) saturate(.85)}
 
 .fab{position:fixed;right:max(20px,calc((100vw - 1240px)/2));bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:15;display:inline-flex;align-items:center;gap:8px;height:54px;padding:0 22px 0 18px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;box-shadow:0 12px 26px -8px var(--shadow)}
 .fab svg{width:20px;height:20px}
+/* 回到最上方：半透明、不搶眼，往下捲一段才出現 */
+.to-top{position:fixed;right:max(20px,calc((100vw - 1240px)/2));bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:14;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink);background:color-mix(in srgb,var(--paper) 78%,transparent);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:0 2px 8px -2px rgba(0,0,0,.25);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .25s,transform .25s,visibility .25s}
+.to-top.show{opacity:.5;visibility:visible;transform:none}
+.to-top.show:hover,.to-top.show:focus-visible,.to-top.show:active{opacity:.92}
+@media (prefers-reduced-motion: reduce){.to-top{transition:opacity .01s,visibility .01s;transform:none}}
 .tabbar{display:none}
 
 /* 對話框通用 */
@@ -699,6 +704,7 @@ a.btn.primary{color:var(--accent-ink)}
   .menu{right:12px;width:min(280px,calc(100vw - 24px))}
   .views{display:none}
   .fab{display:none}
+  .to-top{right:14px;bottom:calc(74px + env(safe-area-inset-bottom,0px));width:38px;height:38px}
   .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--paper);border-top:1px solid var(--rule);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
   .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--ink-soft);padding:4px 0}
   .tabbar button svg{width:22px;height:22px}
@@ -1279,6 +1285,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
   </footer>
 </div>
 
+<button type="button" class="to-top" id="toTop" aria-label="回到最上方" title="回到最上方" tabindex="-1"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6"/></svg></button>
 <button class="fab" id="addBtn" type="button"><svg><use href="#i-plus"/></svg>放一本書</button>
 
 <nav class="tabbar" aria-label="主要功能">
@@ -3624,6 +3631,15 @@ function showNotionPreview(file,result){
   const d=$('importPreview');d.querySelector('h3').textContent='Notion 匯入預覽';
   $('importNote').textContent=(pendingPileImport.length?`另外有 ${pendingPileImport.length} 本還沒讀完，會放進「書堆」（想讀／待讀／在讀依 Notion 的狀態判斷）。`:'')+(result.imageCount?` 有 ${result.imageCount} 本帶到了封面。`:' 這份 Notion 資料沒有可用的封面，匯入後可以在書本裡補。');
 }
+
+/* ================= 回到最上方 ================= */
+(function(){
+  const b=$('toTop');if(!b)return;let tick=false;
+  const upd=()=>{tick=false;const on=window.scrollY>Math.max(480,innerHeight*.6);b.classList.toggle('show',on);b.tabIndex=on?0:-1};
+  addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(upd)}},{passive:true});
+  b.onclick=()=>{window.scrollTo({top:0,behavior:reduceMotion()?'auto':'smooth'});b.blur()};
+  upd();
+})();
 
 /* ================= 閱讀集郵冊：每讀完 4 本收藏一枚郵票，40 本集滿十枚 ================= */
 const ALB_STAMPS=[
