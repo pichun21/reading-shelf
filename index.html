@@ -1220,7 +1220,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
     <button type="button" id="mInstall" hidden>安裝到主畫面<span>像 App 一樣開啟</span></button>
     <button type="button" id="mSync">保存與同步<span>Google 帳號</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
-    <button type="button" id="mImport">匯入資料<span>JSON／Excel</span></button>
+    <button type="button" id="mImport">匯入資料<span>JSON／Excel／Notion</span></button>
     <hr>
     <button type="button" id="mFont">字體與書背<span>換介面和書名的字體</span></button>
     <button type="button" id="mSeries">我的系列<span>整套書的進度</span></button>
@@ -1275,7 +1275,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
   <footer class="site-foot">
     <p>頁間日子 Pages Between Days：記錄每一本讀過的書，書只存在你的瀏覽器，或你自己的 Google 雲端硬碟。</p>
     <p class="copy">© 2026 needtodeco. All rights reserved.</p>
-    <nav><a href="https://shelf.needtodeco.com/pages-between-days.html">關於頁間日子</a><span>·</span><a href="https://shelf.needtodeco.com/pages-between-days.html#privacy">隱私權說明</a></nav>
+    <nav><a href="pages-between-days.html">關於頁間日子</a><span>·</span><a href="pages-between-days.html#privacy">隱私權說明</a></nav>
   </footer>
 </div>
 
@@ -1290,7 +1290,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
   <button type="button" id="reviewTab"><svg><use href="#i-spark"/></svg>回顧</button>
 </nav>
 
-<input id="importFile" type="file" accept="application/json,.json,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+<input id="importFile" type="file" accept="application/json,.json,.csv,text/csv,.zip,application/zip,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
 
 <!-- 翻開的書 -->
 <dialog id="bookView" aria-label="閱讀紀錄">
@@ -1650,7 +1650,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 <!-- 匯入說明 -->
 <dialog id="importBox" class="bottom">
   <div class="sheet">
-    <div class="sheet-head"><div style="flex:1"><h3>匯入資料</h3><p>可以匯入 Excel 書單，或之前匯出的 JSON 備份。</p></div><button type="button" class="x" id="importBoxClose" aria-label="關閉">×</button></div>
+    <div class="sheet-head"><div style="flex:1"><h3>匯入資料</h3><p>可以匯入 Excel 書單、Notion 資料庫，或之前匯出的 JSON 備份。</p></div><button type="button" class="x" id="importBoxClose" aria-label="關閉">×</button></div>
     <div class="sheet-body">
       <div class="howto" style="margin:0"><b>Excel 書單的格式</b>
         <ol>
@@ -1658,6 +1658,14 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
           <li>可以再加「作者」「譯者」「標籤」「喜歡」「閱讀筆記」。「喜歡」填「是」，或把書名那格塗上底色都可以。</li>
           <li>封面圖可以直接貼在 Excel 裡同一列的格子上。</li>
           <li>如果每個年份分一個工作表，工作表名稱寫年份（例如 2025），就可以不用「年份」欄。</li>
+        </ol>
+      </div>
+      <div class="howto" style="margin:12px 0 0"><b>從 Notion 匯入</b>
+        <ol>
+          <li>打開你的書單資料庫，右上角「⋯」→「匯出」，格式選「Markdown &amp; CSV」或 CSV。</li>
+          <li>把下載的 .csv 或 .zip 直接選進來，不用解壓縮。</li>
+          <li>欄位名稱會自動對應：「名稱／書名」「讀完日期（日期欄）」「作者」「標籤」「喜歡（勾選）」「心得」「封面」「狀態」。</li>
+          <li>狀態是「完成／Done」的放上書架；「想讀」「待讀」「在讀」放進書堆。沒有日期的完成書不會匯入。</li>
         </ol>
       </div>
       <p class="hint" style="margin-top:12px">匯入前會先顯示預覽，可以選擇合併或取代目前的書房。</p>
@@ -2578,13 +2586,15 @@ function showExcelPreview(file,result){
   if(!$('importPreview').open)$('importPreview').showModal();
 }
 async function applyExcelImport(replace){
-  if(!pendingExcelImport?.length)return;
+  if(!pendingExcelImport?.length&&!pendingPileImport?.length)return;
   if(replace){const ok=await ask({title:'取代整個書房？',body:`目前的 ${books.length} 本紀錄會被清空，換成這份 Excel 的 ${pendingExcelImport.length} 本。建議先匯出一份備份。`,buttons:[{label:'取消',value:false},{label:'清空並取代',value:true,cls:'danger solid'}]});if(!ok)return}
-  const r=await writeImport(pendingExcelImport,replace);$('importPreview').close();pendingExcelImport=null;toast(replace?`已匯入 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`);
+  const r=await writeImport(pendingExcelImport||[],replace);let pn=0;
+  if(pendingPileImport?.length){if(replace)for(const o of pile)await removeBook(o.id);const have=new Set((replace?[]:[...pile,...books]).map(o=>normTitleKey(o.title)));for(const p of pendingPileImport){const k=normTitleKey(p.title);if(have.has(k))continue;have.add(k);await saveBook(p);pn++}await reload();render(false)}
+  $('importPreview').close();pendingExcelImport=null;pendingPileImport=null;toast((replace?`已匯入 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`)+(pn?`，書堆新增 ${pn} 本`:''));
 }
 $('closeImportPreview').onclick=()=>$('importPreview').close();$('cancelExcelImport').onclick=()=>$('importPreview').close();
 $('mergeExcelImport').onclick=()=>applyExcelImport(false);$('replaceExcelImport').onclick=()=>applyExcelImport(true);
-$('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(/\.xlsx$/i.test(file.name)||file.type.includes('spreadsheetml')){toast('正在讀取 Excel 與圖片…');excelYears={};showExcelPreview(file,await parseXlsx(file))}else await importBackup(file)}catch(err){notify('匯入沒有成功',err.message)}};
+$('importFile').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(/\.xlsx$/i.test(file.name)||file.type.includes('spreadsheetml')){toast('正在讀取 Excel 與圖片…');excelYears={};pendingPileImport=null;const r=await parseXlsx(file);showExcelPreview(file,r);$('importPreview').querySelector('h3').textContent='Excel 匯入預覽'}else if(/\.(csv|zip)$/i.test(file.name)){toast('正在讀取 Notion 資料…');showNotionPreview(file,await parseNotionFile(file))}else await importBackup(file)}catch(err){notify('匯入沒有成功',err.message)}};
 $('mImport').onclick=chooseImport;
 
 /* ================= 一次整理全部封面 ================= */
@@ -3523,6 +3533,97 @@ function fontRenderBox(){
 document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{fnTab=b.dataset.t;fontRenderBox()});
 $('mFont').onclick=()=>{closeMenu();FONT_OPTS.forEach(f=>fontLoad(f.fam));fontRenderBox();$('fontBox').showModal()};
 $('fnClose').onclick=()=>$('fontBox').close();
+
+/* ================= Notion 匯入：資料庫匯出的 CSV，或整包匯出的 .zip ================= */
+var pendingPileImport=null;
+const NOTION_MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function csvParse(text){
+  text=String(text||'').replace(/^﻿/,'');const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===','){row.push(cur);cur=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);cur='';if(row.some(x=>x!==''))rows.push(row);row=[]}
+    else cur+=c}
+  if(cur!==''||row.length){row.push(cur);if(row.some(x=>x!==''))rows.push(row)}
+  return rows;
+}
+/* Notion 的日期可能是「2026年10月5日」「October 5, 2026」「2026/10/05」，也可能是區間，取結束那天 */
+function notionDate(v){
+  let s=String(v||'').trim();if(!s)return null;
+  if(/→|->|~|\sto\s/.test(s))s=s.split(/→|->|~|\sto\s/).pop().trim();
+  let m=s.match(/((?:19|20)\d{2})\s*[-\/.年]\s*(\d{1,2})/);if(m&&+m[2]>=1&&+m[2]<=12)return {y:+m[1],m:+m[2]};
+  m=s.match(/([A-Za-z]{3,9})\.?\s+\d{1,2}(?:st|nd|rd|th)?,?\s+((?:19|20)\d{2})/);if(m){const k=NOTION_MON[m[1].slice(0,3).toLowerCase()];if(k)return {y:+m[2],m:k}}
+  m=s.match(/\d{1,2}(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?,?\s+((?:19|20)\d{2})/);if(m){const k=NOTION_MON[m[1].slice(0,3).toLowerCase()];if(k)return {y:+m[2],m:k}}
+  m=s.match(/(\d{1,2})\/\d{1,2}\/((?:19|20)\d{2})/);if(m&&+m[1]>=1&&+m[1]<=12)return {y:+m[2],m:+m[1]};
+  return null;
+}
+function notionCols(head){
+  const H=head.map(normHeader),used=new Set();
+  const pick=list=>{for(const h of list){const n=normHeader(h),k=H.findIndex((x,i)=>!used.has(i)&&x===n);if(k>=0){used.add(k);return k}}
+    for(const h of list){const n=normHeader(h),k=H.findIndex((x,i)=>!used.has(i)&&x&&x.includes(n));if(k>=0){used.add(k);return k}}return -1};
+  const c={};
+  c.title=pick(['書名','名稱','標題','書籍','name','title','book']);
+  c.status=pick(['閱讀狀態','狀態','進度','status','state','progress']);
+  c.date=pick(['讀完日期','完成日期','閱讀日期','讀完時間','finished','completed','date','日期','讀完']);
+  c.year=pick(['年份','年度','year']);
+  c.month=pick(['月份','month']);
+  c.author=pick(['作者','author','writer']);
+  c.translator=pick(['譯者','translator']);
+  c.tags=pick(['標籤','tags','tag','分類','類別','類型','genre','category']);
+  c.fav=pick(['喜歡','最愛','收藏','favorite','favourite','fav']);
+  c.note=pick(['心得','閱讀筆記','筆記','備註','notes','note','review','comment']);
+  c.cover=pick(['封面圖','封面','cover','thumbnail','image','圖片']);
+  return c;
+}
+function notionStatus(s){
+  const t=String(s||'').trim();if(!t)return '';
+  if(/未開始|沒開始|not.?started/i.test(t))return 'want';
+  if(/完成|讀完|已讀|done|finish|complete|^read$/i.test(t))return 'done';
+  if(/在讀|閱讀中|進行|in.?progress|reading|doing|started/i.test(t))return 'reading';
+  if(/待讀|下一本|next|queue|todo|to-do/i.test(t))return 'todo';
+  return 'want';
+}
+async function parseNotionFile(file){
+  let sets=[],imgs=new Map();
+  if(/\.zip$/i.test(file.name)||/zip/.test(file.type||'')){
+    if(!window.JSZip)throw new Error('壓縮檔元件還沒載入，請確認網路連線後重新整理');
+    const zip=await JSZip.loadAsync(await file.arrayBuffer());
+    const names=Object.keys(zip.files).filter(n=>!zip.files[n].dir&&!/(^|\/)__MACOSX\//.test(n));
+    let csvs=names.filter(n=>/\.csv$/i.test(n));const main=csvs.filter(n=>!/_all\.csv$/i.test(n));if(main.length)csvs=main;
+    if(!csvs.length)throw new Error('這個壓縮檔裡找不到 .csv。請在 Notion 匯出時選「Markdown & CSV」。');
+    for(const n of csvs)sets.push(csvParse(await zip.files[n].async('string')));
+    for(const n of names)if(/\.(jpe?g|png|webp|gif)$/i.test(n)){const b=n.split('/').pop().toLowerCase();imgs.set(b,zip.files[n])}
+  }else sets.push(csvParse(await file.text()));
+  const records=[],pileRaw=[],noMonth=[];let order=0,cover=0;
+  for(const rows of sets){
+    if(rows.length<2)continue;const c=notionCols(rows[0]);if(c.title<0)continue;
+    for(const row of rows.slice(1)){
+      const g=k=>k>=0?String(row[k]??'').trim():'';const title=g(c.title);if(!title)continue;
+      let st=c.status>=0?notionStatus(g(c.status)):'';
+      let d=notionDate(g(c.date));
+      if(!d){const yy=yearFrom(g(c.year)),mm=monthFrom(g(c.month));const mn=parseInt(mm);if(yy&&mn>=1&&mn<=12)d={y:yy,m:mn}}
+      if(!st)st=d?'done':'want';
+      let cv='';const cr=g(c.cover);
+      if(cr){const u=cr.match(/https?:\/\/[^\s)]+/);if(u)cv=u[0];else{const f=imgs.get(decodeURIComponent(cr.split('/').pop()).toLowerCase());if(f){try{cv=await resizeExcelImage(await f.async('blob'))}catch(_){}}}}
+      const base={title,author:g(c.author),translator:g(c.translator),tags:g(c.tags).split(/[、,，;；]+/).map(s=>s.trim()).filter(Boolean).slice(0,8),favorite:c.fav>=0&&boolFrom(g(c.fav)),note:g(c.note)};
+      if(cv){base.cover=cv;base.coverX=50;base.coverY=50;base.coverZoom=1;cover++}
+      if(st==='done'){
+        if(!d){noMonth.push(title);continue}
+        records.push({id:'notion-'+Date.now()+'-'+(order++),year:d.y,month:`${d.m}月`,...base});
+      }else pileRaw.push({id:'pn'+Date.now()+'-'+(order++),status:st,addedAt:Date.now()+order,...base});
+    }
+  }
+  const pileList=normalizeImportedPile(pileRaw);
+  if(!records.length&&!pileList.length&&!noMonth.length)throw new Error('找不到可以辨識的書。檔案裡至少要有一欄是書名（欄位名稱叫「名稱」「書名」或 Name 都可以）。');
+  return {records,pile:pileList,noYear:{},noMonth,imageCount:cover,mappedCount:cover,notion:true};
+}
+function showNotionPreview(file,result){
+  pendingPileImport=result.pile||[];
+  showExcelPreview(file,result);
+  const d=$('importPreview');d.querySelector('h3').textContent='Notion 匯入預覽';
+  $('importNote').textContent=(pendingPileImport.length?`另外有 ${pendingPileImport.length} 本還沒讀完，會放進「書堆」（想讀／待讀／在讀依 Notion 的狀態判斷）。`:'')+(result.imageCount?` 有 ${result.imageCount} 本帶到了封面。`:' 這份 Notion 資料沒有可用的封面，匯入後可以在書本裡補。');
+}
 
 /* ================= 閱讀集郵冊：每讀完 4 本收藏一枚郵票，40 本集滿十枚 ================= */
 const ALB_STAMPS=[
