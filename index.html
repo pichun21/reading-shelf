@@ -1131,6 +1131,12 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 @media (max-width:640px){.pst .pic{height:13px;width:15px}.pstat .ps-l .pic{height:22px;width:26px}}
 :root[data-theme="dark"] .pic,:root[data-theme="dark"] .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pic,:root:not([data-theme="light"]) .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}}
+/* 翻開／闔上的過程中先把內頁的字和進度條藏起來，避免 Safari 把它們畫到封面前面（會看到一條線） */
+.alb-stage.moving .alb-page>*{visibility:hidden}
+.alb-cover{transform:translateZ(2px)}
+.alb-stage[data-state="open"] .alb-cover{transform:rotateY(-171deg) translateZ(2px)}
+.alb-prog .bar{transition:none}
+.pe-illu{width:min(150px,40vw)}
 </style>
 
 </head>
@@ -3127,7 +3133,7 @@ function pileTile(b){
     ${stBadge(b.status)}
   </article>`;
 }
-const PILE_ILLU=`<img class="pe-illu" src="stamps/pile-illu.webp" alt="" aria-hidden="true" draggable="false" width="240" height="174">`;
+const PILE_ILLU=`<img class="pe-illu" src="stamps/pile-illu.webp" alt="" aria-hidden="true" draggable="false" width="150" height="109">`;
 function renderPile(st){
   stageCtx=[];
   const n=pile.length,urgent=pileUrgent(),cnt=k=>pile.filter(b=>b.status===k).length;
@@ -3563,13 +3569,13 @@ function albSetState(open){albOpenState=open;albEl('albStage').dataset.state=ope
 function albOpenBook(jumpTo){
   if(albBusy||albOpenState)return;albBusy=true;
   if(typeof jumpTo==='number')albPage=Math.floor(jumpTo/ALB_PER);
-  albEl('albStage').classList.remove('closing');albRender(false);albSetState(true);albSound('open');
+  albEl('albStage').classList.remove('closing');albEl('albStage').classList.add('moving');albRender(false);albSetState(true);albSound('open');
   const wait=reduceMotion()?60:1000;
-  albLater(()=>{albBusy=false;albRender(true)},wait);
+  albLater(()=>{albBusy=false;albEl('albStage').classList.remove('moving');albRender(true)},wait);
 }
 function albShut(){
   if(albBusy||!albOpenState)return;albBusy=true;albClear();albEl('albDetail').open&&albEl('albDetail').close();
-  const stg=albEl('albStage');stg.classList.add('closing');albSetState(false);albSound('close');albLater(()=>{albBusy=false;stg.classList.remove('closing')},reduceMotion()?60:1050);
+  const stg=albEl('albStage');stg.classList.add('closing','moving');albSetState(false);albSound('close');albLater(()=>{albBusy=false;stg.classList.remove('closing','moving')},reduceMotion()?60:1050);
 }
 /* 翻頁：舊頁像紙一樣翻走；往回翻則是前一頁從左邊蓋回來 */
 function albTurn(dir){
