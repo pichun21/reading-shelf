@@ -363,7 +363,7 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
     <div class="corner">
       <div>
         <h3>讀完一本書，蓋一枚郵票</h3>
-        <p>每讀完四本書，集郵冊就會多收進一枚郵票。放上書的那一刻，郵票會「啪」地蓋下去，伴著一聲輕輕的印章聲；打開集郵冊，封面像真的書一樣翻開，一頁一頁慢慢看。</p>
+        <p>每讀完四本書，這一年的集郵冊就會多收進一枚郵票。集郵冊是一年一本，2026 年先開張，之後每年各有一本。放上書的那一刻，郵票會「啪」地蓋下去，伴著一聲輕輕的紙張聲；打開集郵冊，封面像真的書一樣翻開，一頁一頁慢慢看。</p>
         <ul><li>翻頁、蓋章、闔上，都有動畫和柔和的音效，可以隨時靜音</li><li>還沒集到的位置會留空，點開能看到「再讀幾本就會蓋上」</li><li>每一枚郵票都能放大欣賞，也能存成圖片</li></ul>
         <p class="try-hint">右邊可以自己蓋蓋看。</p>
       </div>
@@ -514,8 +514,8 @@ footer{border-top:1px solid var(--rule);padding-block:24px 40px;font-size:13px;c
 })();
 
 (function(){var btn=document.getElementById('sdBtn');if(!btn)return;var st=document.getElementById('sdStamp'),slot=document.getElementById('sdSlot'),cap=document.getElementById('sdCap'),on=false,ac=null;
-function thud(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(48,t+.14);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.2);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.22);
-var n=ac.createBufferSource(),b=ac.createBuffer(1,ac.sampleRate*.05,ac.sampleRate),d=b.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);n.buffer=b;var f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=900;var g2=ac.createGain();g2.gain.value=.12;n.connect(f).connect(g2).connect(ac.destination);n.start(t)}catch(e){}}
+function thud(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();var t=ac.currentTime,o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(140,t);o.frequency.exponentialRampToValueAtTime(95,t+.06);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.06,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.08);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+.1);
+var n=ac.createBufferSource(),b=ac.createBuffer(1,ac.sampleRate*.16,ac.sampleRate),d=b.getChannelData(0);for(var i=0;i<d.length;i++){var p=i/d.length;d[i]=(Math.random()*2-1)*Math.sin(p*Math.PI)*Math.pow(1-p,.6)}n.buffer=b;var f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=3200;f.Q.value=.7;var g2=ac.createGain();g2.gain.value=.3;n.connect(f).connect(g2).connect(ac.destination);n.start(t)}catch(e){}}
 btn.addEventListener('click',function(){if(on){st.classList.remove('land');slot.classList.remove('shake');void st.offsetWidth;cap.textContent='這一頁還空著，讀完第四本就會蓋章。';btn.textContent='讀完第四本，蓋章';on=false;return}
 st.classList.add('land');slot.classList.add('shake');setTimeout(thud,200);cap.textContent='蓋好了。第一枚郵票收進集郵冊。';btn.textContent='再蓋一次';on=true})})();
 </script>

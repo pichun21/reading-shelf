@@ -28,6 +28,7 @@
   --glow:rgba(255,226,170,0); --veil:rgba(20,26,26,.42); --shadow:rgba(32,38,32,.20);
   --f-display:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-book-def:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
   --f-book:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
   --f-num:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --r:10px;
@@ -1083,15 +1084,53 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 /* ---- 字體 ---- */
 .spine span,.gen .t,.tile .cap,.page-r h2,.pt-title,.pc-txt b,.ser-t{font-family:var(--f-book)}
 .font-sheet{max-width:600px}
-.fn-prev{display:flex;align-items:flex-end;gap:18px;padding:18px 16px;border:1px dashed var(--rule);border-radius:14px;background:var(--wall);margin:0 0 14px;overflow:hidden}
-.fn-prev .book{pointer-events:none;transform:none}
-.fn-prev .fn-cover{width:92px;height:138px;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:2px 3px 0 rgba(0,0,0,.08),6px 8px 14px -4px var(--shadow);flex:none}
-.fn-txt{min-width:0}.fn-txt b{display:block;font-family:var(--f-book);font-size:20px;line-height:1.3}.fn-txt p{margin:4px 0 0;font-size:14px}.fn-txt small{color:var(--ink-soft)}
-.fn-h{margin:14px 0 8px;font-size:14px;font-weight:600}
-.fn-chips{display:flex;flex-wrap:wrap;gap:8px}
-.fn-chips button{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:14px;cursor:pointer}
-.fn-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .fn-note{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0}
+.alb-ytitle{display:flex;align-items:center;gap:8px;margin:0}.alb-yb{width:30px;height:30px;border-radius:50%;border:1px solid var(--alb-rule);background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer}.alb-yb:disabled{opacity:.3;cursor:default}
+.alb-stage[data-state="closed"]:not(.closing) .alb-page{display:none}
+.alb-grid{grid-auto-rows:1fr}.alb-prog .track{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.stamp.filler{pointer-events:none}.mystery.ghost{border-style:dotted;background:transparent;box-shadow:none;opacity:.45}
+/* ---- 書架頁的郵票進度 ---- */
+.stamp-row{margin:14px 0 0;max-width:34em}
+.stamp-row button{width:100%;display:flex;align-items:center;gap:14px;padding:10px 14px 10px 12px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;background:var(--paper);border:0;border-radius:6px;
+  background-image:radial-gradient(circle at 5px 5px,var(--wall) 3px,transparent 3.5px);background-size:12px 12px;background-position:-6px -6px;background-repeat:space no-repeat;
+  box-shadow:0 0 0 7px var(--paper),0 0 0 8px var(--rule),0 6px 16px -8px var(--shadow);margin:8px 8px 0;width:calc(100% - 16px);transition:transform .2s}
+.stamp-row button:hover,.stamp-row button:focus-visible{transform:translateY(-2px) rotate(-.4deg)}
+.stamp-row button{background-image:none}
+.sr-thumbs{display:flex;flex:none;align-items:center}.sr-thumbs img{width:62px;height:auto;filter:drop-shadow(0 2px 3px #0003);margin-left:-18px;transform:rotate(-3deg)}
+.sr-thumbs img:nth-child(even){transform:rotate(2deg)}.sr-thumbs img:first-child{margin-left:0}
+.sr-lock{width:52px;aspect-ratio:3/2;margin-left:-12px;border:1px dashed var(--brass);border-radius:2px;display:flex;align-items:center;justify-content:center;color:var(--brass);background:color-mix(in srgb,var(--brass) 8%,transparent)}.sr-lock svg{width:20px;height:20px}
+.sr-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--ink-soft)}.sr-txt b{font-family:var(--f-display);font-size:15px;color:var(--ink);font-weight:700}.sr-txt b em{font-style:normal;font-family:var(--f-num);color:var(--brass);margin-left:6px}
+.sr-bar{display:block;height:5px;border-radius:9px;background:var(--rule);overflow:hidden;margin-top:3px}.sr-bar i{display:block;height:100%;background:var(--brass);border-radius:9px}
+.sr-go{font-size:22px;color:var(--brass)}
+/* ---- 字體：書架上的小展示＋字體列表 ---- */
+.fn-shelf{position:relative;padding:20px 18px 0;border-radius:14px 14px 0 0;background:linear-gradient(180deg,color-mix(in srgb,var(--wall) 90%,#fff),var(--wall));overflow:hidden}
+.fn-books{display:flex;align-items:flex-end;gap:16px}
+.fn-books .book{pointer-events:none;transform:none}
+.fn-cover{width:84px;height:126px;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:2px 3px 0 rgba(0,0,0,.08),6px 8px 14px -4px var(--shadow);flex:none}
+.fn-line{margin:0 0 6px;font-family:var(--f-body);font-size:14px;line-height:1.5;min-width:0}.fn-line small{display:block;color:var(--ink-soft);font-family:var(--f-num);font-size:13px}
+.fn-plank{height:14px;margin:0 -18px;background:linear-gradient(180deg,#d5bf9f,#b79b78 70%,#9d8262);box-shadow:0 6px 10px -6px var(--shadow)}
+.fn-tabs{display:flex;margin:14px 0 4px;border-bottom:1px solid var(--rule)}
+.fn-tabs button{flex:1;padding:10px 4px;border:0;background:none;color:var(--ink-soft);font:inherit;font-size:14.5px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.fn-tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--brass)}
+.fn-list{list-style:none;margin:0;padding:0}
+.fn-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 4px;border:0;border-bottom:1px solid var(--rule);background:none;text-align:left;color:var(--ink);cursor:pointer;font:inherit}
+.fn-nm{flex:none;width:7.5em;font-size:14px;line-height:1.35}.fn-nm small{display:block;font-size:11.5px;color:var(--ink-soft)}
+.fn-sm{flex:1;min-width:0;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fn-dot{flex:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--rule)}
+.fn-row.on .fn-dot{border-color:var(--brass);background:radial-gradient(circle,var(--brass) 45%,transparent 50%)}
+.fn-row.on .fn-nm{font-weight:700}
+.fn-row:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+.sr-txt b{white-space:nowrap}.sr-txt b em{margin-left:4px;font-size:.95em}.alb-leaf{margin-top:8px}
+@media (max-width:480px){.sr-thumbs img{width:46px;margin-left:-14px}.sr-lock{width:42px}.stamp-row button{gap:10px}}
+.pic{display:inline-block;height:1.25em;width:1.5em;object-fit:contain;flex:none;vertical-align:middle;-webkit-user-drag:none;user-select:none}
+.pstat .ps-l .pic{height:24px;width:30px}
+.pst .pic{height:15px;width:18px}
+.pile-menu .pic{height:20px;width:24px}
+.pe-steps .pic{height:34px;width:42px;margin:0 auto 4px}
+.pe-illu{width:min(240px,64vw);height:auto;display:block;margin:0 auto}
+@media (max-width:640px){.pst .pic{height:13px;width:15px}.pstat .ps-l .pic{height:22px;width:26px}}
+:root[data-theme="dark"] .pic,:root[data-theme="dark"] .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pic,:root:not([data-theme="light"]) .pe-illu{filter:brightness(1.35) drop-shadow(0 0 .7px #fff9)}}
 </style>
 
 </head>
@@ -1156,6 +1195,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
       </div>
       <p class="summary" id="summary"></p>
       <div class="goal-row" id="goalRow"></div>
+      <div class="stamp-row" id="stampRow" hidden></div>
     </div>
     <div class="rhythm">
       <div class="rhythm-head"><span>每月讀了幾本</span><span id="rhythmHint">點月份跳到那一層</span></div>
@@ -1361,9 +1401,9 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
   <div class="sheet font-sheet">
     <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="fnTitle">字體與書背</h3><p>選了馬上看得到，書架上的書背、封面上的書名也會跟著變。</p></div><button type="button" class="x" id="fnClose" aria-label="關閉">×</button></div>
     <div class="sheet-body">
-      <div class="fn-prev" id="fnPrev" aria-label="預覽"></div>
-      <h4 class="fn-h">介面字體</h4><div class="fn-chips" id="fnUi"></div>
-      <h4 class="fn-h">書名、書背字體</h4><div class="fn-chips" id="fnBook"></div>
+      <div class="fn-shelf" id="fnPrev" aria-label="預覽"></div>
+      <div class="fn-tabs" role="tablist" aria-label="要換哪裡的字體"><button type="button" role="tab" data-t="book" class="on">書名與書背</button><button type="button" role="tab" data-t="ui">整個介面</button></div>
+      <ul class="fn-list" id="fnList"></ul>
       <p class="fn-note">字體會從 Google Fonts 載入，第一次選要連上網路，載入前會先用預設字體。</p>
     </div>
   </div>
@@ -1397,7 +1437,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
       <div class="alb-book">
         <section class="alb-page" aria-label="集郵冊內頁">
           <header class="alb-head"><span class="alb-brand"><img src="stamps/logo.webp" alt="" width="30" height="30"><span>頁間日子</span></span><span class="small">每讀完 4 本收藏一枚</span></header>
-          <div class="alb-prog" aria-live="polite"><p id="albTotal"></p><p class="small" id="albNext"></p><div class="track" id="albProg" role="progressbar" aria-label="下一枚郵票進度" aria-valuemin="0" aria-valuemax="100"><div class="bar" id="albBar"></div></div></div>
+          <div class="alb-prog" aria-live="polite"><p class="alb-ytitle"><button type="button" class="alb-yb" id="albYPrev" aria-label="前一年" hidden>‹</button><span id="albTotal"></span><button type="button" class="alb-yb" id="albYNext" aria-label="下一年" hidden>›</button></p><p class="small" id="albNext"></p><div class="track" id="albProg" role="progressbar" aria-label="下一枚郵票進度" aria-valuemin="0" aria-valuemax="100"><div class="bar" id="albBar"></div></div></div>
           <div class="alb-leaf" id="albLeaf"><div class="alb-grid" id="albGrid"></div></div>
           <p class="alb-note" id="albNote"></p>
           <div class="alb-ctl"><button type="button" class="btn sm" id="albPrev">← 上一頁</button><span class="small" id="albPageNo"></span><button type="button" class="btn sm" id="albNextPg">下一頁 →</button></div>
@@ -1740,7 +1780,7 @@ function renderIntro(animateBars){
     if(best&&counts[best]>1)html+=`讀得最多的是<em>${best}</em>月，那個月讀了<em>${counts[best]}</em>本。`;
     if(years.includes(currentYear-1)){const prev=yearBooks(currentYear-1).length,d=n-prev;html+=`<span class="delta">${d>0?`比 ${currentYear-1} 年多 ${d} 本`:d<0?`比 ${currentYear-1} 年少 ${-d} 本`:`和 ${currentYear-1} 年一樣多`}</span>`}
   }
-  $('summary').innerHTML=html;renderGoalRow();
+  $('summary').innerHTML=html;renderGoalRow();if(typeof renderStampRow==='function')renderStampRow();
   const max=Math.max(1,...counts.slice(1));
   $('bars').innerHTML=counts.slice(1).map((c,k)=>`<button type="button" data-m="${k+1}" aria-label="${k+1}月，${c} 本"${c?'':' tabindex="-1"'}><span class="n">${c||''}</span><span class="col ${c?'':'zero'}" data-h="${Math.round(c/max*100)}" style="height:${animateBars&&!reduceMotion()?0:`max(4px, calc(${Math.round(c/max*100)}% - 20px))`}"></span></button>`).join('');
   $('monthsAxis').innerHTML=Array.from({length:12},(_,k)=>`<span>${k+1}</span>`).join('');
@@ -2179,7 +2219,7 @@ $('editForm').onsubmit=async e=>{
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
   const goalBefore=yearBooks(b.year).length;
-  const albBefore=books.length;
+  const albBefore=albYearCount(b.year);
   try{await saveBook(b)}catch(ex){btn.disabled=false;btn.textContent=isNew?'放上書架':'儲存';err.hidden=false;err.textContent='沒有存進去：'+ex.message+'。可能是瀏覽器空間不足，先匯出備份再試一次。';return}
   btn.disabled=false;markDirty();await reload();goalCelebrate(b.year,goalBefore);
   if(batchModeActive){toast('已儲存，前往下一本');batchIndex++;currentYear=b.year;render(false);await openBatchBook();return}
@@ -3056,12 +3096,7 @@ function pileCover(b){
   if(b.cover)return `<img src="${esc(b.cover)}" alt="" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`;
   return `<span class="pc-gen" style="--h:${hue(b.title)}"><span>${esc(spineTitle(b.title))}</span></span>`;
 }
-const PILE_IC={
-  want:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 19.5s-7.5-4.4-7.5-10A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7.5 2.5c0 5.6-7.5 10-7.5 10z"/></svg>',
-  todo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5h11v17h-11a1.5 1.5 0 0 1-1.5-1.5V5a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M5 17.5a1.5 1.5 0 0 1 1.5-1.5h11"/></svg>',
-  reading:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg>',
-  done:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.2 12.3 2.6 2.6 5-5.4"/></svg>'
-};
+const PILE_IC=Object.fromEntries(['want','todo','reading','done'].map(k=>[k,`<img class="pic pic-${k}" src="stamps/pile-${k}.webp" alt="" aria-hidden="true" draggable="false" decoding="async">`]));
 const PILE_SORTS=[{k:'status',l:'依狀態'},{k:'added',l:'新增順序'},{k:'due',l:'到期日'},{k:'title',l:'書名'},{k:'manual',l:'我排的順序'}];
 var pileFilter=['want','todo','reading'].includes(ls.get('pile-filter'))?ls.get('pile-filter'):'all';
 var pileSort=PILE_SORTS.some(s=>s.k===ls.get('pile-sort'))?ls.get('pile-sort'):'status';
@@ -3092,7 +3127,7 @@ function pileTile(b){
     ${stBadge(b.status)}
   </article>`;
 }
-const PILE_ILLU=`<svg class="pe-illu" viewBox="0 0 120 92" aria-hidden="true"><path d="M20 30l3.2 7.8L31 41l-7.8 3.2L20 52l-3.2-7.8L9 41l7.8-3.2z" fill="#c9a45c"/><g stroke="#2f4a4c" stroke-width="3" stroke-linejoin="round"><rect x="40" y="62" width="58" height="20" rx="4" fill="#e3cfa1"/><rect x="86" y="62" width="6" height="20" fill="#b0604f" stroke="none"/><rect x="42" y="40" width="54" height="18" rx="4" fill="#efe6d2" transform="rotate(-4 69 49)"/><rect x="38" y="16" width="56" height="20" rx="4" fill="#a9bdb5" transform="rotate(4 66 26)"/></g></svg>`;
+const PILE_ILLU=`<img class="pe-illu" src="stamps/pile-illu.webp" alt="" aria-hidden="true" draggable="false" width="240" height="174">`;
 function renderPile(st){
   stageCtx=[];
   const n=pile.length,urgent=pileUrgent(),cnt=k=>pile.filter(b=>b.status===k).length;
@@ -3410,14 +3445,16 @@ function fontApply(){
   if(b.k==='def')r.removeProperty('--f-book');else r.setProperty('--f-book',b.css);
 }
 fontApply();
+var fnTab='book';
 function fontRenderBox(){
   const sample={id:'fn-demo',title:'頁間日子',author:'示意作者',year:new Date().getFullYear(),month:'1月'};
-  $('fnPrev').innerHTML=`<div class="slot" style="height:auto;padding:0">${bookEl(sample)}</div><div class="fn-cover"><div class="gen" style="--h:${hue('慢慢讀')}"><span class="s">${sample.year}</span><span class="t">慢慢讀，慢慢活</span><span class="a">示意作者</span></div></div><div class="fn-txt"><b>慢慢讀，慢慢活</b><p>今天讀到哪裡了？</p><small>0123456789　2026 年 10 月</small></div>`;
-  const chips=(id,cur,attr)=>{$(id).innerHTML=FONT_OPTS.map(f=>`<button type="button" data-f="${f.k}" class="${f.k===cur?'on':''}" aria-pressed="${f.k===cur}" style="font-family:${f.k==='def'?'inherit':f.css}">${f.l}</button>`).join('')};
-  chips('fnUi',fontUi);chips('fnBook',fontBook);
-  $('fnUi').querySelectorAll('button').forEach(x=>x.onclick=()=>{fontUi=x.dataset.f;ls.set('font-ui',fontUi);fontApply();fontRenderBox();renderStage()});
-  $('fnBook').querySelectorAll('button').forEach(x=>x.onclick=()=>{fontBook=x.dataset.f;ls.set('font-book',fontBook);fontApply();fontRenderBox();renderStage()});
+  $('fnPrev').innerHTML=`<div class="fn-books"><div class="slot" style="height:auto;padding:0">${bookEl(sample)}</div><div class="fn-cover"><div class="gen" style="--h:${hue('慢慢讀')}"><span class="s">${sample.year}</span><span class="t">慢慢讀，慢慢活</span><span class="a">示意作者</span></div></div><p class="fn-line">今天讀到哪裡了？<small>0123456789</small></p></div><div class="fn-plank" aria-hidden="true"></div>`;
+  document.querySelectorAll('[data-t]').forEach(b=>{const on=b.dataset.t===fnTab;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+  const cur=fnTab==='ui'?fontUi:fontBook;
+  $('fnList').innerHTML=FONT_OPTS.map(f=>{const nm=f.l.replace(/（.*）/,''),ds=(f.l.match(/（(.*)）/)||[])[1]||'預設的樣子';return `<li><button type="button" class="fn-row${f.k===cur?' on':''}" data-f="${f.k}" aria-pressed="${f.k===cur}"><span class="fn-nm">${nm}<small>${ds}</small></span><span class="fn-sm" style="font-family:${f.k==='def'?'var(--f-book-def)':f.css}">慢慢讀，慢慢活</span><span class="fn-dot" aria-hidden="true"></span></button></li>`}).join('');
+  $('fnList').querySelectorAll('button').forEach(x=>x.onclick=()=>{if(fnTab==='ui'){fontUi=x.dataset.f;ls.set('font-ui',fontUi)}else{fontBook=x.dataset.f;ls.set('font-book',fontBook)}fontApply();fontRenderBox();renderStage()});
 }
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{fnTab=b.dataset.t;fontRenderBox()});
 $('mFont').onclick=()=>{closeMenu();FONT_OPTS.forEach(f=>fontLoad(f.fam));fontRenderBox();$('fontBox').showModal()};
 $('fnClose').onclick=()=>$('fontBox').close();
 
@@ -3431,14 +3468,22 @@ const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER);
 const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —'];
 const albImg=s=>`stamps/${s.f}.webp`;
 var albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
-function albCount(){return books.length+(demoMode?albDemoExtra:0)}
+/* 集郵冊是「年度」的：每一年各有一本，只算那一年讀完的書。從 2026 年開始。 */
+const ALB_FIRST=2026;
+var albYear=null;
+function albYearCount(y){return books.filter(b=>Number(b.year)===Number(y)).length}
+function albYears(){const now=new Date().getFullYear(),mx=Math.max(now,...books.map(b=>Number(b.year)||0));const a=[];for(let y=ALB_FIRST;y<=mx;y++)a.push(y);return a}
+function albCurYear(){const ys=albYears();if(albYear==null||!ys.includes(albYear))albYear=ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1];return albYear}
+function albCount(){return albYearCount(albCurYear())+(demoMode?albDemoExtra:0)}
 function albOwned(c=albCount()){return Math.min(ALB_STAMPS.length,Math.floor(c/4))}
-function albSeen(){if(demoMode)return albSeenMem;try{return new Set(JSON.parse(ls.get('album-seen')||'[]'))}catch{return new Set()}}
-function albMarkSeen(i){if(demoMode){albSeenMem.add(i);return}const s=albSeen();s.add(i);ls.set('album-seen',JSON.stringify([...s]))}
+/* 已看過的郵票：每年各記一份（舊版存的是一串數字，當作 2026 年） */
+function albSeenAll(){try{const v=JSON.parse(ls.get('album-seen')||'{}');return Array.isArray(v)?{[ALB_FIRST]:v}:(v&&typeof v==='object'?v:{})}catch{return {}}}
+function albSeen(){if(demoMode)return albSeenMem;return new Set(albSeenAll()[albCurYear()]||[])}
+function albMarkSeen(i){if(demoMode){albSeenMem.add(i);return}const all=albSeenAll(),y=albCurYear(),s=new Set(all[y]||[]);s.add(i);all[y]=[...s];ls.set('album-seen',JSON.stringify(all))}
 /* 郵戳日期：用「讀完第 n 本」那本書的年月 */
 function albDate(n){
-  const arr=[...books].sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b));
-  const b=arr[n-1];if(!b)return String(new Date().getFullYear());
+  const arr=books.filter(b=>Number(b.year)===albCurYear()).sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b));
+  const b=arr[n-1];if(!b)return String(albCurYear());
   const m=monthNum(b.month);return m?`${b.year}.${String(m).padStart(2,'0')}`:String(b.year);
 }
 const albLater=(fn,ms)=>{const t=setTimeout(fn,ms);albT.push(t);return t};
@@ -3465,11 +3510,11 @@ function albSound(kind){
     }else if(kind==='flip'){                             /* 翻頁：紙張沙一聲 */
       play(noise(.32,p=>Math.sin(Math.min(1,p*1.25)*Math.PI*.9)*.8),t0,'bandpass',3400,1500,.7,.42);
       play(noise(.05,p=>1-p),t0+.27,'highpass',2200,0,.6,.12);
-    }else if(kind==='stamp'){                            /* 蓋章：橡膠章壓下去的悶響＋紙面一點點回彈 */
-      thump(t0,190,46,.24,.9);
-      play(noise(.045,p=>Math.pow(1-p,2.2)),t0,'bandpass',1500,0,1.1,.5);
-      play(noise(.11,p=>Math.pow(1-p,1.4)),t0+.02,'lowpass',900,0,.7,.35);
-      thump(t0+.09,120,70,.1,.18);
+    }else if(kind==='stamp'){                            /* 郵票貼上去：紙張的聲音——輕輕一壓，再一點紙面摩擦 */
+      play(noise(.07,p=>Math.pow(1-p,1.8)),t0,'bandpass',2600,1800,.8,.32);
+      play(noise(.16,p=>Math.sin(p*Math.PI)*Math.pow(1-p,.6)*.8),t0+.015,'bandpass',4200,2400,.6,.22);
+      play(noise(.03,p=>1-p),t0+.06,'highpass',3000,0,.7,.16);
+      thump(t0+.01,140,95,.07,.07);
     }else if(kind==='chime'){                            /* 新郵票解鎖：兩個輕輕的鈴聲 */
       tone(t0,1318.5,.7,.16);tone(t0+.12,1760,.9,.14);tone(t0+.26,2093,1.1,.1);
     }else if(kind==='knock'){                            /* 點到還沒解鎖的格子：輕敲 */
@@ -3491,12 +3536,13 @@ function albGridHTML(page,count,animate){
   return ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).map((s,j)=>{
     const i=page*ALB_PER+j,fresh=animate&&s.n<=count&&!seen.has(i);
     return albStampHTML(s,i,count,fresh?{land:260+(k++)*420}:{});
-  }).join('');
+  }).join('')+Array.from({length:Math.max(0,ALB_PER-ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).length)},()=>'<div class="stamp filler" aria-hidden="true"><span class="mystery ghost"></span><span class="stamp-name">&nbsp;</span><span class="small">&nbsp;</span></div>').join('');
 }
 function albRender(animate){
   const count=albCount(),owned=albOwned(count),next=ALB_STAMPS.find(s=>s.n>count);
-  albEl('albTotal').textContent=`已收藏 ${owned}／${ALB_STAMPS.length} 枚`;
-  albEl('albNext').textContent=next?`再讀 ${next.n-count} 本，就能揭曉下一枚神祕郵票`:'十枚郵票收藏完成，謝謝每一本書的陪伴。';
+  const ys=albYears(),yi=ys.indexOf(albCurYear());albEl('albTotal').textContent=`${albCurYear()} 年　已收藏 ${owned}／${ALB_STAMPS.length} 枚`;
+  albEl('albYPrev').hidden=albEl('albYNext').hidden=ys.length<2;albEl('albYPrev').disabled=yi<=0;albEl('albYNext').disabled=yi>=ys.length-1;
+  albEl('albNext').textContent=next?`${albCurYear()} 年再讀 ${next.n-count} 本，就能揭曉下一枚神祕郵票`:`${albCurYear()} 年的十枚郵票收藏完成，謝謝每一本書的陪伴。`;
   const prev=owned?ALB_STAMPS[owned-1].n:0,pct=next?Math.max(0,Math.min(100,100*(count-prev)/(next.n-prev))):100;
   albEl('albBar').style.width=pct+'%';albEl('albProg').setAttribute('aria-valuenow',Math.round(pct));
   albEl('albPageNo').textContent=`${albPage+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[albPage]||'';
@@ -3517,13 +3563,13 @@ function albSetState(open){albOpenState=open;albEl('albStage').dataset.state=ope
 function albOpenBook(jumpTo){
   if(albBusy||albOpenState)return;albBusy=true;
   if(typeof jumpTo==='number')albPage=Math.floor(jumpTo/ALB_PER);
-  albRender(false);albSetState(true);albSound('open');
+  albEl('albStage').classList.remove('closing');albRender(false);albSetState(true);albSound('open');
   const wait=reduceMotion()?60:1000;
   albLater(()=>{albBusy=false;albRender(true)},wait);
 }
 function albShut(){
   if(albBusy||!albOpenState)return;albBusy=true;albClear();albEl('albDetail').open&&albEl('albDetail').close();
-  albSetState(false);albSound('close');albLater(()=>{albBusy=false},reduceMotion()?60:980);
+  const stg=albEl('albStage');stg.classList.add('closing');albSetState(false);albSound('close');albLater(()=>{albBusy=false;stg.classList.remove('closing')},reduceMotion()?60:1050);
 }
 /* 翻頁：舊頁像紙一樣翻走；往回翻則是前一頁從左邊蓋回來 */
 function albTurn(dir){
@@ -3568,7 +3614,8 @@ async function albDownload(s){
   }catch{b.textContent='下載失敗，再試一次';b.disabled=false}
 }
 /* ---- 開關整本集郵冊 ---- */
-function albOpenDialog(jumpTo,autoOpen){
+function albOpenDialog(jumpTo,autoOpen,year){
+  if(year)albYear=Number(year);
   closeMenu&&closeMenu();albClear();albBusy=false;
   albPage=typeof jumpTo==='number'?Math.floor(jumpTo/ALB_PER):0;
   albEl('albDemo').hidden=!demoMode;
@@ -3596,14 +3643,17 @@ albEl('albSim').onclick=()=>{
   else{albRender(false);toast('已多讀完一本（示範）')}
 };
 function albCelebrateIn(i){albRender(true);albBusy=false}
-$('mAlbum').onclick=()=>{closeMenu();albOpenDialog()};
-function albMenuLabel(){const o=albOwned();const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`已收藏 ${o}／${ALB_STAMPS.length} 枚郵票`}
+$('mAlbum').onclick=()=>{closeMenu();albYear=null;albOpenDialog()};
+function albLatestYear(){const ys=albYears();return ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1]}
+function albMenuLabel(){const y=albLatestYear(),o=albOwned(albYearCount(y)+(demoMode?albDemoExtra:0));const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`${y} 年　已收藏 ${o}／${ALB_STAMPS.length} 枚郵票`}
 albMenuLabel();
 
 /* ---- 讀完一本書：剛好湊滿 4 本時，蓋章慶祝 ---- */
 function albAfterFinish(b,before,done){
-  const after=books.length,o0=albOwned(before),o1=albOwned(after);
-  albMenuLabel();
+  albYear=Number(b.year)>=ALB_FIRST?Number(b.year):null;
+  if(Number(b.year)<ALB_FIRST){albMenuLabel();done&&done();return}
+  const after=albYearCount(b.year),o0=albOwned(before),o1=albOwned(after);
+  albMenuLabel();renderStampRow();
   if(o1>o0&&!demoMode){albCelebrate(o1-1,done);return}
   done&&done();
   const left=ALB_STAMPS.find(s=>s.n>after);
@@ -3624,7 +3674,7 @@ function albCelebrate(i,done){
 /* ---- 第一次更新到這版：提醒有集郵冊（只提醒一次） ---- */
 function albHint(){
   if(demoMode||ls.get('album-hinted')==='1'||!books.length)return;
-  const n=albOwned();if(!n)return;
+  albYear=albLatestYear();const n=albOwned();if(!n)return;
   ls.set('album-hinted','1');
   const h=albEl('albHint');h.querySelector('.albh-t b').textContent='新功能：集郵冊';h.querySelector('.albh-t > span').textContent=`你已經收集了 ${n} 枚郵票，點我翻開看看`;
   h.hidden=false;requestAnimationFrame(()=>h.classList.add('in'));
@@ -3633,6 +3683,24 @@ function albHint(){
   setTimeout(hide,12000);
 }
 setTimeout(albHint,3800);
+
+function albSwitchYear(d){const ys=albYears(),i=ys.indexOf(albCurYear()),j=i+d;if(j<0||j>=ys.length||albBusy)return;albYear=ys[j];albPage=0;albSeenMem=new Set();albRender(false)}
+albEl('albYPrev').onclick=()=>albSwitchYear(-1);albEl('albYNext').onclick=()=>albSwitchYear(1);
+
+/* ---- 書架頁上的郵票進度：讓人每天看到「再一本就有新郵票」 ---- */
+function renderStampRow(){
+  const el=$('stampRow');if(!el)return;
+  const y=Number(currentYear);
+  if(!y||y<ALB_FIRST||view==='pile'){el.hidden=true;return}
+  const cnt=albYearCount(y)+(demoMode&&y===albLatestYear()?albDemoExtra:0),owned=albOwned(cnt),next=ALB_STAMPS.find(s=>s.n>cnt);
+  const prev=owned?ALB_STAMPS[owned-1].n:0,pct=next?Math.round(100*(cnt-prev)/(next.n-prev)):100;
+  const shown=ALB_STAMPS.slice(Math.max(0,owned-3),owned);
+  const thumbs=shown.map(s=>`<img src="${albImg(s)}" alt="" loading="lazy" decoding="async" draggable="false">`).join('')+(next?`<span class="sr-lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span>`:'');
+  const line=!next?`${y} 年的十枚郵票都收齊了`:cnt===0?`讀完第 ${next.n} 本，蓋下今年的第一枚郵票`:`再讀 ${next.n-cnt} 本，就能蓋下第 ${owned+1} 枚郵票`;
+  el.hidden=false;
+  el.innerHTML=`<button type="button" id="srBtn" aria-label="打開 ${y} 年的集郵冊，已收藏 ${owned} 枚，${line}"><span class="sr-thumbs">${thumbs}</span><span class="sr-txt"><b>${y} 集郵冊　<em>${owned}／${ALB_STAMPS.length}</em></b><span>${line}</span><i class="sr-bar"><i style="width:${pct}%"></i></i></span><span class="sr-go" aria-hidden="true">›</span></button>`;
+  $('srBtn').onclick=()=>{albYear=y;albOpenDialog()};
+}
 
 /* ================= 示範書櫃（資料只在記憶體，不寫入書房、不同步） ================= */
 var demoMode=false,demoGoals={},demoPrevView='shelf';
