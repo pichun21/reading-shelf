@@ -28,6 +28,7 @@
   --glow:rgba(255,226,170,0); --veil:rgba(20,26,26,.42); --shadow:rgba(32,38,32,.20);
   --f-display:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
   --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-book:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
   --f-num:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   --r:10px;
   color-scheme:light;
@@ -860,6 +861,8 @@ html[data-view="pile"] #intro{display:none}
 .pile-chips button.on small{color:inherit;opacity:.85}
 .pile-tr{display:flex;align-items:center;gap:8px;margin-left:auto}
 .pile-sort select{height:36px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:13.5px;padding:0 30px 0 14px;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 16px) 16px,calc(100% - 11px) 16px;background-size:5px 5px;background-repeat:no-repeat}
+.linkish{background:none;border:0;color:var(--accent,#b5532f);text-decoration:underline;font:inherit;cursor:pointer;padding:0 4px}
+.pile-cat select{max-width:150px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .pile-lay{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink)}
 .pile-lay:hover{background:var(--wall-2)}
@@ -933,6 +936,162 @@ html[data-view="pile"] #intro{display:none}
   .pe-steps li span{font-size:12px}
 }
 @media (max-width:360px){.pile-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* ================= 集郵冊 ================= */
+:root{--alb-paper:#f7f2e7;--alb-ink:#263c39;--alb-soft:#69776f;--alb-rule:#d8d8ca;--alb-spine:#60756b;--alb-mark:#a34d45;--alb-desk:#2a3a37;--alb-desk2:#1a2625;--alb-mys:#eae9df;--alb-mysb:#c1c4b2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--alb-paper:#292d27;--alb-ink:#ece7dc;--alb-soft:#b6bdb6;--alb-rule:#505a52;--alb-spine:#667d6c;--alb-mark:#dc9b8e;--alb-mys:#343c32;--alb-mysb:#70816f}}
+:root[data-theme="dark"]{--alb-paper:#292d27;--alb-ink:#ece7dc;--alb-soft:#b6bdb6;--alb-rule:#505a52;--alb-spine:#667d6c;--alb-mark:#dc9b8e;--alb-mys:#343c32;--alb-mysb:#70816f}
+dialog.alb{width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;background:var(--alb-desk2);overflow:hidden}
+dialog.alb::backdrop{background:#0d1514}
+.alb-desk{position:relative;width:100%;height:100%;display:grid;place-items:center;padding:56px 12px 20px;background:radial-gradient(120% 90% at 50% 38%,var(--alb-desk) 0%,var(--alb-desk2) 100%)}
+.alb-x,.alb-mute{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#e9e2cf;background:#ffffff14;border:1px solid #ffffff24;z-index:6}
+.alb-x{right:12px}.alb-mute{right:62px}
+.alb-x svg,.alb-mute svg{width:20px;height:20px}
+.alb-mute .off{display:none}.alb-mute[data-m="1"] .on{display:none}.alb-mute[data-m="1"] .off{display:block}
+.alb-stage{display:flex;flex-direction:column;align-items:center;gap:18px}
+.alb-book{position:relative;width:min(94vw,500px,calc((100dvh - 168px)*.7209));aspect-ratio:620/860;perspective:1900px;filter:drop-shadow(0 22px 28px #0008);transition:transform .9s cubic-bezier(.3,.6,.2,1)}
+.alb-stage[data-state="closed"] .alb-book{transform:translateX(0) rotateZ(-.6deg)}
+.alb-page{position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:10px 14px 10px 18px;justify-content:space-between;color:var(--alb-ink);font-family:var(--f-display);background:var(--alb-paper);background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,#827f6b08 4px);border-radius:6px 14px 14px 6px;border-left:10px solid var(--alb-spine);box-shadow:inset 6px 0 12px -6px #0003;visibility:hidden;transition:visibility 0s .95s;display:flex;flex-direction:column}
+.alb-stage[data-state="open"] .alb-page{visibility:visible;transition:visibility 0s}
+.alb-page p{margin:3px 0;line-height:1.5}.alb-page h2{font-size:21px;font-weight:500;margin:8px 0 0;letter-spacing:.04em}
+.alb-page .small{font-family:var(--f-body);font-size:11.5px;color:var(--alb-soft)}
+.alb-head{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--alb-rule);padding-bottom:8px}
+.alb-brand{display:flex;align-items:center;gap:7px;font-size:14px}.alb-brand img{width:26px;height:26px;object-fit:contain}
+.alb-prog{margin:6px 0 0}.alb-prog p:first-child{font-size:14.5px}
+.alb-prog .track{height:5px;background:color-mix(in srgb,var(--alb-ink) 12%,transparent);border-radius:9px;margin-top:7px;overflow:hidden}
+.alb-prog .bar{height:100%;background:var(--alb-spine);border-radius:9px;transition:width .6s cubic-bezier(.3,.7,.2,1)}
+.alb-leaf{position:relative;perspective:1200px;flex:none;display:flex;align-items:center}
+.alb-grid{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;padding:6px 0;transform-origin:left center;backface-visibility:hidden;background:var(--alb-paper)}
+.alb-over{position:absolute;left:0;top:0;right:0;z-index:4;box-shadow:6px 0 18px #0003;will-change:transform}
+.alb-note{text-align:center;letter-spacing:.12em;font-size:11px;color:var(--alb-soft);margin:2px 0}
+.alb-ctl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.alb-ctl .btn:disabled{opacity:.35}
+.alb-demo[hidden]{display:none}.alb-demo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--alb-rule)}
+.alb-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--alb-rule)}
+.alb-page .btn{background:transparent;color:var(--alb-ink);border-color:var(--alb-rule)}.alb-page .btn.primary{background:var(--alb-spine);color:#fff;border-color:var(--alb-spine)}
+.stamp{border:0;background:transparent;color:inherit;padding:0;text-align:center;min-width:0;border-radius:8px;display:flex;flex-direction:column;align-items:center;font-family:inherit}
+.stamp .s-img{position:relative;display:block;width:100%}
+.stamp img{display:block;width:100%;height:auto;filter:drop-shadow(0 3px 3px #0002);-webkit-user-drag:none;user-select:none}
+.stamp:nth-child(odd) img{transform:rotate(-1deg)}.stamp:nth-child(even) img{transform:rotate(1deg)}
+.stamp-name{display:block;margin:3px 0 0;font-size:12.5px;line-height:1.3}
+.stamp .postmark{display:inline-block;font-family:var(--f-body);color:var(--alb-mark);font-size:10px;border:1px solid currentColor;border-radius:3px;padding:2px 5px;transform:rotate(-3deg);margin-top:2px}
+.stamp .postmark em{font-style:normal}
+.mystery{width:100%;aspect-ratio:3/2;display:flex;align-items:center;justify-content:center;border:1px dashed var(--alb-mysb);background:var(--alb-mys);color:var(--alb-soft);border-radius:2px;box-shadow:inset 0 1px 4px #0001}
+.mystery svg{width:26px;height:26px}.mystery.big{max-width:420px;margin:auto;aspect-ratio:3/2}.mystery.big svg{width:44px;height:44px}
+.stamp.locked.shake{animation:albShake .42s}
+@keyframes albShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px) rotate(-1.5deg)}45%{transform:translateX(4px) rotate(1deg)}70%{transform:translateX(-2px)}}
+/* 封面：像書皮一樣從書背（左邊）翻開 */
+.alb-cover{position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;transition:transform .95s cubic-bezier(.45,.05,.2,1),opacity 0s;z-index:5;cursor:pointer;opacity:1;border-radius:4px 12px 12px 4px}
+.alb-cover .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:4px 12px 12px 4px;overflow:hidden}
+.alb-cover .front img{width:100%;height:100%;object-fit:cover;display:block;user-select:none}
+.alb-cover .back{transform:rotateY(180deg);background:#2f5551 repeating-linear-gradient(45deg,transparent,transparent 2px,#ffffff06 3px);box-shadow:inset -8px 0 14px #0004}
+.alb-stage[data-state="open"] .alb-cover{transform:rotateY(-171deg);opacity:0;transition:transform .95s cubic-bezier(.45,.05,.2,1),opacity .2s .95s;pointer-events:none}
+.alb-cover:focus-visible{outline:2px solid #e9d9a4;outline-offset:4px}
+.alb-open,.alb-shut{min-width:170px}.alb-shut{background:#ffffff14;color:#efe8d5;border-color:#ffffff30}.alb-shut[hidden],.alb-open[hidden]{display:none}
+/* 蓋章：從上方落下、壓進紙裡、回彈，郵戳隨後蓋上 */
+.stamp.land img{animation:albLand .62s cubic-bezier(.3,.9,.3,1) both;animation-delay:var(--d,0ms)}
+.stamp.land .postmark{animation:albMark .4s cubic-bezier(.3,1.4,.4,1) both;animation-delay:calc(var(--d,0ms) + .34s)}
+.stamp.land .stamp-name{animation:albFade .4s both;animation-delay:calc(var(--d,0ms) + .28s)}
+.stamp.land .ring{position:absolute;left:50%;top:50%;width:30%;aspect-ratio:1;margin:-15% 0 0 -15%;border-radius:50%;border:2px solid #b9a26a;opacity:0;pointer-events:none;animation:albRing .55s ease-out both;animation-delay:calc(var(--d,0ms) + .3s)}
+@keyframes albLand{0%{opacity:0;transform:translateY(-46px) scale(1.55) rotate(-9deg);filter:blur(5px) drop-shadow(0 26px 14px #0004)}52%{opacity:1;transform:translateY(0) scale(1.02) rotate(-1deg);filter:blur(0) drop-shadow(0 10px 8px #0003)}68%{transform:translateY(2px) scale(.94)}84%{transform:scale(1.025)}100%{transform:scale(1)}}
+@keyframes albMark{0%{opacity:0;transform:rotate(-12deg) scale(1.9)}100%{opacity:1;transform:rotate(-3deg) scale(1)}}
+@keyframes albFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes albRing{0%{opacity:.8;transform:scale(.4)}100%{opacity:0;transform:scale(4.2)}}
+/* 放大看 */
+dialog.albd{width:min(92vw,520px);max-height:88dvh;margin:auto;padding:0;border:1px solid var(--alb-rule);border-radius:16px;background:var(--alb-paper);color:var(--alb-ink);box-shadow:0 20px 70px #0007;overflow:auto}
+dialog.albd::backdrop{background:#10181799;backdrop-filter:blur(3px)}
+.albd-card{padding:18px 18px 16px;text-align:center}.albd-t{font-family:var(--f-display);font-size:17px;margin:0 0 10px}
+.albd-art{max-width:440px;margin:0 auto;transition:transform .12s ease-out;transform-style:preserve-3d;touch-action:pan-y}
+.albd-art img{display:block;width:100%;filter:drop-shadow(0 12px 14px #0004);animation:albPop .5s cubic-bezier(.3,1.3,.4,1) both;-webkit-user-drag:none}
+@keyframes albPop{from{opacity:0;transform:scale(.88) rotate(-3deg)}to{opacity:1;transform:none}}
+.albd .small{font-family:var(--f-body);font-size:12px;color:var(--alb-soft);margin:10px 0 0}
+.albd-act{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.albd .btn{background:transparent;color:var(--alb-ink);border-color:var(--alb-rule)}.albd .btn.primary{background:var(--alb-spine);color:#fff;border-color:var(--alb-spine)}
+/* 讀完解鎖：新郵票蓋下去 */
+dialog.albw{width:min(92vw,420px);margin:auto;padding:0;border:0;background:transparent;color:#f2ead4;overflow:visible}
+dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b1312f2);backdrop-filter:blur(4px)}
+.albw-card{text-align:center;padding:10px}
+.albw-kick{font-family:var(--f-body);letter-spacing:.3em;font-size:12px;color:#d9c88e;margin:0 0 10px;opacity:0}
+.albw-stage{position:relative;width:min(78vw,340px);margin:0 auto 14px}
+.albw-stage img{display:block;width:100%;opacity:0;filter:drop-shadow(0 18px 20px #0007)}
+.albw h3{font-family:var(--f-display);font-size:24px;font-weight:500;margin:4px 0;opacity:0;letter-spacing:.06em}
+.albw p#albwSub{margin:0 0 18px;color:#cfd8c6;font-size:14px;opacity:0}
+.albw-btn{display:flex;gap:10px;justify-content:center;opacity:0}
+.albw .btn{background:transparent;border-color:#ffffff40;color:#f2ead4}.albw .btn.primary{background:#e9d9a4;border-color:#e9d9a4;color:#23332f}
+.albw-spark{position:absolute;inset:0;pointer-events:none}
+.albw-spark i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;background:#f1d98a;border-radius:2px;transform:rotate(45deg) scale(0);opacity:0}
+.albw.go .albw-kick{animation:albFade .5s .1s both}
+.albw.go .albw-stage img{animation:albWin 1s cubic-bezier(.3,.9,.3,1) .25s both}
+.albw.go .albw-spark i{animation:albSpark .9s ease-out calc(.82s + var(--dl)) both}
+.albw.go h3{animation:albFade .5s 1.05s both}.albw.go p#albwSub{animation:albFade .5s 1.2s both}.albw.go .albw-btn{animation:albFade .5s 1.4s both}
+@keyframes albWin{0%{opacity:0;transform:translateY(-90px) scale(1.7) rotate(-12deg);filter:blur(6px) drop-shadow(0 40px 24px #0006)}55%{opacity:1;transform:translateY(0) scale(1) rotate(-2deg);filter:blur(0) drop-shadow(0 18px 20px #0007)}68%{transform:scale(.92)}82%{transform:scale(1.04) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes albSpark{0%{opacity:1;transform:translate(0,0) rotate(45deg) scale(0)}30%{opacity:1;transform:translate(calc(var(--x)*.55),calc(var(--y)*.55)) rotate(45deg) scale(var(--s))}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(45deg) scale(0)}}
+/* 第一次更新時的提醒 */
+.alb-hint{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;max-width:min(92vw,380px);background:#2f5551;color:#f2e5c4;border-radius:16px;box-shadow:0 12px 34px #0006;transform:translate(-50%,24px);opacity:0;transition:transform .4s cubic-bezier(.3,1.2,.4,1),opacity .3s}
+.alb-hint.in{transform:translate(-50%,0);opacity:1}.alb-hint[hidden]{display:none}
+.alb-hint button{color:inherit;text-align:left}
+#albHintGo{display:flex;align-items:center;gap:10px;padding:10px 6px 10px 12px;min-height:50px}
+#albHintGo img{width:28px;height:28px;object-fit:contain;flex:none}
+.albh-t{display:flex;flex-direction:column;line-height:1.35}.albh-t b{font-size:14px;font-weight:600}.albh-t span{font-size:12.5px;color:#d9d3b6}
+#albHintX{width:38px;align-self:stretch;font-size:20px;color:#d9d3b6}
+@media (prefers-reduced-motion:reduce){
+  .alb-book,.alb-cover,.alb-prog .bar{transition-duration:.01s!important}
+  .stamp.land img,.stamp.land .postmark,.stamp.land .stamp-name,.stamp.land .ring,.albw.go .albw-stage img,.albw.go h3,.albw.go p#albwSub,.albw.go .albw-btn,.albw.go .albw-kick,.albd-art img{animation-duration:.01s!important;animation-delay:0s!important}
+  .albw.go .albw-spark i{display:none}
+}
+@media (max-width:380px){.alb-page{padding:12px 12px 10px 16px}.alb-page h2{font-size:19px}.stamp-name{font-size:12px}}
+
+/* ---- 調整順序 ---- */
+.ord-sheet{max-width:560px}
+.ord-tabs{display:flex;gap:6px;margin:0 0 10px}
+.ord-tabs button{flex:1;height:38px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.ord-tabs button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ord-h{margin:14px 0 6px;font-size:14px;color:var(--ink-soft);font-weight:600}.ord-h small{margin-left:8px;font-weight:400}
+.ord-ul{list-style:none;margin:0;padding:0;border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.ord-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--paper);border-bottom:1px solid var(--rule)}
+.ord-row:last-child{border-bottom:0}
+.ord-row.drag{opacity:.45}.ord-row.over{box-shadow:inset 0 3px 0 var(--brass)}
+.ord-row.moved{animation:ordFlash 1s ease}
+@keyframes ordFlash{from{background:color-mix(in srgb,var(--brass) 28%,var(--paper))}to{background:var(--paper)}}
+.ord-grip{color:var(--ink-soft);cursor:grab;font-size:18px;line-height:1;touch-action:none}
+.ord-cv{width:30px;height:42px;border-radius:3px;background:var(--rule);flex:none;overflow:hidden}.ord-cv img{width:100%;height:100%;object-fit:cover;display:block}
+.ord-t{flex:1;min-width:0;font-size:14.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}.ord-t small{display:block;font-size:12px;color:var(--ink-soft)}
+.ord-bt{display:flex;gap:4px}.ord-bt button{width:40px;height:40px;border-radius:10px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer;font-size:13px}
+
+/* ---- 系列書 ---- */
+.sbadge{position:absolute;left:-3px;top:8px;min-width:20px;height:20px;padding:0 6px;border-radius:0 10px 10px 0;background:var(--brass);color:#fff;font-size:11px;font-weight:700;line-height:20px;text-align:center;z-index:3;box-shadow:0 1px 3px #0003;pointer-events:none}
+.series-link{display:inline-block;width:fit-content;align-self:flex-start;margin:2px 0 6px;padding:3px 10px;border-radius:999px;border:1px solid var(--rule);background:transparent;color:var(--brass);font:inherit;font-size:13px;cursor:pointer}
+.series-link:hover,.series-link:focus-visible{background:color-mix(in srgb,var(--brass) 14%,transparent)}
+.pchip.ser{color:var(--brass);border-color:color-mix(in srgb,var(--brass) 50%,var(--rule))}
+.ser-sheet{max-width:560px}
+.ser-bar{height:8px;border-radius:99px;background:var(--rule);overflow:hidden;margin:0 0 14px}.ser-bar i{display:block;height:100%;background:var(--brass);border-radius:99px}
+.ser-bar.sm{height:5px;margin:6px 0 0}
+.ser-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:16px 12px}
+.ser-bk{display:flex;flex-direction:column;gap:4px;border:0;background:none;padding:0;text-align:left;font:inherit;color:var(--ink);cursor:pointer;min-width:0}
+.ser-cv{position:relative;display:block;aspect-ratio:2/3;border-radius:4px;overflow:hidden;background:var(--rule);box-shadow:0 3px 10px #0002}
+.ser-cv img{width:100%;height:100%;object-fit:cover;display:block}
+.ser-bk:not(.done) .ser-cv{filter:grayscale(.85);opacity:.6}
+.ser-gen{display:flex;align-items:center;justify-content:center;height:100%;padding:6px;font-size:13px;text-align:center;background:hsl(var(--h) 30% 82%);color:#3a3330}
+.ser-tick{position:absolute;right:4px;top:4px;width:22px;height:22px;border-radius:50%;background:var(--brass);color:#fff;font-size:13px;line-height:22px;text-align:center}
+.ser-n{font-size:12px;color:var(--brass);font-weight:600}.ser-t{font-size:13px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ser-st{font-size:11.5px;color:var(--ink-soft)}.ser-st.ok{color:var(--brass)}
+.ser-acts{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+.ser-row{display:flex;align-items:center;gap:12px;width:100%;padding:10px 4px;border:0;border-bottom:1px solid var(--rule);background:none;font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.ser-row .ser-cv.sm{width:44px;flex:none;box-shadow:0 2px 6px #0002}
+.ser-rt{flex:1;min-width:0}.ser-rt b{display:block;font-size:15px}.ser-rt small{font-size:12.5px;color:var(--ink-soft)}
+
+/* ---- 字體 ---- */
+.spine span,.gen .t,.tile .cap,.page-r h2,.pt-title,.pc-txt b,.ser-t{font-family:var(--f-book)}
+.font-sheet{max-width:600px}
+.fn-prev{display:flex;align-items:flex-end;gap:18px;padding:18px 16px;border:1px dashed var(--rule);border-radius:14px;background:var(--wall);margin:0 0 14px;overflow:hidden}
+.fn-prev .book{pointer-events:none;transform:none}
+.fn-prev .fn-cover{width:92px;height:138px;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:2px 3px 0 rgba(0,0,0,.08),6px 8px 14px -4px var(--shadow);flex:none}
+.fn-txt{min-width:0}.fn-txt b{display:block;font-family:var(--f-book);font-size:20px;line-height:1.3}.fn-txt p{margin:4px 0 0;font-size:14px}.fn-txt small{color:var(--ink-soft)}
+.fn-h{margin:14px 0 8px;font-size:14px;font-weight:600}
+.fn-chips{display:flex;flex-wrap:wrap;gap:8px}
+.fn-chips button{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:14px;cursor:pointer}
+.fn-chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.fn-note{font-size:12.5px;color:var(--ink-soft);margin:10px 0 0}
 </style>
 
 </head>
@@ -972,6 +1131,10 @@ html[data-view="pile"] #intro{display:none}
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel</span></button>
     <hr>
+    <button type="button" id="mFont">字體與書背<span>換介面和書名的字體</span></button>
+    <button type="button" id="mSeries">我的系列<span>整套書的進度</span></button>
+    <button type="button" id="mOrder">調整書本順序<span>書架與書堆</span></button>
+    <button type="button" id="mAlbum">閱讀集郵冊<span>收藏郵票</span></button>
     <button type="button" id="mTags">管理標籤<span>改名、合併、顏色</span></button>
     <hr>
     <button type="button" id="mBatch">逐本補上封面<span id="mBatchCount"></span></button>
@@ -1019,7 +1182,8 @@ html[data-view="pile"] #intro{display:none}
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
   <footer class="site-foot">
     <p>頁間日子 Pages Between Days：記錄每一本讀過的書，書只存在你的瀏覽器，或你自己的 Google 雲端硬碟。</p>
-    <nav><a href="https://pichun21.github.io/reading-shelf/pages-between-days.html">關於頁間日子</a><span>·</span><a href="https://pichun21.github.io/reading-shelf/pages-between-days.html#privacy">隱私權說明</a></nav>
+    <p class="copy">© 2026 needtodeco. All rights reserved.</p>
+    <nav><a href="https://shelf.needtodeco.com/pages-between-days.html">關於頁間日子</a><span>·</span><a href="https://shelf.needtodeco.com/pages-between-days.html#privacy">隱私權說明</a></nav>
   </footer>
 </div>
 
@@ -1094,7 +1258,8 @@ html[data-view="pile"] #intro{display:none}
         </div>
       </div>
       <div class="pile-fields" id="pileFields" hidden>
-        <div class="field"><span class="lab">書從哪裡來<small>選填，再點一次可以取消</small></span><div class="src-chips" id="srcChips"></div></div>
+        <div class="field"><span class="lab">是哪一種書<small>選填，再點一次可以取消</small></span><div class="src-chips" id="fmtChips"></div></div>
+        <div class="field" id="srcField" hidden><span class="lab">書從哪裡來<small>選填</small></span><div class="src-chips" id="srcChips"></div></div>
         <div class="field" id="dueField" hidden><label for="bookDue">圖書館到期日<small>選填</small></label><input id="bookDue" type="date"></div>
       </div>
       <button type="button" class="more-toggle" id="moreToggle" aria-expanded="false" aria-controls="editorMore"><span class="mt-ic">＋</span><span id="moreLabel">作者、標籤、珍藏、讀完的感覺、筆記</span><small>選填</small></button>
@@ -1107,6 +1272,15 @@ html[data-view="pile"] #intro{display:none}
         <div class="field">
           <label for="bookTranslator">譯者</label>
           <input id="bookTranslator" maxlength="80" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bookSeries">系列<small>選填，例如「哈利波特」</small></label>
+          <input id="bookSeries" list="seriesList" maxlength="80" autocomplete="off">
+          <datalist id="seriesList"></datalist>
+        </div>
+        <div class="field">
+          <label for="bookSeriesNo">第幾集<small>選填</small></label>
+          <input id="bookSeriesNo" maxlength="8" inputmode="decimal" autocomplete="off" placeholder="1、2、上、下">
         </div>
       </div>
       <div class="field" id="favField">
@@ -1180,6 +1354,75 @@ html[data-view="pile"] #intro{display:none}
     </div>
   </div>
 </dialog>
+
+
+<!-- 字體 -->
+<dialog id="fontBox" class="bottom" aria-labelledby="fnTitle">
+  <div class="sheet font-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="fnTitle">字體與書背</h3><p>選了馬上看得到，書架上的書背、封面上的書名也會跟著變。</p></div><button type="button" class="x" id="fnClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <div class="fn-prev" id="fnPrev" aria-label="預覽"></div>
+      <h4 class="fn-h">介面字體</h4><div class="fn-chips" id="fnUi"></div>
+      <h4 class="fn-h">書名、書背字體</h4><div class="fn-chips" id="fnBook"></div>
+      <p class="fn-note">字體會從 Google Fonts 載入，第一次選要連上網路，載入前會先用預設字體。</p>
+    </div>
+  </div>
+</dialog>
+
+<!-- 系列 -->
+<dialog id="seriesBox" class="bottom" aria-labelledby="serTitle">
+  <div class="sheet ser-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="serTitle">系列</h3><p id="serSub"></p></div><button type="button" class="x" id="serClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body"><div id="serBody"></div></div>
+  </div>
+</dialog>
+
+<!-- 調整順序 -->
+<dialog id="orderBox" class="bottom" aria-labelledby="ordTitle">
+  <div class="sheet ord-sheet">
+    <div class="sheet-head"><div style="flex:1;min-width:0"><h3 id="ordTitle">調整書本順序</h3><p id="ordHint">用 ▲▼ 或拖曳把書移到想要的位置，同一個月裡的書會照這個順序擺。</p></div><button type="button" class="x" id="ordClose" aria-label="關閉">×</button></div>
+    <div class="sheet-body">
+      <div class="ord-tabs" role="tablist"><button type="button" role="tab" data-ordscope="shelf" class="on">書架</button><button type="button" role="tab" data-ordscope="pile">書堆</button></div>
+      <div id="ordList"></div>
+    </div>
+  </div>
+</dialog>
+
+<!-- 集郵冊 -->
+<dialog id="album" class="alb" aria-label="閱讀集郵冊">
+  <div class="alb-desk">
+    <button type="button" class="alb-x" id="albX" aria-label="離開集郵冊"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <button type="button" class="alb-mute" id="albMute" data-m="0" aria-label="音效開關" aria-pressed="false"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/></svg></button>
+    <div class="alb-stage" id="albStage" data-state="closed">
+      <div class="alb-book">
+        <section class="alb-page" aria-label="集郵冊內頁">
+          <header class="alb-head"><span class="alb-brand"><img src="stamps/logo.webp" alt="" width="30" height="30"><span>頁間日子</span></span><span class="small">每讀完 4 本收藏一枚</span></header>
+          <div class="alb-prog" aria-live="polite"><p id="albTotal"></p><p class="small" id="albNext"></p><div class="track" id="albProg" role="progressbar" aria-label="下一枚郵票進度" aria-valuemin="0" aria-valuemax="100"><div class="bar" id="albBar"></div></div></div>
+          <div class="alb-leaf" id="albLeaf"><div class="alb-grid" id="albGrid"></div></div>
+          <p class="alb-note" id="albNote"></p>
+          <div class="alb-ctl"><button type="button" class="btn sm" id="albPrev">← 上一頁</button><span class="small" id="albPageNo"></span><button type="button" class="btn sm" id="albNextPg">下一頁 →</button></div>
+          <div class="alb-demo" id="albDemo" hidden><span class="small">示範書櫃：想看看蓋章的感覺？</span><button type="button" class="btn sm primary" id="albSim">模擬讀完一本 ＋</button></div>
+        </section>
+        <div class="alb-cover" id="albCover" role="button" tabindex="0" aria-label="打開集郵冊">
+          <div class="face front"><img src="stamps/cover.webp" alt="2026 橡果藏書：墨綠布紋與燙金松鼠的閱讀集郵冊封面" draggable="false"></div>
+          <div class="face back" aria-hidden="true"></div>
+        </div>
+      </div>
+      <button type="button" class="btn primary alb-open" id="albOpen">打開集郵冊</button>
+      <button type="button" class="btn alb-shut" id="albShut" hidden>合上集郵冊</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="albDetail" class="albd" aria-label="郵票放大欣賞"></dialog>
+<dialog id="albWin" class="albw" aria-label="收到一枚新郵票">
+  <div class="albw-card">
+    <p class="albw-kick">收到新郵票</p>
+    <div class="albw-stage"><span class="albw-spark" id="albwSpark" aria-hidden="true"></span><img id="albwImg" alt="" draggable="false"></div>
+    <h3 id="albwName"></h3><p id="albwSub"></p>
+    <div class="albw-btn"><button type="button" class="btn primary" id="albwOpen">翻開集郵冊</button><button type="button" class="btn" id="albwClose">繼續</button></div>
+  </div>
+</dialog>
+<div class="alb-hint" id="albHint" hidden><button type="button" id="albHintGo"><img src="stamps/logo.webp" alt="" width="28" height="28"><span class="albh-t"><b></b><span></span></span></button><button type="button" id="albHintX" aria-label="關閉提示">×</button></div>
 
 <!-- 金句卡 -->
 <dialog id="quoteBox" class="bottom" aria-labelledby="qcTitle">
@@ -1435,18 +1678,20 @@ function monthNum(m){const x=String(m).match(/\d+/);return x?Number(x[0]):0}
 function monthLabel(m){const s=String(m||'').trim();const x=s.match(/^(\d{1,2})\s*月?$/);if(x&&Number(x[1])>=1&&Number(x[1])<=12)return CN[Number(x[1])]+'月';return s}
 function orderKey(b){const n=String(b.id).match(/\d+/g)||['0'];return Number(n[0])+(n[1]?Number(n[1])/1e4:0)}
 function byId(id){return books.find(x=>String(x.id)===String(id))}
-function normalizeBook(b){return {...b,tags:Array.isArray(b.tags)?b.tags.filter(Boolean).map(String):[]}}
+function normalizeBook(b){const o={...b,tags:Array.isArray(b.tags)?b.tags.filter(Boolean).map(String):[]};if(o.source==='ebook'){o.format='ebook';o.source=''}return o}
 async function reload(){const all=(await getAll()).map(normalizeBook);books=all.filter(isDone);pile=all.filter(b=>!isDone(b))}
 function yearsList(){const y=[...new Set(books.map(b=>Number(b.year)))].filter(Number.isFinite).sort((a,b)=>a-b);return y.length?y:[NOW.getFullYear()]}
 function yearBooks(y=currentYear){return books.filter(b=>Number(b.year)===Number(y))}
-function sortInMonth(a,b){return orderKey(a)-orderKey(b)}
+/* 手動排的順序（ord）優先；沒排過的新書接在後面，依加入先後 */
+function ordKey(b){return Number.isFinite(Number(b.ord))&&b.ord!==''&&b.ord!=null?Number(b.ord):1e15+orderKey(b)}
+function sortInMonth(a,b){return ordKey(a)-ordKey(b)}
 function cropOf(b){return {x:Number.isFinite(Number(b?.coverX))?Number(b.coverX):50,y:Number.isFinite(Number(b?.coverY))?Number(b.coverY):50,zoom:Number.isFinite(Number(b?.coverZoom))?Math.max(1,Number(b.coverZoom)):1}}
 function cropTransform(c){const z=Math.max(1,Number(c.zoom)||1);const maxShift=((z-1)*50)/z;const tx=((50-(Number(c.x)||50))/50)*maxShift;const ty=((50-(Number(c.y)||50))/50)*maxShift;return `object-position:50% 50%;transform:translate(${tx}%, ${ty}%) scale(${z})`}
 function coverInner(b){
   if(b.cover)return `<img src="${esc(b.cover)}" alt="《${esc(b.title)}》封面" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`;
   return `<div class="gen" style="--h:${hue(b.title)}"><span class="s">${esc(b.year)}</span><span class="t">${esc(b.title)}</span><span class="a">${esc(b.author||'')}</span></div>`;
 }
-const ribbon=b=>b.favorite?'<span class="ribbon" aria-hidden="true"></span>':'';
+const ribbon=b=>(b.favorite?'<span class="ribbon" aria-hidden="true"></span>':'')+(b.series&&String(b.seriesNo||'').trim()?`<span class="sbadge" aria-hidden="true">${esc(String(b.seriesNo).trim())}</span>`:'');
 function spineTitle(t){return String(t).replace(/[（(].*?[）)]/g,'').replace(/[：:].*$/,'').trim()||t}
 function bookEl(b){
   const lab=`《${esc(b.title)}》${b.favorite?'，珍藏':''}`;
@@ -1581,6 +1826,7 @@ function renderSpread(){
       ${recallMode?`<p class="recall">${esc(recallLine(b))}</p>`:''}
       <div class="when"><b>${esc(b.year)}</b>　${esc(monthLabel(b.month))}讀完</div>
       <h2>${esc(b.title)}</h2>
+      ${b.series?`<button type="button" class="series-link" data-series="${esc(b.series)}">《${esc(b.series)}》${b.seriesNo?'第 '+esc(b.seriesNo)+' 集':'系列'}<span aria-hidden="true"> ›</span></button>`:''}
       ${b.author||b.translator?`<p class="author">${[b.author?personLinks(b.author):'',b.translator?personLinks(b.translator,' 譯'):''].filter(Boolean).join('<span class="psep">　</span>')}</p>`:''}
       ${normFeel(b.feel)?`<button type="button" class="feel-pill f${FEELS.indexOf(normFeel(b.feel))}" data-feel="${esc(normFeel(b.feel))}">${esc(normFeel(b.feel))}</button>`:''}
       ${b.tags.length?`<div class="chips">${b.tags.map(t=>`<button type="button" class="chip${tagClass(t)}"${tagStyle(t)} data-tag="${esc(t)}">#${esc(t)}</button>`).join('')}</div>`:''}
@@ -1800,7 +2046,7 @@ function setEditorMore(open){$('editorMore').hidden=!open;$('moreToggle').setAtt
 $('moreToggle').onclick=()=>{const open=$('editorMore').hidden;setEditorMore(open);ls.set('editor-more',open?'1':'0');if(open)setTimeout(()=>{$('editorMore').scrollIntoView({block:'nearest',behavior:'smooth'});$('bookAuthor').focus({preventScroll:true})},60)};
 function openEditor(b=null,opts={}){
   editFromView=!!opts.fromView;
-  editStatus=opts.finish?'done':(b?(b.status||'done'):(opts.status||'done'));editSource=b?.source||'';$('bookDue').value=b?.due||'';renderSrcChips();
+  editStatus=opts.finish?'done':(b?(b.status||'done'):(opts.status||'done'));editFormat=b?.format||'';editSource=b?.source||'';$('bookDue').value=b?.due||'';renderSrcChips();
   yearsForForm(b?.year||(opts.finish?NOW.getFullYear():currentYear));
   pendingCover=b?.cover||'';pendingCrop=cropOf(b||{});pendingCoverSource=b?.coverSource||'';pendingOriginal=b?.coverOriginal||'';
   $('formTitle').innerHTML=b?'編輯閱讀紀錄'+(batchModeActive?`<span class="batch-pill">補封面 ${batchIndex+1} / ${batchQueue.length}</span>`:''):'放一本書上架';
@@ -1810,7 +2056,7 @@ function openEditor(b=null,opts={}){
   $('bookTitle').value=b?.title||'';$('titleHint').hidden=true;
   setEditorMore(!!b||ls.get('editor-more')==='1');
   $('bookAuthor').value=b?.author||'';
-  $('bookTranslator').value=b?.translator||'';
+  $('bookTranslator').value=b?.translator||'';$('bookSeries').value=b?.series||'';$('bookSeriesNo').value=b?.seriesNo||'';seriesFillList();
   const defMonth=b&&b.month?b.month:((opts.finish||Number(currentYear)===NOW.getFullYear())?`${NOW.getMonth()+1}月`:'');
   $('bookMonthCustom').value='';setMonth(defMonth);
   editTags=[...(b?.tags||[])];renderTags();
@@ -1926,13 +2172,14 @@ $('editForm').onsubmit=async e=>{
   const btn=$('saveBtn');btn.disabled=true;
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
-  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
+  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),...seriesFields(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
   if(editFeel)b.feel=editFeel;else delete b.feel;
-  delete b.status;delete b.due;if(editSource)b.source=editSource;else delete b.source;
+  delete b.status;delete b.due;if(editSource)b.source=editSource;else delete b.source;if(editFormat)b.format=editFormat;else delete b.format;
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
   if(cover)b.coverTidied=true;
   const goalBefore=yearBooks(b.year).length;
+  const albBefore=books.length;
   try{await saveBook(b)}catch(ex){btn.disabled=false;btn.textContent=isNew?'放上書架':'儲存';err.hidden=false;err.textContent='沒有存進去：'+ex.message+'。可能是瀏覽器空間不足，先匯出備份再試一次。';return}
   btn.disabled=false;markDirty();await reload();goalCelebrate(b.year,goalBefore);
   if(batchModeActive){toast('已儲存，前往下一本');batchIndex++;currentYear=b.year;render(false);await openBatchBook();return}
@@ -1943,7 +2190,7 @@ $('editForm').onsubmit=async e=>{
   else if(isNew){
     const el=document.querySelector(`#stage [data-id="${CSS.escape(b.id)}"]`);
     if(el){el.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'center',inline:'center'});el.classList.add('drop');setTimeout(()=>el.classList.remove('drop'),900)}
-    showTicketNudge(b);
+    albAfterFinish(b,albBefore,()=>showTicketNudge(b));
   }else toast('已儲存');
 };
 async function savePileFromEditor(){
@@ -1953,9 +2200,9 @@ async function savePileFromEditor(){
   const old=anyById($('bookId').value),btn=$('saveBtn');btn.disabled=true;
   let cover=pendingCover||'';
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
-  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom,status:editStatus,addedAt:old?.addedAt||Date.now()};
+  const b={...(old||{}),id:old?.id||('b'+Date.now()),title,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),...seriesFields(),note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom,status:editStatus,addedAt:old?.addedAt||Date.now()};
   delete b.year;delete b.month;
-  if(editSource)b.source=editSource;else delete b.source;
+  if(editSource)b.source=editSource;else delete b.source;if(editFormat)b.format=editFormat;else delete b.format;
   const due=$('bookDue').value;if(editSource==='library'&&due)b.due=due;else delete b.due;
   if(editStatus==='reading'&&(!old||old.status!=='reading'))b.startedAt=Date.now();
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
@@ -2054,7 +2301,14 @@ $('exportExcelBtn').onclick=exportExcel;
 function splitTags(v){return String(v||'').split(/[、,，;；\/#\s]+/).map(s=>s.trim()).filter(Boolean).slice(0,8)}
 function normalizeImported(raw){
   const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:null;if(!arr)throw new Error('這不是書房的備份檔');
-  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),translator:String(b.translator||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);if(normFeel(b.feel))o.feel=normFeel(b.feel);const qs=normQuotes(b.quotes);if(qs.length)o.quotes=qs;return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
+  return arr.map((b,i)=>{const o={id:String(b.id||('import-'+Date.now()+'-'+i)),title:String(b.title||'').trim(),year:Number(b.year),month:String(b.month||'').trim(),author:String(b.author||''),translator:String(b.translator||''),favorite:!!b.favorite,note:String(b.note||''),tags:Array.isArray(b.tags)?b.tags.map(String).filter(Boolean):splitTags(b.tags),cover:String(b.cover||''),coverX:Number.isFinite(Number(b.coverX))?Number(b.coverX):50,coverY:Number.isFinite(Number(b.coverY))?Number(b.coverY):50,coverZoom:Number.isFinite(Number(b.coverZoom))?Math.max(1,Number(b.coverZoom)):1};if(b.coverSource)o.coverSource=String(b.coverSource);if(normFeel(b.feel))o.feel=normFeel(b.feel);const qs=normQuotes(b.quotes);if(qs.length)o.quotes=qs;for(const k of IMPORT_EXTRA)if(b[k]!==undefined&&b[k]!==null&&b[k]!=='')o[k]=b[k];return o}).filter(b=>b.title&&Number.isFinite(b.year)&&b.month);
+}
+/* 備份裡其他會用到的欄位（分類、排序、系列…），匯入時一起帶回來 */
+const IMPORT_EXTRA=['format','source','ord','series','seriesNo','coverTidied','isbn','pages','publisher'];
+/* 書堆的書（還沒讀完）：備份檔裡有 status 的就是 */
+function normalizeImportedPile(raw){
+  const arr=Array.isArray(raw)?raw:Array.isArray(raw?.books)?raw.books:[];
+  return arr.filter(b=>b&&['want','todo','reading'].includes(b.status)&&String(b.title||'').trim()&&!(Number.isFinite(Number(b.year))&&b.month)).map(b=>normalizeBook({...b,id:String(b.id||'p'+Date.now()+Math.random().toString(36).slice(2,6)),title:String(b.title).trim()}));
 }
 const bookKey=b=>`${Number(b.year)}|${String(b.month||'').trim()}|${normTitleKey(b.title)}`;
 async function writeImport(incoming,replace){
@@ -2108,6 +2362,7 @@ async function importBackup(file){
   if(raw&&raw.goals&&typeof raw.goals==='object')saveGoals(mergeGoals(goalsAll(),raw.goals));
   if(raw&&raw.tagmeta&&typeof raw.tagmeta==='object')saveTagMeta(mergeTagMeta(tagMetaAll(),raw.tagmeta));
   const r=await writeImport(incoming,choice==='replace');
+  {const ip=normalizeImportedPile(raw);if(ip.length){if(choice==='replace')for(const o of pile)await removeBook(o.id);const have=new Set(pile.map(o=>String(o.id)));for(const p of ip){if(choice!=='replace'&&have.has(String(p.id)))continue;await saveBook(p)}await reload();render(false)}}
   toast(choice==='replace'?`已還原 ${r.added} 本書`:`新增 ${r.added} 本，補齊 ${r.filled} 本的資料`);
 }
 let pendingExcelImport=null;
@@ -2767,12 +3022,20 @@ const PILE_ST=[
   {k:'want',l:'想讀',hint:'還沒拿到，先記下來',act:'拿到了',empty:''}
 ];
 const PILE_LABEL={reading:'在讀',todo:'待讀',want:'想讀',done:'讀完了'};
-const PILE_SRC=[{k:'library',l:'圖書館'},{k:'bought',l:'自己買的'},{k:'ebook',l:'電子書'},{k:'borrowed',l:'跟朋友借'}];
+const PILE_FMT=[{k:'paper',l:'紙本書'},{k:'ebook',l:'電子書'}];
+const PILE_SRC=[{k:'library',l:'圖書館'},{k:'bought',l:'自己買的'},{k:'borrowed',l:'跟朋友借'}];
 const PILE_NEXT={want:'todo',todo:'reading'};
 function isDone(b){return !b.status||b.status==='done'}
 function pileById(id){return pile.find(x=>String(x.id)===String(id))}
 function anyById(id){return byId(id)||pileById(id)}
 function srcLabel(k){return PILE_SRC.find(s=>s.k===k)?.l||''}
+function fmtLabel(k){return PILE_FMT.find(s=>s.k===k)?.l||''}
+/* 分類顯示：「紙本書・圖書館」「電子書・自己買的」，只選了一半就只顯示那一半 */
+function catLabel(b){return [fmtLabel(b?.format),srcLabel(b?.source)].filter(Boolean).join('・')}
+/* 分類篩選：'' 全部；'paper'／'ebook'；'paper:library' 這種是兩層都指定 */
+var pileCat=(()=>{const v=ls.get('pile-cat')||'';return /^(paper|ebook)(:(library|bought|borrowed))?$/.test(v)?v:''})();
+function pileCatMatch(b){if(!pileCat)return true;const [f,s]=pileCat.split(':');return (b.format||'')===f&&(!s||b.source===s)}
+function catOptions(){return `<option value=""${pileCat===''?' selected':''}>全部分類</option>`+PILE_FMT.map(f=>`<optgroup label="${f.l}"><option value="${f.k}"${pileCat===f.k?' selected':''}>${f.l}（全部）</option>${PILE_SRC.map(s=>`<option value="${f.k}:${s.k}"${pileCat===f.k+':'+s.k?' selected':''}>${f.l}・${s.l}</option>`).join('')}</optgroup>`).join('')}
 /* 到期日：回傳剩幾天與顯示文字 */
 function dueInfo(b){
   if(!b||!b.due||b.source!=='library')return null;
@@ -2799,22 +3062,23 @@ const PILE_IC={
   reading:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5v13"/></svg>',
   done:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.2 12.3 2.6 2.6 5-5.4"/></svg>'
 };
-const PILE_SORTS=[{k:'status',l:'依狀態'},{k:'added',l:'新增順序'},{k:'due',l:'到期日'},{k:'title',l:'書名'}];
+const PILE_SORTS=[{k:'status',l:'依狀態'},{k:'added',l:'新增順序'},{k:'due',l:'到期日'},{k:'title',l:'書名'},{k:'manual',l:'我排的順序'}];
 var pileFilter=['want','todo','reading'].includes(ls.get('pile-filter'))?ls.get('pile-filter'):'all';
 var pileSort=PILE_SORTS.some(s=>s.k===ls.get('pile-sort'))?ls.get('pile-sort'):'status';
 var pileLayout=ls.get('pile-layout')==='list'?'list':'grid';
 const PILE_ORDER={reading:0,todo:1,want:2};
 function pileSorted(){
-  let l=pile.filter(b=>pileFilter==='all'||b.status===pileFilter);
+  let l=pile.filter(b=>(pileFilter==='all'||b.status===pileFilter)&&pileCatMatch(b));
   if(pileSort==='status')return PILE_ST.flatMap(s=>pileList(s.k)).filter(b=>l.includes(b));
   if(pileSort==='added')return l.sort((a,b)=>(b.addedAt||0)-(a.addedAt||0));
+  if(pileSort==='manual')return l.sort((a,b)=>ordKey(a)-ordKey(b));
   if(pileSort==='title')return l.sort((a,b)=>a.title.localeCompare(b.title,'zh-Hant'));
   return l.sort((a,b)=>{const x=dueInfo(a),y=dueInfo(b);if(x&&y)return x.d-y.d;if(x)return -1;if(y)return 1;return PILE_ORDER[a.status]-PILE_ORDER[b.status]||(b.addedAt||0)-(a.addedAt||0)});
 }
 function stBadge(s){return `<span class="pst st-${s}">${PILE_IC[s]}${PILE_LABEL[s]}</span>`}
 function pileCard(b){
   const s=PILE_ST.find(x=>x.k===b.status),due=dueInfo(b);
-  const chips=[stBadge(b.status),b.source?`<span class="pchip">${esc(srcLabel(b.source))}</span>`:'',due?`<span class="pchip due ${due.level}">${esc(due.text)}</span>`:''].join('');
+  const chips=[stBadge(b.status),b.series?`<span class="pchip ser">${esc(b.series)}${b.seriesNo?' 第'+esc(b.seriesNo)+'集':''}</span>`:'',catLabel(b)?`<span class="pchip">${esc(catLabel(b))}</span>`:'',due?`<span class="pchip due ${due.level}">${esc(due.text)}</span>`:''].join('');
   return `<article class="pcard st-${b.status}" data-pid="${esc(b.id)}">
     <button type="button" class="pc-open" data-open="${esc(b.id)}" aria-label="編輯《${esc(b.title)}》"><span class="pc-cover">${pileCover(b)}</span><span class="pc-txt"><b>${esc(b.title)}</b>${b.author?`<small>${esc(b.author)}</small>`:''}<span class="pchips">${chips}</span></span></button>
     <button type="button" class="btn sm ${b.status==='reading'?'primary':''} pc-act" data-act="${esc(b.id)}">${b.status==='reading'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 12.5 4 4 8-9"/></svg>':''}${esc(s.act)}</button>
@@ -2840,18 +3104,22 @@ function renderPile(st){
   const stats=`<div class="pile-stats">${['want','todo','reading'].map(k=>`<button type="button" class="pstat st-${k}${pileFilter===k?' on':''}" data-filter="${k}" aria-pressed="${pileFilter===k}"><span class="ps-l">${PILE_IC[k]}${PILE_LABEL[k]}</span><b>${cnt(k)}</b></button>`).join('')}</div></div>`;
   const alert=urgent.length?`<div class="pile-alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2.5h6"/></svg><span>${urgent.some(b=>dueInfo(b).d<0)?'有書已經逾期了':'有書快到期了'}：${urgent.slice(0,3).map(b=>`《${esc(b.title)}》${esc(dueInfo(b).text)}`).join('、')}${urgent.length>3?` 等 ${urgent.length} 本`:''}</span></div>`:'';
   const tools=`<div class="pile-tools"><div class="pile-chips" role="group" aria-label="篩選">${[['all','全部',n],['want','想讀',cnt('want')],['todo','待讀',cnt('todo')],['reading','在讀',cnt('reading')]].map(([k,l,c])=>`<button type="button" data-filter="${k}" class="${pileFilter===k?'on':''}" aria-pressed="${pileFilter===k}">${l}<small>${c}</small></button>`).join('')}</div>
-    <div class="pile-tr"><label class="pile-sort"><span class="sr">排序</span><select id="pileSortSel">${PILE_SORTS.map(s=>`<option value="${s.k}"${s.k===pileSort?' selected':''}>${s.l}</option>`).join('')}</select></label>
+    <div class="pile-tr"><label class="pile-sort pile-cat"><span class="sr">分類</span><select id="pileCatSel">${catOptions()}</select></label><label class="pile-sort"><span class="sr">排序</span><select id="pileSortSel">${PILE_SORTS.map(s=>`<option value="${s.k}"${s.k===pileSort?' selected':''}>${s.l}</option>`).join('')}</select></label>
     <button type="button" class="pile-lay" id="pileLay" aria-label="${pileLayout==='grid'?'改成列表':'改成封面'}" title="${pileLayout==='grid'?'改成列表':'改成封面'}">${pileLayout==='grid'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>'}</button>
+    <button type="button" class="btn sm" id="pileOrd">調整順序</button>
     <button type="button" class="btn sm primary pile-add-d" id="pileAdd"><svg><use href="#i-plus"/></svg>加進書堆</button></div></div>`;
   const list=pileSorted();
   let body;
-  if(!list.length)body=`<p class="pile-none">沒有${PILE_LABEL[pileFilter]}的書。</p>`;
+  if(!list.length)body=`<p class="pile-none">${pileCat?'這個分類裡':'沒有'+(PILE_LABEL[pileFilter]||'')+'的書'}${pileCat?'還沒有書。<button type="button" class="linkish" id="pileCatClear">看全部分類</button>':'。'}</p>`;
   else if(pileLayout==='grid')body=`<div class="pile-grid">${list.map(pileTile).join('')}</div>`;
   else if(pileSort==='status'&&pileFilter==='all')body=PILE_ST.map(s=>{const l=list.filter(b=>b.status===s.k);if(!l.length)return '';return `<div class="pile-group" data-st="${s.k}"><h3>${s.l}<small>${l.length} 本</small><span class="pg-hint">${s.hint}</span></h3><div class="pile-list">${l.map(pileCard).join('')}</div></div>`}).join('');
   else body=`<div class="pile-list flat">${list.map(pileCard).join('')}</div>`;
   st.innerHTML=`<section class="pile">${head}${stats}${alert}${tools}${body}</section>`;
   $('pileAdd').onclick=()=>openEditor(null,{status:pileFilter==='all'?'todo':pileFilter});
   st.querySelectorAll('[data-filter]').forEach(el=>el.onclick=()=>{const f=el.dataset.filter;pileFilter=pileFilter===f&&el.classList.contains('pstat')?'all':f;ls.set('pile-filter',pileFilter);renderStage()});
+  $('pileCatClear')&&($('pileCatClear').onclick=()=>{pileCat='';ls.set('pile-cat','');renderStage()});
+  $('pileCatSel').onchange=e=>{pileCat=e.target.value;ls.set('pile-cat',pileCat);renderStage()};
+  $('pileOrd')&&($('pileOrd').onclick=()=>openOrder('pile'));
   $('pileSortSel').onchange=e=>{pileSort=e.target.value;ls.set('pile-sort',pileSort);renderStage()};
   $('pileLay').onclick=()=>{pileLayout=pileLayout==='grid'?'list':'grid';ls.set('pile-layout',pileLayout);renderStage()};
   st.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>{const b=pileById(el.dataset.open);if(b)openEditor(b)});
@@ -2894,10 +3162,14 @@ async function pileAdvance(id,el){
 function updatePileDot(){const u=pileUrgent().length;document.querySelectorAll('[data-view="pile"]').forEach(x=>x.classList.toggle('has-dot',u>0))}
 
 /* ---- 編輯器裡的狀態切換 ---- */
-var editStatus='done',editSource='';
+var editStatus='done',editSource='',editFormat='';
 function renderSrcChips(){
+  $('fmtChips').innerHTML=PILE_FMT.map(s=>`<button type="button" data-fmt="${s.k}" class="${s.k===editFormat?'on':''}" aria-pressed="${s.k===editFormat}">${s.l}</button>`).join('');
+  $('fmtChips').querySelectorAll('button').forEach(x=>x.onclick=()=>{editFormat=editFormat===x.dataset.fmt?'':x.dataset.fmt;if(!editFormat)editSource='';renderSrcChips()});
+  /* 先選紙本或電子書，才會出現「從哪裡來」 */
+  $('srcField').hidden=!editFormat;
   $('srcChips').innerHTML=PILE_SRC.map(s=>`<button type="button" data-src="${s.k}" class="${s.k===editSource?'on':''}" aria-pressed="${s.k===editSource}">${s.l}</button>`).join('');
-  $('srcChips').querySelectorAll('button').forEach(x=>x.onclick=()=>{editSource=editSource===x.dataset.src?'':x.dataset.src;renderSrcChips();$('dueField').hidden=editSource!=='library'});
+  $('srcChips').querySelectorAll('button').forEach(x=>x.onclick=()=>{editSource=editSource===x.dataset.src?'':x.dataset.src;renderSrcChips()});
   $('dueField').hidden=editSource!=='library';
 }
 function applyStatusUI(b,opts={}){
@@ -3028,6 +3300,340 @@ $('tmClose').onclick=()=>$('tagMgr').close();
 $('mTags').onclick=()=>{closeMenu();openTagMgr()};
 $('tagMgrLink').onclick=()=>openTagMgr();
 
+/* ================= 手動調整順序 ================= */
+var ordScope='shelf';
+function ordRow(b){return `<li class="ord-row" draggable="true" data-oid="${esc(b.id)}"><span class="ord-grip" aria-hidden="true">⠿</span><span class="ord-cv">${b.cover?`<img src="${esc(b.cover)}" alt="" loading="lazy">`:''}</span><span class="ord-t">${esc(b.title)}${b.series?`<small>${esc(b.series)}${b.seriesNo?' 第'+esc(b.seriesNo)+'集':''}</small>`:''}</span><span class="ord-bt"><button type="button" data-mv="-1" aria-label="往前移：《${esc(b.title)}》">▲</button><button type="button" data-mv="1" aria-label="往後移：《${esc(b.title)}》">▼</button></span></li>`}
+function ordGroups(){
+  if(ordScope==='pile'){
+    const l=[...pile].sort((a,b)=>{const x=PILE_ORDER[a.status]-PILE_ORDER[b.status];return x||ordKey(a)-ordKey(b)||0});
+    return PILE_ST.map(s=>({label:s.l,items:l.filter(b=>b.status===s.k)})).filter(g=>g.items.length);
+  }
+  return groupByMonth(yearBooks()).reverse().map(g=>({label:`${currentYear} 年 ${monthLabel(g.month)}`,items:g.items}));
+}
+function renderOrder(){
+  const gs=ordGroups();
+  $('ordHint').textContent=ordScope==='pile'?'同一種狀態裡的書會照這個順序排。排好後，書堆的「排序」會自動切到「我排的順序」。':`正在調整 ${currentYear} 年。同一個月裡的書會照這個順序擺在書架上。`;
+  document.querySelectorAll('[data-ordscope]').forEach(b=>{const on=b.dataset.ordscope===ordScope;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+  $('ordList').innerHTML=gs.length?gs.map((g,i)=>`<h4 class="ord-h">${esc(g.label)}<small>${g.items.length} 本</small></h4><ul class="ord-ul" data-g="${i}">${g.items.map(ordRow).join('')}</ul>`).join(''):'<p class="pile-none">這裡還沒有書。</p>';
+  $('ordList').querySelectorAll('.ord-ul').forEach(ul=>{
+    const items=gs[Number(ul.dataset.g)].items;
+    ul.querySelectorAll('[data-mv]').forEach(btn=>btn.onclick=()=>{
+      const li=btn.closest('.ord-row'),id=li.dataset.oid,i=items.findIndex(b=>String(b.id)===id),j=i+Number(btn.dataset.mv);
+      if(j<0||j>=items.length)return;
+      const ids=items.map(b=>String(b.id));ids.splice(j,0,ids.splice(i,1)[0]);ordApply(ids,id,btn.dataset.mv);
+    });
+    let drag=null;
+    ul.querySelectorAll('.ord-row').forEach(li=>{
+      li.ondragstart=e=>{drag=li.dataset.oid;li.classList.add('drag');try{e.dataTransfer.setData('text/plain',drag);e.dataTransfer.effectAllowed='move'}catch(_){}};
+      li.ondragend=()=>{li.classList.remove('drag');ul.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))};
+      li.ondragover=e=>{if(drag){e.preventDefault();li.classList.add('over')}};
+      li.ondragleave=()=>li.classList.remove('over');
+      li.ondrop=e=>{e.preventDefault();li.classList.remove('over');if(!drag||drag===li.dataset.oid)return;
+        const ids=items.map(b=>String(b.id));const from=ids.indexOf(drag),to=ids.indexOf(li.dataset.oid);if(from<0||to<0)return;ids.splice(to,0,ids.splice(from,1)[0]);ordApply(ids,drag)};
+    });
+  });
+}
+async function ordApply(ids,focusId,dir){
+  const pool=ordScope==='pile'?pile:books;
+  for(let i=0;i<ids.length;i++){const b=pool.find(x=>String(x.id)===ids[i]);if(b&&b.ord!==i+1){b.ord=i+1;await saveBook(b)}}
+  if(ordScope==='pile'&&pileSort!=='manual'){pileSort='manual';ls.set('pile-sort','manual')}
+  markDirty();await reload();render(false);
+  const y=$('orderBox').scrollTop;renderOrder();
+  const row=$('ordList').querySelector(`[data-oid="${CSS.escape(String(focusId))}"]`);
+  if(row){row.classList.add('moved');if(dir){const b=row.querySelector(`[data-mv="${dir}"]`)||row.querySelector('[data-mv]');b&&b.focus({preventScroll:false})}}
+}
+function openOrder(scope){ordScope=scope||(view==='pile'?'pile':'shelf');renderOrder();$('orderBox').showModal()}
+$('mOrder').onclick=()=>{closeMenu();openOrder()};
+$('ordClose').onclick=()=>$('orderBox').close();
+document.querySelectorAll('[data-ordscope]').forEach(b=>b.onclick=()=>{ordScope=b.dataset.ordscope;renderOrder()});
+
+/* ================= 系列書 ================= */
+function seriesFields(){return {series:$('bookSeries').value.trim(),seriesNo:$('bookSeriesNo').value.trim()}}
+function seriesNames(){const m=new Map();[...books,...pile].forEach(b=>{const s=String(b.series||'').trim();if(s)m.set(s,(m.get(s)||0)+1)});return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
+function seriesFillList(){const dl=$('seriesList');if(dl)dl.innerHTML=seriesNames().map(n=>`<option value="${esc(n)}">`).join('')}
+/* 集數：能轉成數字就照數字排，「上、中、下」「前傳」這類文字排在後面 */
+const SER_WORD={'上':1,'中':2,'下':3,'前傳':0,'外傳':99,'番外':99};
+function seriesNoVal(b){const t=String(b.seriesNo||'').trim();if(t==='')return 1e6;const n=Number(t);if(Number.isFinite(n))return n;return t in SER_WORD?SER_WORD[t]:1e5}
+function seriesBooks(name){return [...books,...pile].filter(b=>String(b.series||'').trim()===name).sort((a,b)=>seriesNoVal(a)-seriesNoVal(b)||String(a.title).localeCompare(b.title,'zh-Hant'))}
+function serCell(b){
+  const done=isDone(b);
+  const st=done?`<span class="ser-st ok">${esc(b.year)} ${esc(monthLabel(b.month))}讀完</span>`:`<span class="ser-st">${esc(PILE_LABEL[b.status]||'')}</span>`;
+  return `<button type="button" class="ser-bk${done?' done':''}" data-sid="${esc(b.id)}" aria-label="${done?'打開':'編輯'}《${esc(b.title)}》"><span class="ser-cv">${b.cover?`<img src="${esc(b.cover)}" alt="" loading="lazy">`:`<span class="ser-gen" style="--h:${hue(b.title)}">${esc(spineTitle(b.title))}</span>`}${done?'<span class="ser-tick" aria-hidden="true">✓</span>':''}</span><span class="ser-n">${b.seriesNo?'第 '+esc(b.seriesNo)+' 集':'　'}</span><span class="ser-t">${esc(b.title)}</span>${st}</button>`;
+}
+function openSeries(name){
+  const l=seriesBooks(name);if(!l.length)return;
+  const d=l.filter(isDone).length;
+  $('serTitle').textContent=name;
+  $('serSub').textContent=`共 ${l.length} 本，已讀完 ${d} 本${d===l.length?'。整套都讀完了。':'。'}`;
+  $('serBody').innerHTML=`<div class="ser-bar" role="img" aria-label="已讀 ${d} 本，共 ${l.length} 本"><i style="width:${Math.round(d/l.length*100)}%"></i></div><div class="ser-grid">${l.map(serCell).join('')}</div><div class="ser-acts"><button type="button" class="btn sm" id="serAdd">在這個系列加一本</button><button type="button" class="btn sm" id="serRename">改系列名稱</button></div>`;
+  $('serBody').querySelectorAll('[data-sid]').forEach(x=>x.onclick=()=>{const b=anyById(x.dataset.sid);if(!b)return;$('seriesBox').close();if(isDone(b)){const ctx=l.filter(isDone).map(z=>z.id);openBook(b.id,ctx)}else openEditor(b)});
+  $('serAdd').onclick=()=>{$('seriesBox').close();const last=l[l.length-1];const n=Number(last.seriesNo);openEditor(null,{status:'todo'});$('bookSeries').value=name;$('bookSeriesNo').value=Number.isFinite(n)&&String(last.seriesNo).trim()!==''?String(n+1):''};
+  $('serRename').onclick=async()=>{
+    const nn=prompt('新的系列名稱（改成已經有的名稱就會合併）',name);if(nn==null)return;const t=nn.trim();if(!t||t===name)return;
+    for(const b of l){b.series=t;await saveBook(b)}markDirty();await reload();render(false);openSeries(t);toast(`已改成《${t}》`)};
+  if(!$('seriesBox').open)$('seriesBox').showModal();
+}
+$('serClose').onclick=()=>$('seriesBox').close();
+document.addEventListener('click',e=>{const x=e.target.closest&&e.target.closest('[data-series]');if(x){e.preventDefault();openSeries(x.dataset.series)}});
+
+function openSeriesList(){
+  const ns=seriesNames();
+  $('serTitle').textContent='我的系列';
+  $('serSub').textContent=ns.length?`${ns.length} 個系列。在書的編輯畫面填上「系列」和「第幾集」，就會出現在這裡。`:'還沒有系列。在書的編輯畫面填上「系列」和「第幾集」，整套書就會收在一起。';
+  $('serBody').innerHTML=ns.map(n=>{const l=seriesBooks(n),d=l.filter(isDone).length;const c=l.find(b=>b.cover);return `<button type="button" class="ser-row" data-series="${esc(n)}"><span class="ser-cv sm">${c?`<img src="${esc(c.cover)}" alt="" loading="lazy">`:''}</span><span class="ser-rt"><b>${esc(n)}</b><small>已讀 ${d}／${l.length} 本</small><span class="ser-bar sm"><i style="width:${Math.round(d/l.length*100)}%"></i></span></span><span aria-hidden="true">›</span></button>`}).join('');
+  if(!$('seriesBox').open)$('seriesBox').showModal();
+}
+$('mSeries').onclick=()=>{closeMenu();openSeriesList()};
+
+/* ================= 字體 ================= */
+const FONT_OPTS=[
+  {k:'def',l:'預設（文楷）',fam:null,ui:'"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif',disp:'"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif'},
+  {k:'huninn',l:'粉圓（圓潤可愛）',fam:'Huninn',css:'"Huninn","Noto Sans TC","PingFang TC",sans-serif'},
+  {k:'iansui',l:'芫荽（手寫可愛）',fam:'Iansui',css:'"Iansui","Noto Sans TC","PingFang TC",sans-serif'},
+  {k:'klee',l:'教科書手寫（日系鋼筆字）',fam:'Klee+One:wght@400;600',css:'"Klee One","Iansui","Noto Sans TC","PingFang TC",sans-serif'},
+  {k:'serif',l:'思源宋體（書本感）',fam:'Noto+Serif+TC:wght@400;600;700',css:'"Noto Serif TC","Songti TC","PMingLiU",serif'},
+  {k:'cactus',l:'仙人掌明體（古典）',fam:'Cactus+Classical+Serif',css:'"Cactus Classical Serif","Noto Serif TC","PingFang TC",serif'},
+  {k:'csung',l:'昭源宋體（細緻書卷）',fam:'Chiron+Sung+HK:wght@400;600;700',css:'"Chiron Sung HK","Noto Serif TC","PingFang TC",serif'},
+  {k:'chei',l:'昭源黑體（清爽好讀）',fam:'Chiron+Hei+HK:wght@400;500;700',css:'"Chiron Hei HK","Noto Sans TC","PingFang TC",sans-serif'}
+];
+var fontUi=ls.get('font-ui')||'def',fontBook=ls.get('font-book')||'def';
+if(!FONT_OPTS.some(f=>f.k===fontUi))fontUi='def';if(!FONT_OPTS.some(f=>f.k===fontBook))fontBook='def';
+const fontLoaded=new Set();
+function fontLoad(fam){
+  if(!fam||fontLoaded.has(fam))return;fontLoaded.add(fam);
+  const l=document.createElement('link');l.rel='stylesheet';l.href=`https://fonts.googleapis.com/css2?family=${fam}&display=swap`;document.head.appendChild(l);
+}
+function fontApply(){
+  const r=document.documentElement.style,u=FONT_OPTS.find(f=>f.k===fontUi),b=FONT_OPTS.find(f=>f.k===fontBook);
+  fontLoad(u.fam);fontLoad(b.fam);
+  if(u.k==='def'){r.removeProperty('--f-body');r.removeProperty('--f-display')}else{r.setProperty('--f-body',u.css);r.setProperty('--f-display',u.css)}
+  if(b.k==='def')r.removeProperty('--f-book');else r.setProperty('--f-book',b.css);
+}
+fontApply();
+function fontRenderBox(){
+  const sample={id:'fn-demo',title:'頁間日子',author:'示意作者',year:new Date().getFullYear(),month:'1月'};
+  $('fnPrev').innerHTML=`<div class="slot" style="height:auto;padding:0">${bookEl(sample)}</div><div class="fn-cover"><div class="gen" style="--h:${hue('慢慢讀')}"><span class="s">${sample.year}</span><span class="t">慢慢讀，慢慢活</span><span class="a">示意作者</span></div></div><div class="fn-txt"><b>慢慢讀，慢慢活</b><p>今天讀到哪裡了？</p><small>0123456789　2026 年 10 月</small></div>`;
+  const chips=(id,cur,attr)=>{$(id).innerHTML=FONT_OPTS.map(f=>`<button type="button" data-f="${f.k}" class="${f.k===cur?'on':''}" aria-pressed="${f.k===cur}" style="font-family:${f.k==='def'?'inherit':f.css}">${f.l}</button>`).join('')};
+  chips('fnUi',fontUi);chips('fnBook',fontBook);
+  $('fnUi').querySelectorAll('button').forEach(x=>x.onclick=()=>{fontUi=x.dataset.f;ls.set('font-ui',fontUi);fontApply();fontRenderBox();renderStage()});
+  $('fnBook').querySelectorAll('button').forEach(x=>x.onclick=()=>{fontBook=x.dataset.f;ls.set('font-book',fontBook);fontApply();fontRenderBox();renderStage()});
+}
+$('mFont').onclick=()=>{closeMenu();FONT_OPTS.forEach(f=>fontLoad(f.fam));fontRenderBox();$('fontBox').showModal()};
+$('fnClose').onclick=()=>$('fontBox').close();
+
+/* ================= 閱讀集郵冊：每讀完 4 本收藏一枚郵票，40 本集滿十枚 ================= */
+const ALB_STAMPS=[
+  {n:4,name:'茶杯',f:'s01'},{n:8,name:'書本嫩芽',f:'s02'},{n:12,name:'司康',f:'s03'},{n:16,name:'窗邊盆栽',f:'s04'},
+  {n:20,name:'夜讀檯燈',f:'s05'},{n:24,name:'舒適閱讀椅',f:'s06'},{n:28,name:'完整小書房',f:'s07'},{n:32,name:'閱讀松鼠',f:'s08'},
+  {n:36,name:'湖畔閱讀小船',f:'s09'},{n:40,name:'樹屋祕密圖書館',f:'s10'}
+];
+const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER);
+const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —'];
+const albImg=s=>`stamps/${s.f}.webp`;
+var albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
+function albCount(){return books.length+(demoMode?albDemoExtra:0)}
+function albOwned(c=albCount()){return Math.min(ALB_STAMPS.length,Math.floor(c/4))}
+function albSeen(){if(demoMode)return albSeenMem;try{return new Set(JSON.parse(ls.get('album-seen')||'[]'))}catch{return new Set()}}
+function albMarkSeen(i){if(demoMode){albSeenMem.add(i);return}const s=albSeen();s.add(i);ls.set('album-seen',JSON.stringify([...s]))}
+/* 郵戳日期：用「讀完第 n 本」那本書的年月 */
+function albDate(n){
+  const arr=[...books].sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b));
+  const b=arr[n-1];if(!b)return String(new Date().getFullYear());
+  const m=monthNum(b.month);return m?`${b.year}.${String(m).padStart(2,'0')}`:String(b.year);
+}
+const albLater=(fn,ms)=>{const t=setTimeout(fn,ms);albT.push(t);return t};
+const albClear=()=>{albT.forEach(clearTimeout);albT=[]};
+
+/* ---- 音效：用 WebAudio 現場合成（翻開的布面聲、翻頁沙沙、蓋章的悶響） ---- */
+var albAC=null;
+function albSound(kind){
+  if(albMuted)return;
+  try{
+    albAC=albAC||tkAC||new (window.AudioContext||window.webkitAudioContext)();const ac=albAC;if(ac.state==='suspended')ac.resume();
+    const out=ac.createGain();out.gain.value=.75;out.connect(ac.destination);const t0=ac.currentTime+.01,sr=ac.sampleRate;
+    const noise=(sec,fn)=>{const len=Math.ceil(sr*sec),buf=ac.createBuffer(1,len,sr),d=buf.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*fn(i/len);return buf};
+    const play=(buf,at,type,f0,f1,q,gain)=>{const s=ac.createBufferSource();s.buffer=buf;const f=ac.createBiquadFilter();f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,at);if(f1)f.frequency.exponentialRampToValueAtTime(f1,at+buf.duration);const g=ac.createGain();g.gain.value=gain;s.connect(f).connect(g).connect(out);s.start(at)};
+    const thump=(at,f0,f1,dur,gain)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(f0,at);o.frequency.exponentialRampToValueAtTime(f1,at+dur*.85);g.gain.setValueAtTime(gain,at);g.gain.exponentialRampToValueAtTime(.001,at+dur);o.connect(g).connect(out);o.start(at);o.stop(at+dur+.02)};
+    const tone=(at,f,dur,gain)=>{const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(gain,at+.01);g.gain.exponentialRampToValueAtTime(.001,at+dur);o.connect(g).connect(out);o.start(at);o.stop(at+dur+.02)};
+    if(kind==='open'){                                   /* 布面書皮：低沉擦過＋翻開的氣流＋輕落 */
+      play(noise(.9,p=>Math.sin(p*Math.PI)*.9),t0,'bandpass',260,1100,.9,.5);
+      play(noise(.5,p=>Math.pow(1-p,1.6)*.7),t0+.5,'highpass',1800,0,.5,.18);
+      thump(t0,95,55,.18,.25);thump(t0+.84,80,48,.2,.3);
+    }else if(kind==='close'){                            /* 合上：氣流往內收，最後悶悶一聲 */
+      play(noise(.75,p=>Math.sin(p*Math.PI)*.8),t0,'bandpass',1000,240,.9,.45);
+      thump(t0+.78,110,42,.26,.7);play(noise(.06,p=>Math.pow(1-p,2)),t0+.78,'bandpass',700,0,.8,.3);
+    }else if(kind==='flip'){                             /* 翻頁：紙張沙一聲 */
+      play(noise(.32,p=>Math.sin(Math.min(1,p*1.25)*Math.PI*.9)*.8),t0,'bandpass',3400,1500,.7,.42);
+      play(noise(.05,p=>1-p),t0+.27,'highpass',2200,0,.6,.12);
+    }else if(kind==='stamp'){                            /* 蓋章：橡膠章壓下去的悶響＋紙面一點點回彈 */
+      thump(t0,190,46,.24,.9);
+      play(noise(.045,p=>Math.pow(1-p,2.2)),t0,'bandpass',1500,0,1.1,.5);
+      play(noise(.11,p=>Math.pow(1-p,1.4)),t0+.02,'lowpass',900,0,.7,.35);
+      thump(t0+.09,120,70,.1,.18);
+    }else if(kind==='chime'){                            /* 新郵票解鎖：兩個輕輕的鈴聲 */
+      tone(t0,1318.5,.7,.16);tone(t0+.12,1760,.9,.14);tone(t0+.26,2093,1.1,.1);
+    }else if(kind==='knock'){                            /* 點到還沒解鎖的格子：輕敲 */
+      thump(t0,240,150,.07,.4);play(noise(.03,p=>1-p),t0,'bandpass',1200,0,1,.25);
+    }
+  }catch{}
+}
+
+/* ---- 畫面 ---- */
+const albEl=id=>$(id);
+function albStampHTML(s,i,count,opts={}){
+  const owned=s.n<=count;
+  if(!owned)return `<button type="button" class="stamp locked" data-i="${i}" aria-label="神祕郵票，累積讀完 ${s.n} 本解鎖"><span class="mystery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span class="stamp-name">神祕郵票</span><span class="small">累積讀完 ${s.n} 本</span></button>`;
+  const land=opts.land!=null;
+  return `<button type="button" class="stamp${land?' land':''}" data-i="${i}"${land?` style="--d:${opts.land}ms"`:''} aria-label="${s.name}，已收藏"><span class="s-img"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"><i class="ring" aria-hidden="true"></i></span><span class="stamp-name">${s.name}</span><span class="postmark">${land?'<em>':''}已收藏 · ${albDate(s.n)}${land?'</em>':''}</span></button>`;
+}
+function albGridHTML(page,count,animate){
+  const seen=albSeen();let k=0;
+  return ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).map((s,j)=>{
+    const i=page*ALB_PER+j,fresh=animate&&s.n<=count&&!seen.has(i);
+    return albStampHTML(s,i,count,fresh?{land:260+(k++)*420}:{});
+  }).join('');
+}
+function albRender(animate){
+  const count=albCount(),owned=albOwned(count),next=ALB_STAMPS.find(s=>s.n>count);
+  albEl('albTotal').textContent=`已收藏 ${owned}／${ALB_STAMPS.length} 枚`;
+  albEl('albNext').textContent=next?`再讀 ${next.n-count} 本，就能揭曉下一枚神祕郵票`:'十枚郵票收藏完成，謝謝每一本書的陪伴。';
+  const prev=owned?ALB_STAMPS[owned-1].n:0,pct=next?Math.max(0,Math.min(100,100*(count-prev)/(next.n-prev))):100;
+  albEl('albBar').style.width=pct+'%';albEl('albProg').setAttribute('aria-valuenow',Math.round(pct));
+  albEl('albPageNo').textContent=`${albPage+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[albPage]||'';
+  albEl('albPrev').disabled=albPage===0;albEl('albNextPg').disabled=albPage===ALB_PAGES-1;
+  albEl('albGrid').innerHTML=albGridHTML(albPage,count,animate);
+  if(animate)albPlayLands();
+}
+/* 新郵票逐枚「蓋」上去：每一枚落下時各配一聲 */
+function albPlayLands(){
+  const seen=albSeen();
+  albEl('albGrid').querySelectorAll('.stamp.land').forEach(el=>{
+    const i=Number(el.dataset.i),d=parseFloat(el.style.getPropertyValue('--d'))||0;
+    if(seen.has(i))return;albMarkSeen(i);
+    albLater(()=>albSound('stamp'),reduceMotion()?0:d+300);
+  });
+}
+function albSetState(open){albOpenState=open;albEl('albStage').dataset.state=open?'open':'closed';albEl('albOpen').hidden=open;albEl('albShut').hidden=!open}
+function albOpenBook(jumpTo){
+  if(albBusy||albOpenState)return;albBusy=true;
+  if(typeof jumpTo==='number')albPage=Math.floor(jumpTo/ALB_PER);
+  albRender(false);albSetState(true);albSound('open');
+  const wait=reduceMotion()?60:1000;
+  albLater(()=>{albBusy=false;albRender(true)},wait);
+}
+function albShut(){
+  if(albBusy||!albOpenState)return;albBusy=true;albClear();albEl('albDetail').open&&albEl('albDetail').close();
+  albSetState(false);albSound('close');albLater(()=>{albBusy=false},reduceMotion()?60:980);
+}
+/* 翻頁：舊頁像紙一樣翻走；往回翻則是前一頁從左邊蓋回來 */
+function albTurn(dir){
+  const to=albPage+dir;if(albBusy||to<0||to>=ALB_PAGES)return;albBusy=true;albEl('albDetail').open&&albEl('albDetail').close();
+  const wrap=albEl('albLeaf'),grid=albEl('albGrid'),count=albCount();
+  const fromHTML=grid.innerHTML,toHTML=albGridHTML(to,count,false);
+  albSound('flip');
+  albEl('albPageNo').textContent=`${to+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[to]||'';albEl('albPrev').disabled=to===0;albEl('albNextPg').disabled=to===ALB_PAGES-1;
+  const fin=()=>{albPage=to;albRender(true);albBusy=false};
+  if(reduceMotion()){fin();return}
+  const ov=document.createElement('div');ov.className='alb-grid alb-over';
+  if(dir>0){ov.innerHTML=fromHTML;grid.innerHTML=toHTML}else{ov.innerHTML=toHTML}
+  wrap.appendChild(ov);
+  const a=ov.animate(dir>0
+    ?[{transform:'rotateY(0deg)',opacity:1,filter:'brightness(1)'},{transform:'rotateY(-95deg)',opacity:.2,filter:'brightness(.8)'}]
+    :[{transform:'rotateY(-95deg)',opacity:.2,filter:'brightness(.8)'},{transform:'rotateY(0deg)',opacity:1,filter:'brightness(1)'}],
+    {duration:460,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'});
+  a.onfinish=()=>{ov.remove();fin()};
+}
+/* ---- 放大看郵票 ---- */
+var albChosen=null;
+function albDetail(i){
+  const s=ALB_STAMPS[i],count=albCount(),owned=s.n<=count,d=albEl('albDetail');albChosen=s;
+  d.innerHTML=`<div class="albd-card"><p class="albd-t">${owned?s.name:'神祕郵票'} · ${s.n} 本紀念</p>${owned?`<div class="albd-art" id="albdArt"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"></div>`:'<div class="mystery big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'}<p class="small">${owned?'收藏日期：'+albDate(s.n)+'（讀完第 '+s.n+' 本）':'再讀 '+(s.n-count)+' 本就能收藏，進度跨年保留。'}</p><div class="albd-act">${owned?'<button type="button" class="btn primary" id="albdDl">下載郵票 PNG</button>':''}<button type="button" class="btn" id="albdX">收起</button></div></div>`;
+  if(!d.open)d.showModal();
+  albEl('albdX').onclick=()=>d.close();
+  if(owned){
+    albEl('albdDl').onclick=()=>albDownload(s);
+    const art=albEl('albdArt');
+    art.addEventListener('pointermove',e=>{if(reduceMotion())return;const r=art.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;art.style.transform=`perspective(700px) rotateY(${x*14}deg) rotateX(${-y*14}deg)`});
+    art.addEventListener('pointerleave',()=>{art.style.transform=''});
+  }
+}
+async function albDownload(s){
+  const b=albEl('albdDl');b.disabled=true;b.textContent='下載中…';
+  try{
+    const img=await new Promise((ok,no)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=no;m.src=albImg(s)});
+    const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)throw 0;
+    const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`頁間日子-${s.n}本-${s.name}.png`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);
+    b.textContent='下載郵票 PNG';b.disabled=false;
+  }catch{b.textContent='下載失敗，再試一次';b.disabled=false}
+}
+/* ---- 開關整本集郵冊 ---- */
+function albOpenDialog(jumpTo,autoOpen){
+  closeMenu&&closeMenu();albClear();albBusy=false;
+  albPage=typeof jumpTo==='number'?Math.floor(jumpTo/ALB_PER):0;
+  albEl('albDemo').hidden=!demoMode;
+  albSetState(false);albRender(false);albEl('album').showModal();
+  albEl('albMute').setAttribute('aria-pressed',albMuted);albEl('albMute').dataset.m=albMuted?'1':'0';
+  if(autoOpen)albLater(()=>albOpenBook(jumpTo),420);
+}
+function albCloseDialog(){albClear();albBusy=false;albEl('albDetail').open&&albEl('albDetail').close();albEl('album').close()}
+albEl('albOpen').onclick=()=>albOpenBook();
+albEl('albCover').onclick=()=>albOpenBook();
+albEl('albCover').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();albOpenBook()}});
+albEl('albShut').onclick=albShut;
+albEl('albX').onclick=albCloseDialog;
+albEl('album').addEventListener('close',()=>{albClear();albBusy=false});
+albEl('albPrev').onclick=()=>albTurn(-1);albEl('albNextPg').onclick=()=>albTurn(1);
+albEl('albGrid').onclick=e=>{const b=e.target.closest('button.stamp');if(!b)return;const i=Number(b.dataset.i);
+  if(b.classList.contains('locked')){albSound('knock');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake')}
+  albDetail(i)};
+albEl('albDetail').addEventListener('click',e=>{if(e.target===albEl('albDetail'))albEl('albDetail').close()});
+albEl('albMute').onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');albEl('albMute').dataset.m=albMuted?'1':'0';albEl('albMute').setAttribute('aria-pressed',albMuted);if(!albMuted)albSound('flip')};
+/* 示範書櫃專用：模擬讀完一本，看看蓋章的感覺 */
+albEl('albSim').onclick=()=>{
+  if(albBusy)return;const before=albOwned();albDemoExtra++;const after=albOwned();
+  if(after>before){albPage=Math.floor((after-1)/ALB_PER);albRender(false);albBusy=true;albEl('albGrid').querySelectorAll('.stamp').forEach(()=>{});albCelebrateIn(after-1)}
+  else{albRender(false);toast('已多讀完一本（示範）')}
+};
+function albCelebrateIn(i){albRender(true);albBusy=false}
+$('mAlbum').onclick=()=>{closeMenu();albOpenDialog()};
+function albMenuLabel(){const o=albOwned();const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`已收藏 ${o}／${ALB_STAMPS.length} 枚郵票`}
+albMenuLabel();
+
+/* ---- 讀完一本書：剛好湊滿 4 本時，蓋章慶祝 ---- */
+function albAfterFinish(b,before,done){
+  const after=books.length,o0=albOwned(before),o1=albOwned(after);
+  albMenuLabel();
+  if(o1>o0&&!demoMode){albCelebrate(o1-1,done);return}
+  done&&done();
+  const left=ALB_STAMPS.find(s=>s.n>after);
+  if(left&&albOwned(after)>0||left)albLater(()=>{if(!$('tkNudge')||$('tkNudge').hidden)toast(`再讀 ${left.n-after} 本，就能收到下一枚郵票`)},4200);
+}
+function albCelebrate(i,done){
+  const s=ALB_STAMPS[i],w=albEl('albWin');
+  albEl('albwImg').src=albImg(s);albEl('albwName').textContent=s.name;
+  albEl('albwSub').textContent=`讀完第 ${s.n} 本，收進集郵冊的第 ${i+1} 枚。`;
+  albMarkSeen(i);
+  const sp=albEl('albwSpark');sp.innerHTML=Array.from({length:14},(_,k)=>{const a=k/14*Math.PI*2+Math.random()*.4,r=90+Math.random()*60;return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px;--s:${.6+Math.random()*.8};--dl:${Math.random()*120}ms"></i>`}).join('');
+  w.classList.remove('go');w.showModal();void w.offsetWidth;w.classList.add('go');
+  albLater(()=>albSound('stamp'),reduceMotion()?0:620);albLater(()=>albSound('chime'),reduceMotion()?0:900);
+  const fin=open=>{w.close();if(open){albOpenDialog(i*1,true)}else done&&done()};
+  albEl('albwOpen').onclick=()=>fin(true);albEl('albwClose').onclick=()=>fin(false);
+  w.oncancel=e=>{e.preventDefault();fin(false)};
+}
+/* ---- 第一次更新到這版：提醒有集郵冊（只提醒一次） ---- */
+function albHint(){
+  if(demoMode||ls.get('album-hinted')==='1'||!books.length)return;
+  const n=albOwned();if(!n)return;
+  ls.set('album-hinted','1');
+  const h=albEl('albHint');h.querySelector('.albh-t b').textContent='新功能：集郵冊';h.querySelector('.albh-t > span').textContent=`你已經收集了 ${n} 枚郵票，點我翻開看看`;
+  h.hidden=false;requestAnimationFrame(()=>h.classList.add('in'));
+  const hide=()=>{h.classList.remove('in');setTimeout(()=>{h.hidden=true},400)};
+  albEl('albHintGo').onclick=()=>{hide();albOpenDialog(undefined,true)};albEl('albHintX').onclick=hide;
+  setTimeout(hide,12000);
+}
+setTimeout(albHint,3800);
+
 /* ================= 示範書櫃（資料只在記憶體，不寫入書房、不同步） ================= */
 var demoMode=false,demoGoals={},demoPrevView='shelf';
 const demoStore=new Map();
@@ -3072,20 +3678,21 @@ function demoData(){
     [P,12,'時間的禮物','林以安','',['小說'],1,'意猶未盡','',[q('原來最好的禮物，是有人記得你說過的話。',156)]],
     [P,12,'回家的路','沈牧','',['散文'],0,'好看','',[]],
   ].filter(r=>r[0]<Y||r[1]<=M);
+  const DEMO_SERIES={'港邊的舊書攤':{series:'港邊三部曲',seriesNo:'1'},'冬日火車時刻表':{series:'港邊三部曲',seriesNo:'2'},'山屋與十二隻貓':{series:'山屋日記',seriesNo:'上'}};
   return rows.map((r,i)=>{const [year,m,title,author,translator,tags,fav,feel,note,quotes]=r;
-    const b={id:'d'+(1000+i),title,year,month:m+'月',author,translator,tags,favorite:!!fav,feel,note,cover:'',coverX:50,coverY:50,coverZoom:1,updatedAt:Date.now()};
+    const b={...(DEMO_SERIES[title]||{}),id:'d'+(1000+i),title,year,month:m+'月',author,translator,tags,favorite:!!fav,feel,note,cover:'',coverX:50,coverY:50,coverZoom:1,updatedAt:Date.now()};
     if(quotes.length)b.quotes=quotes;return b}).concat(demoPile());
 }
 function demoPile(){
   const d=n=>{const t=new Date();t.setDate(t.getDate()+n);return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`};
   const T=Date.now(),H=36e5;
   return [
-    {id:'dp1',title:'夜行的貓與月亮',author:'森川夏帆',translator:'陳若微',status:'reading',source:'bought',startedAt:T-30*H,addedAt:T-200*H},
-    {id:'dp2',title:'城市散步學',author:'何思遠',status:'todo',source:'library',due:d(2),addedAt:T-100*H},
-    {id:'dp3',title:'海風吹過的書店',author:'林以安',status:'todo',source:'library',due:d(12),addedAt:T-90*H},
-    {id:'dp4',title:'給自己的十堂理財課',author:'黃子珩',status:'todo',source:'ebook',addedAt:T-60*H},
+    {id:'dp1',series:'港邊三部曲',seriesNo:'3',title:'夜行的貓與月亮',author:'森川夏帆',translator:'陳若微',status:'reading',format:'paper',source:'bought',startedAt:T-30*H,addedAt:T-200*H},
+    {id:'dp2',title:'城市散步學',author:'何思遠',status:'todo',format:'paper',source:'library',due:d(2),addedAt:T-100*H},
+    {id:'dp3',title:'海風吹過的書店',author:'林以安',status:'todo',format:'ebook',source:'library',due:d(12),addedAt:T-90*H},
+    {id:'dp4',title:'給自己的十堂理財課',author:'黃子珩',status:'todo',format:'ebook',source:'bought',addedAt:T-60*H},
     {id:'dp5',title:'北方之北',author:'Ingrid Holm',translator:'李安',status:'want',addedAt:T-20*H},
-    {id:'dp6',title:'我們的植物日記',author:'葉小禾',status:'want',source:'borrowed',addedAt:T-10*H}
+    {id:'dp6',title:'我們的植物日記',author:'葉小禾',status:'want',format:'paper',source:'borrowed',addedAt:T-10*H}
   ].map(b=>({tags:[],cover:'',coverX:50,coverY:50,coverZoom:1,updatedAt:T,...b}));
 }
 async function enterDemo(opts={}){
@@ -3404,7 +4011,7 @@ function vSlideItems(ctx,d,imgs){
     }});
   }else{
     it.push({...hItem(d.h,88),gap:34});it.push({...pItem(d.p),gap:70});
-    it.push({h:60,draw:(y)=>{ctx.font=`500 34px ${VF.b}`;ctx.fillStyle=VC.acc;vSpaced(ctx,'pichun21.github.io/reading-shelf',VW/2,y+42,2)}});
+    it.push({h:60,draw:(y)=>{ctx.font=`500 34px ${VF.b}`;ctx.fillStyle=VC.acc;vSpaced(ctx,'shelf.needtodeco.com',VW/2,y+42,2)}});
   }
   return it;
 }
@@ -3453,7 +4060,7 @@ async function vAssets(data){
   data.forEach(d=>{if(d.a)bs.set(d.a.id,d.a);if(d.z)bs.set(d.z.id,d.z);(d.books||[]).forEach(b=>bs.set(b.id,b))});
   await Promise.all([...bs.values()].map(async b=>{if(b.cover)imgs.set(b.id,await vLoadImg(b.cover))}));
   /* 先把會用到的字載入，畫布才不會用到備用字型 */
-  const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags})))+'0123456789頁間日子·PagesBetweenDayspichun21.github.io/reading-shelf';
+  const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags})))+'0123456789頁間日子·PagesBetweenDaysshelf.needtodeco.com';
   try{await Promise.race([Promise.all([`700 80px ${VF.d}`,`400 40px ${VF.b}`,`500 40px ${VF.b}`,`italic 500 200px ${VF.n}`].map(f=>document.fonts.load(f,txt))),new Promise(r=>setTimeout(r,6000))])}catch(e){}
   return {icon,word,imgs};
 }

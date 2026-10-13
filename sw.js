@@ -1,5 +1,5 @@
 /* 頁間日子：離線開啟用。網頁本身採「先連網、失敗才用快取」，所以更新網站後一定拿到新版。 */
-const VERSION='pages-between-days-v31';
+const VERSION='pages-between-days-v36';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 const RUNTIME_HOSTS=['fonts.googleapis.com','fonts.gstatic.com','cdn.jsdelivr.net'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
@@ -12,6 +12,8 @@ self.addEventListener('fetch',e=>{
     e.respondWith(fetch(req).then(r=>{const cp=r.clone();caches.open(VERSION).then(c=>c.put('./index.html',cp));return r}).catch(()=>caches.match('./index.html').then(r=>r||caches.match('./'))));
     return;
   }
+  // 集郵冊的郵票圖：第一次看到時存起來，之後離線也能看
+  if(url.origin===location.origin&&/\/stamps\//.test(url.pathname)){e.respondWith(caches.open(VERSION).then(async c=>{const hit=await c.match(req);if(hit)return hit;const r=await fetch(req);if(r.ok)c.put(req,r.clone());return r}));return}
   // 圖示、設定檔：快取優先
   if(url.origin===location.origin){e.respondWith(caches.match(req).then(r=>r||fetch(req)));return}
   // 字型與 Excel 元件：先給快取，背景更新
