@@ -153,7 +153,7 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
 .slot.gs{margin-left:12px;min-width:var(--tagw)}
 /* 月份：黃銅銘牌，貼在這組書起點下方的層板前緣 */
 .divider{position:absolute;left:0;bottom:0;height:var(--pl);z-index:6;scroll-margin-top:110px}
-.mtag{position:absolute;left:0;bottom:calc((var(--pl) - var(--th)) / 2 - 1px);height:var(--th);display:flex;align-items:center;gap:5px;padding:0 9px;white-space:nowrap;border-radius:3px;color:#46320f;font-family:var(--f-num);font-variant-numeric:lining-nums tabular-nums;font-size:12px;font-weight:700;letter-spacing:.03em;text-shadow:0 1px 0 rgba(255,238,190,.55);
+.mtag{position:absolute;left:0;bottom:calc((var(--pl) - var(--th)) / 2 - 1px);height:var(--th);display:flex;align-items:center;gap:5px;padding:0 9px;white-space:nowrap;border-radius:3px;color:#46320f;font-family:var(--f-display);font-variant-numeric:lining-nums tabular-nums;font-size:12px;line-height:1;font-weight:700;letter-spacing:.03em;text-shadow:0 1px 0 rgba(255,238,190,.55);
   background:linear-gradient(180deg,rgba(255,244,205,.5),rgba(255,244,205,0) 45%,rgba(60,38,8,.18)),linear-gradient(90deg,#c9ad74,#b8985f 50%,#c3a56c);box-shadow:inset 0 0 0 1px rgba(110,80,30,.55),inset 0 1px 0 rgba(255,246,214,.6),0 1px 1px rgba(0,0,0,.45),0 2px 4px -1px rgba(0,0,0,.35);transition:filter .2s,transform .15s}
 .mtag:before,.mtag:after{content:"";position:absolute;top:50%;width:3px;height:3px;margin-top:-1.5px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e8d6a6,#7a5c26);box-shadow:0 .5px 0 rgba(255,240,200,.4)}
 .mtag:before{left:3px}.mtag:after{right:3px}
@@ -161,9 +161,8 @@ html[data-theme="dark"] .mtag{filter:brightness(.8) saturate(.85)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mtag{filter:brightness(.8) saturate(.85)}}
 .mtag:hover{filter:brightness(1.07)}.mtag:active{transform:translateY(1px)}
 .mtag:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.mt-m{font-family:var(--f-display);font-size:12.5px}
+.mt-m,.mt-c{display:block;line-height:1;font-size:12px;padding-top:1px}
 .mt-d{width:3px;height:3px;border-radius:50%;background:rgba(70,50,15,.6);flex:none}
-.mt-c{font-size:12px}
 .book{position:relative;flex:none;display:block;transform-origin:bottom center;transition:transform .28s cubic-bezier(.2,.8,.2,1),filter .2s}
 .book:hover,.book:focus-visible{transform:translateY(-12px) rotate(-1.5deg)}
 .book.pulled{transform:translateY(-26px) scale(1.04)}
