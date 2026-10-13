@@ -24,7 +24,7 @@
   --wall:#e4e8e1; --wall-2:#d6dbd2; --paper:#f7f6f1; --paper-2:#eeede6;
   --ink:#1d2526; --ink-soft:#59645f; --rule:#c5cbc1;
   --wood-hi:#d9b68a; --wood:#b48a5c; --wood-lo:#7e5a37;
-  --dim:rgba(0,0,0,0); --back:rgba(70,42,20,.60); --case-glow:rgba(255,224,165,.20);
+  --dim:rgba(0,0,0,0); --back:rgba(70,42,20,.60); --case-glow:rgba(255,214,150,.28); --lamp:rgba(255,200,115,.34); --lamp2:rgba(255,196,110,.10);
   --accent:#1f5a5e; --accent-ink:#ffffff; --brass:#9a6f22; --ribbon:#b8233c;
   --glow:rgba(255,226,170,0); --veil:rgba(20,26,26,.42); --shadow:rgba(32,38,32,.20);
   --f-display:"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif;
@@ -40,7 +40,7 @@
     --wall:#141819; --wall-2:#1b2022; --paper:#22282a; --paper-2:#1b2022;
     --ink:#ece4d4; --ink-soft:#a59e90; --rule:#343c3e;
     --wood-hi:#6e4c31; --wood:#4f3420; --wood-lo:#2a1a0f;
-    --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,190,110,.10);
+    --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,184,100,.17); --lamp:rgba(255,184,100,.26); --lamp2:rgba(255,176,90,.08);
     --accent:#86c0b6; --accent-ink:#0f1a1a; --brass:#d8ad5c; --ribbon:#e05a6f;
     --glow:rgba(255,196,120,.17); --veil:rgba(4,6,7,.66); --shadow:rgba(0,0,0,.55);
     color-scheme:dark;
@@ -50,7 +50,7 @@
   --wall:#141819; --wall-2:#1b2022; --paper:#22282a; --paper-2:#1b2022;
   --ink:#ece4d4; --ink-soft:#a59e90; --rule:#343c3e;
   --wood-hi:#6e4c31; --wood:#4f3420; --wood-lo:#2a1a0f;
-  --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,190,110,.10);
+  --dim:rgba(8,4,0,.5); --back:rgba(30,16,6,.55); --case-glow:rgba(255,184,100,.17); --lamp:rgba(255,184,100,.26); --lamp2:rgba(255,176,90,.08);
   --accent:#86c0b6; --accent-ink:#0f1a1a; --brass:#d8ad5c; --ribbon:#e05a6f;
   --glow:rgba(255,196,120,.17); --veil:rgba(4,6,7,.66); --shadow:rgba(0,0,0,.55);
   color-scheme:dark;
@@ -131,8 +131,8 @@ kbd{font-family:var(--f-body);font-size:11px;border:1px solid var(--rule);border
   box-shadow:inset 18px 0 20px -14px rgba(0,0,0,.55),inset -18px 0 20px -14px rgba(0,0,0,.55),inset 0 0 0 1px rgba(30,16,6,.55),0 0 0 1px rgba(60,35,15,.4),0 30px 40px -24px var(--shadow);
   background-color:var(--wood);
   background-image:
-    linear-gradient(to bottom,rgba(0,0,0,.45) 0,rgba(0,0,0,.18) 20px,rgba(0,0,0,0) 58px,rgba(0,0,0,0) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 18px),rgba(255,236,196,.26) calc(100% - 18px),rgba(255,236,196,.12) calc(100% - 15px),rgba(255,255,255,.06) calc(100% - 14px),rgba(0,0,0,.10) calc(100% - 4px),rgba(0,0,0,.5) calc(100% - 2px),rgba(0,0,0,.62) 100%),
-    radial-gradient(ellipse 75% 60% at 50% 16%,var(--case-glow),transparent 75%),
+    linear-gradient(to bottom,rgba(0,0,0,.5) 0,rgba(0,0,0,.14) 7px,var(--lamp) 16px,var(--lamp2) 80px,rgba(0,0,0,0) calc(100% - 45px),rgba(0,0,0,0) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 19px),rgba(255,246,218,.62) calc(100% - 18px),rgba(255,236,196,.26) calc(100% - 18px),rgba(255,236,196,.12) calc(100% - 15px),rgba(255,255,255,.06) calc(100% - 14px),rgba(0,0,0,.10) calc(100% - 4px),rgba(0,0,0,.5) calc(100% - 2px),rgba(0,0,0,.62) 100%),
+    radial-gradient(ellipse 70% 75% at 50% 38%,var(--case-glow),transparent 78%),
     linear-gradient(var(--dim),var(--dim)),
     linear-gradient(to bottom,var(--back) calc(100% - 19px),transparent calc(100% - 19px)),
     url(stamps/wood-h.webp),
@@ -3783,7 +3783,7 @@ var asIdx=0,asFmt='post',asBlob=null,asBusy=false;
 const asImgCache={};
 function asLoad(src){return asImgCache[src]||(asImgCache[src]=new Promise((ok,no)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=no;m.src=src}))}
 async function albMakeCard(i,fmt){
-  const s=ALB_STAMPS[i],y=albCurYear(),n=albCount(),owned=albOwned(n),W=1080,H=fmt==='story'?1920:1350;
+  const s=ALB_STAMPS[i],y=albCurYear(),nAll=albCount(),latest=i>=albOwned(nAll)-1,n=latest?nAll:s.n,owned=latest?albOwned(nAll):i+1,W=1080,H=fmt==='story'?1920:1350;
   try{await document.fonts.ready}catch(_){}
   const cs=getComputedStyle(document.documentElement),FD=cs.getPropertyValue('--f-display')||'serif',FN=cs.getPropertyValue('--f-num')||'serif',FB=cs.getPropertyValue('--f-body')||'sans-serif';
   const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
@@ -3792,12 +3792,13 @@ async function albMakeCard(i,fmt){
   g.strokeStyle='#b0925a';g.lineWidth=3;g.setLineDash([4,12]);g.lineCap='round';g.strokeRect(44,44,W-88,H-88);g.setLineDash([]);
   const top=fmt==='story'?170:92,cx=W/2;
   g.textAlign='center';g.textBaseline='alphabetic';
-  try{const lg=await asLoad('stamps/logo.webp');g.drawImage(lg,cx-190,top-4,64,64)}catch(_){}
-  g.fillStyle='#2f4a46';g.font=`700 44px ${FD}`;g.textAlign='left';g.fillText('頁間日子',cx-110,top+46);g.textAlign='center';
+  g.font=`700 44px ${FD}`;const tw=g.measureText('頁間日子').width,lx=cx-(64+14+tw)/2;
+  try{const lg=await asLoad('stamps/logo.webp');g.drawImage(lg,lx,top-4,64,64)}catch(_){}
+  g.fillStyle='#2f4a46';g.textAlign='left';g.fillText('頁間日子',lx+78,top+46);g.textAlign='center';
   const st=await asLoad(albImg(s));const sw=fmt==='story'?800:700,sh=sw*st.naturalHeight/st.naturalWidth,sy=top+(fmt==='story'?140:110);
   g.save();g.translate(cx,sy+sh/2);g.rotate(-.035);g.shadowColor='rgba(60,40,10,.35)';g.shadowBlur=36;g.shadowOffsetY=18;g.drawImage(st,-sw/2,-sh/2,sw,sh);g.restore();
   let y0=sy+sh+(fmt==='story'?120:84);
-  g.fillStyle='#5b6b66';g.font=`500 40px ${FD}`;g.fillText(`${y} 年到現在，我已經讀完`,cx,y0);
+  g.fillStyle='#5b6b66';g.font=`500 40px ${FD}`;g.fillText(latest?`${y} 年到現在，我已經讀完`:`${y} 年，我讀完了`,cx,y0);
   y0+=(fmt==='story'?210:178);
   g.fillStyle='#9a6f22';g.font=`600 ${fmt==='story'?230:200}px ${FN}`;g.fillText(String(n),cx-52,y0);
   const nw=g.measureText(String(n)).width;g.fillStyle='#2f4a46';g.font=`700 64px ${FD}`;g.textAlign='left';g.fillText('本書',cx-52+nw/2+16,y0);g.textAlign='center';
@@ -3807,8 +3808,7 @@ async function albMakeCard(i,fmt){
   y0+=(fmt==='story'?92:72);
   const tot=ALB_STAMPS.length,bw=38,gap=14,x0=cx-(tot*bw+(tot-1)*gap)/2;
   for(let k=0;k<tot;k++){g.fillStyle=k<owned?'#9a6f22':'rgba(90,80,50,.18)';const x=x0+k*(bw+gap);g.beginPath();g.roundRect?g.roundRect(x,y0,bw,bw*.72,6):g.rect(x,y0,bw,bw*.72);g.fill()}
-  g.fillStyle='#7d8a84';g.font=`400 30px ${FB}`;g.fillText('shelf.needtodeco.com',cx,H-(fmt==='story'?150:92));
-  return await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
+    return await new Promise(r=>c.toBlob(r,'image/jpeg',.92));
 }
 async function asRefresh(){
   if(asBusy)return;asBusy=true;
