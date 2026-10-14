@@ -4896,11 +4896,12 @@ function useRedirectLogin(){
   try{return ls.get('g-login-mode')==='redirect'||window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true||window.matchMedia('(pointer: coarse)').matches}catch{return false}
 }
 function googleRedirectUri(){return new URL('./',location.href.split('#')[0].split('?')[0]).href}
-function redirectSignIn(hint){
+function redirectSignIn(hint,silent){
   const state=Math.random().toString(36).slice(2)+Date.now().toString(36);
-  ls.set('g-redirect',JSON.stringify({state,t:Date.now()}));
+  ls.set('g-redirect',JSON.stringify({state,t:Date.now(),silent:!!silent}));
   const p=new URLSearchParams({client_id:GOOGLE_CLIENT_ID,redirect_uri:googleRedirectUri(),response_type:'token',scope:G_SCOPE,include_granted_scopes:'true',state});
-  if(hint)p.set('login_hint',hint);else p.set('prompt','select_account');
+  if(silent)p.set('prompt','none');
+  if(hint)p.set('login_hint',hint);else if(!silent)p.set('prompt','select_account');
   location.assign('https://accounts.google.com/o/oauth2/v2/auth?'+p.toString());
 }
 function googleRedirectReturn(){
@@ -4909,14 +4910,15 @@ function googleRedirectReturn(){
   if(!saved||q.get('state')!==saved.state)return false;
   ls.set('g-redirect','');history.replaceState(null,'',location.href.split('#')[0]);
   const cfg=syncCfg();
+  if(q.get('error')&&saved.silent){ls.set('g-silent-t',String(Date.now()+27*60*1000));setSyncStatus(cfg?'auth':'off');return true}
   if(q.get('error')){setSyncStatus(cfg?'err':'off');notify('Google 登入沒有完成',q.get('error')==='access_denied'?'你取消了登入，或沒有勾選允許存取雲端硬碟。':'Google 登入失敗：'+q.get('error'));return true}
   if(!String(q.get('scope')||'').includes('drive.appdata')){setSyncStatus(cfg?'err':'off');notify('還差一步','登入時要勾選「查看、建立及刪除此應用程式本身在您 Google 雲端硬碟中的設定資料」那一格才能同步，請再登入一次並打勾。');return true}
   ls.set('g-token',JSON.stringify({t:q.get('access_token'),exp:Date.now()+(Number(q.get('expires_in'))||3600)*1000}));
   setSyncStatus('busy','正在完成登入…');
-  finishGoogleLogin(cfg).catch(e=>{setSyncStatus(syncCfg()?'err':'off',e.message);if(!e.cancel)notify('Google 登入沒有完成',e.message)});
+  finishGoogleLogin(cfg,!!saved.silent).catch(e=>{setSyncStatus(syncCfg()?'err':'off',e.message);if(!e.cancel)notify('Google 登入沒有完成',e.message)});
   return true;
 }
-async function finishGoogleLogin(cfg){
+async function finishGoogleLogin(cfg,quiet){
   let email=cfg?.email||'';
   try{const r=await gfetch('https://www.googleapis.com/oauth2/v3/userinfo');email=(await r.json()).email||email}catch{}
   const next={type:'google',email};
@@ -4924,7 +4926,7 @@ async function finishGoogleLogin(cfg){
   if(!cfg||cfg.type!=='google'){try{replace=await firstSyncChoice(googleBackend(next),'雲端')}catch(e){if(e.cancel){setSyncStatus(syncCfg()?'ok':'off');return}throw e}}
   ls.set('sync-cfg',JSON.stringify(next));
   const ok=await runSync({replace});
-  if(ok){$('syncBox').open&&$('syncBox').close();toast(cfg?'已重新連線並同步':`已登入 ${email}，書會自動同步到雲端`)}
+  if(ok){$('syncBox').open&&$('syncBox').close();if(!quiet)toast(cfg?'已重新連線並同步':`已登入 ${email}，書會自動同步到雲端`)}
 }
 async function startGoogleLogin(){
   if(!googleReady()){notify('還不能用 Google 登入','網站管理者還沒有完成 Google 登入的設定。');return}
@@ -4988,11 +4990,22 @@ $('syncForm').onsubmit=async e=>{
   }catch(ex){if(!ex.cancel){err.hidden=false;err.textContent=ex.message}}
   finally{btn.disabled=false;btn.textContent='連線並同步'}
 };
-window.addEventListener('online',()=>scheduleSync(500));
+/* 登入約一小時就會過期：趁沒在編輯時，悄悄向 Google 換一張新的（不會跳出畫面；失敗就維持「請重新連線」） */
+function silentRenew(){
+  try{
+    const cfg=syncCfg();if(!cfg||cfg.type!=='google'||demoMode||!navigator.onLine||!googleReady())return;
+    if(gToken()||syncState.busy)return;
+    if(document.visibilityState!=='visible'||document.querySelector('dialog[open]'))return;
+    const last=Number(ls.get('g-silent-t'))||0;if(Date.now()-last<3*60*1000)return;
+    ls.set('g-silent-t',String(Date.now()));redirectSignIn(cfg.email||'',true);
+  }catch(_){}
+}
+setTimeout(silentRenew,2500);setInterval(silentRenew,60*1000);
+window.addEventListener('online',()=>{scheduleSync(500);setTimeout(silentRenew,800)});
 /* 電腦開著不動時，每幾分鐘也去雲端看一次有沒有新的（手機改了書堆狀態等） */
 setInterval(()=>{if(document.visibilityState==='visible'&&syncCfg()&&!demoMode)scheduleSync(200)},4*60*1000);
 window.addEventListener('focus',()=>{if(syncCfg()&&Date.now()-(Number(ls.get('sync-last'))||0)>30000)scheduleSync(300)});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&syncCfg()){const last=Number(ls.get('sync-last'))||0;if(Date.now()-last>60000)scheduleSync(300)}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(silentRenew,600);if(document.visibilityState==='visible'&&syncCfg()){const last=Number(ls.get('sync-last'))||0;if(Date.now()-last>60000)scheduleSync(300)}});
 
 </script>
 </body>
