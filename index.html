@@ -1252,6 +1252,37 @@ html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
 .views button{white-space:nowrap;min-height:43px}
 .views button:focus-visible{outline:3px solid var(--accent,#ad9059);outline-offset:-3px;border-radius:6px}
 </style>
+<style>
+@media (max-width:700px){
+  .pile-tools{margin-left:0;margin-right:0;padding:0}
+  .pile-chips{margin:0;padding:2px}
+  .pile-tr{width:100%;min-width:0;flex-wrap:wrap;justify-content:flex-start;gap:8px}
+  .pile-tr .pile-sort{flex:1 1 130px;min-width:0}
+  .pile-tr .pile-sort select{width:100%;max-width:none;text-overflow:ellipsis}
+  .pile-tr>button{flex:none}
+}
+</style>
+<style>
+.spine{--sc:hsl(30 30% 36%);background:
+  linear-gradient(180deg,rgba(255,255,255,.22) 0,transparent 3px,transparent calc(100% - 4px),rgba(0,0,0,.25) 100%),
+  linear-gradient(90deg,rgba(0,0,0,.3) 0,rgba(255,255,255,.14) 14%,rgba(255,255,255,0) 32%,rgba(0,0,0,.08) 70%,rgba(0,0,0,.34) 100%),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),
+  var(--sc);border-radius:3px 4px 4px 3px;padding:16px 0 12px;position:relative}
+.spine.st0:before,.spine.st0:after,.spine.st1:before,.spine.st1:after,.spine.st2:before,.spine.st2:after{content:"";position:absolute;left:0;right:0;pointer-events:none}
+.spine.st0:before{top:8px;height:5px;border-top:1px solid #e8c981;border-bottom:1px solid #e8c981;opacity:.8}
+.spine.st0:after{bottom:8px;height:5px;border-top:1px solid #e8c981;border-bottom:1px solid #e8c981;opacity:.8}
+.spine.st1:before{top:9px;height:1px;background:#e8c981;opacity:.85;box-shadow:0 4px 0 #e8c981}
+.spine.st1:after{bottom:9px;height:1px;background:#e8c981;opacity:.85;box-shadow:0 -4px 0 #e8c981}
+.spine.st2:before{top:0;height:10px;background:rgba(0,0,0,.2)}
+.spine.st2:after{bottom:0;height:10px;background:rgba(0,0,0,.2)}
+.spine .sp-t{color:#f7edd6;text-shadow:0 1px 1px rgba(0,0,0,.45);height:calc(var(--sh) - 62px);margin-top:6px;position:relative;z-index:1}
+@media (max-width:700px){.spine .sp-t{height:calc(var(--sh) * .78 - 56px)}}
+.spine .sp-a{position:absolute;left:0;right:0;bottom:15px;display:block;writing-mode:vertical-rl;text-orientation:upright;font-size:9.5px;font-weight:400;letter-spacing:.04em;text-align:center;margin:0 auto;height:auto;color:#e8c981;opacity:.85;z-index:1}
+#showRow{display:inline-flex;gap:4px}
+.sort-row .sr-gap{width:14px}
+.sort-row{flex-wrap:wrap}
+</style>
+<style>html[data-view="wall"] #showRow,html[data-view="wall"] .sr-gap,html[data-view="wall"] .sr-lab{display:none}</style>
 
 </head>
 <body>
@@ -1339,7 +1370,7 @@ html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
   <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
   <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button></div>
-  <div class="sort-row" id="sortRow" role="group" aria-label="書架排列順序"><span>排列</span><button type="button" data-dir="old">最早在上</button><button type="button" data-dir="new">最新在上</button></div>
+  <div class="sort-row" id="sortRow" role="group" aria-label="書架排列順序"><span>排列</span><button type="button" data-dir="old">最早在上</button><button type="button" data-dir="new">最新在上</button><span class="sr-gap"></span><span class="sr-lab">呈現</span><span id="showRow" role="group" aria-label="書櫃呈現方式"><button type="button" data-show="auto">自動</button><button type="button" data-show="cover">全部封面</button><button type="button" data-show="spine">全部書背</button></span></div>
   <main id="stage" aria-live="polite"></main>
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
   <footer class="site-foot">
@@ -1444,6 +1475,10 @@ html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
         <div class="field">
           <label for="bookSeriesNo">第幾集<small>選填</small></label>
           <input id="bookSeriesNo" maxlength="8" inputmode="decimal" autocomplete="off" placeholder="1、2、上、下">
+        </div>
+        <div class="field">
+          <label for="bookShelfShow">在書櫃上的樣子<small>選填</small></label>
+          <select id="bookShelfShow"><option value="">跟著書櫃設定</option><option value="cover">一定顯示封面</option><option value="spine">一定顯示書背</option></select>
         </div>
       </div>
       <div class="field" id="favField">
@@ -1880,12 +1915,43 @@ function coverInner(b){
 }
 const ribbon=b=>(b.favorite?'<span class="ribbon" aria-hidden="true"></span>':'')+(b.series&&String(b.seriesNo||'').trim()?`<span class="sbadge" aria-hidden="true">${esc(String(b.seriesNo).trim())}</span>`:'');
 function spineTitle(t){return String(t).replace(/[（(].*?[）)]/g,'').replace(/[：:].*$/,'').trim()||t}
+/* 書背：精選色盤＋布面紋理＋燙金線條，作者放在書背下方 */
+const SPINE_PAL=[[158,32,26],[12,42,30],[212,38,28],[32,52,34],[350,38,30],[188,30,30],[262,22,32],[24,44,30],[98,22,28],[205,14,24]];
+const spineColors=new Map();
+function spineHue(b){const h=hue(b.title);return SPINE_PAL[h%SPINE_PAL.length]}
+function spineCss(b){
+  const [h,s,l]=spineHue(b),c=spineColors.get(b.id);
+  return c?`--sc:${c}`:`--sc:hsl(${h} ${s}% ${l}%)`;
+}
+function spineAvg(b){
+  if(!b.cover||spineColors.has(b.id)||spineColors.get(b.id)===null)return;
+  spineColors.set(b.id,null);
+  const im=new Image();im.crossOrigin='anonymous';
+  im.onload=()=>{try{
+    const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');x.drawImage(im,0,0,8,8);
+    const d=x.getImageData(0,0,8,8).data;let r=0,g=0,bl=0,n=0;
+    for(let k=0;k<d.length;k+=4){if(d[k+3]<200)continue;r+=d[k];g+=d[k+1];bl+=d[k+2];n++}
+    if(!n)return;r/=n;g/=n;bl/=n;
+    const mx=Math.max(r,g,bl)/255,mn=Math.min(r,g,bl)/255,l=(mx+mn)/2;let h=0,s=0;
+    if(mx!==mn){const dd=mx-mn;s=l>.5?dd/(2-mx-mn):dd/(mx+mn);
+      const R=r/255,G=g/255,B=bl/255;h=mx===R?((G-B)/dd+(G<B?6:0)):mx===G?((B-R)/dd+2):((R-G)/dd+4);h*=60}
+    const col=`hsl(${Math.round(h)} ${Math.round(Math.min(48,Math.max(18,s*100*.8)))}% ${Math.round(Math.min(40,Math.max(24,l*100*.75)))}%)`;
+    spineColors.set(b.id,col);
+    document.querySelectorAll(`.book.is-spine[data-id="${CSS.escape(b.id)}"] .spine`).forEach(e=>e.style.setProperty('--sc',col));
+  }catch(_){spineColors.delete(b.id)}};
+  im.onerror=()=>{};im.src=b.cover;
+}
+/* 書櫃呈現：全域 auto／cover／spine，個別書可覆寫（b.shelfShow） */
+let shelfShow=(()=>{const v=ls.get('shelf-show');return v==='cover'||v==='spine'?v:'auto'})();
+function useSpine(b){const o=b.shelfShow;if(o==='spine')return true;if(o==='cover')return false;if(shelfShow==='spine')return true;if(shelfShow==='cover')return false;return !b.cover}
 function bookEl(b){
   const lab=`《${esc(b.title)}》${b.favorite?'，珍藏':''}`;
-  if(b.cover)return `<button type="button" class="book" data-id="${esc(b.id)}" aria-label="${lab}"><span class="face">${coverInner(b)}</span>${ribbon(b)}</button>`;
+  if(!useSpine(b))return `<button type="button" class="book" data-id="${esc(b.id)}" aria-label="${lab}"><span class="face">${coverInner(b)}</span>${ribbon(b)}</button>`;
   const t=spineTitle(b.title),h=hue(b.title);
-  const w=Math.round(Math.min(50,Math.max(32,24+t.length*1.4))), ht=136+(h%5)*5;
-  return `<button type="button" class="book is-spine" data-id="${esc(b.id)}" aria-label="${lab}"><span class="spine" style="--h:${h};--sw:${w}px;--sh:${ht}px"><span>${esc(t)}</span></span>${ribbon(b)}</button>`;
+  const w=Math.round(Math.min(54,Math.max(34,26+t.length*1.5))), ht=138+(h%5)*5, st=h%3;
+  const au=String(b.author||'').split(/[、,，\/／&＆]/)[0].trim().slice(0,4);
+  if(b.cover)spineAvg(b);
+  return `<button type="button" class="book is-spine" data-id="${esc(b.id)}" aria-label="${lab}"><span class="spine st${st}" style="${spineCss(b)};--sw:${w}px;--sh:${ht}px"><span class="sp-t">${esc(t)}</span>${au?`<span class="sp-a">${esc(au)}</span>`:''}</span>${ribbon(b)}</button>`;
 }
 function tileEl(b,sub){return `<button type="button" class="tile" data-id="${esc(b.id)}"><span class="cover">${coverInner(b)}${ribbon(b)}</span><span class="cap">${esc(b.title)}</span><span class="sub">${esc(sub)}</span></button>`}
 let toastTimer;
@@ -1940,6 +2006,8 @@ function flashMonth(m){document.querySelectorAll(`[data-of="${m}"] .book,[data-m
 /* 書架的排列方向：由舊到新（1 月在最上層）或由新到舊（最新的月份在最上層） */
 var shelfDir=['old','new'].includes(ls.get('shelf-dir'))?ls.get('shelf-dir'):'';
 function shelfDirNow(){return shelfDir||(view==='wall'?'new':'old')}
+function syncShowRow(){document.querySelectorAll('#showRow [data-show]').forEach(b=>{const on=b.dataset.show===shelfShow;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
+document.querySelectorAll('#showRow [data-show]').forEach(b=>b.onclick=()=>{shelfShow=b.dataset.show;if(!demoMode)ls.set('shelf-show',shelfShow);renderStage()});
 function syncSortRow(){const d=shelfDirNow();document.querySelectorAll('#sortRow [data-dir]').forEach(b=>{const on=b.dataset.dir===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 document.querySelectorAll('#sortRow [data-dir]').forEach(b=>b.onclick=()=>{shelfDir=b.dataset.dir;if(!demoMode)ls.set('shelf-dir',shelfDir);renderStage()});
 function groupByMonth(list){
@@ -1954,7 +2022,7 @@ function renderStage(){
   if(view==='pile'){renderPile(st);return}
   const groups=groupByMonth(yearBooks());
   stageCtx=groups.flatMap(g=>g.items.map(b=>b.id));
-  const dir=shelfDirNow();syncSortRow();
+  const dir=shelfDirNow();syncSortRow();syncShowRow();
   if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button><button type="button" class="btn" id="wSync">${googleReady()?'用 Google 帳號登入':'從其他裝置同步'}</button><button type="button" class="btn" id="wImport">匯入備份檔</button></div><button type="button" class="demo-link" id="wDemo">還不確定？先逛逛示範書櫃 →</button></div>`;$('wDemo').onclick=()=>enterDemo();$('wAdd').onclick=()=>openEditor();$('wSync').onclick=()=>googleReady()?startGoogleLogin():openSyncBox();$('wImport').onclick=()=>chooseImport();return}
   if(!groups.length){st.innerHTML=`<div class="empty">${currentYear} 年的書架還空著。<br><button type="button" class="btn primary" id="emptyAdd">放上第一本書</button></div>`;$('emptyAdd').onclick=()=>openEditor();return}
   if(view==='wall'){
@@ -2281,7 +2349,7 @@ function openEditor(b=null,opts={}){
   $('bookTitle').value=b?.title||'';$('titleHint').hidden=true;
   setEditorMore(!!b||ls.get('editor-more')==='1');
   $('bookAuthor').value=b?.author||'';
-  $('bookTranslator').value=b?.translator||'';$('bookSeries').value=b?.series||'';$('bookSeriesNo').value=b?.seriesNo||'';seriesFillList();
+  $('bookTranslator').value=b?.translator||'';$('bookSeries').value=b?.series||'';$('bookSeriesNo').value=b?.seriesNo||'';$('bookShelfShow').value=b?.shelfShow||'';seriesFillList();
   const defMonth=b&&b.month?b.month:((opts.finish||Number(currentYear)===NOW.getFullYear())?`${NOW.getMonth()+1}月`:'');
   $('bookMonthCustom').value='';setMonth(defMonth);
   editTags=[...(b?.tags||[])];renderTags();
@@ -3621,7 +3689,7 @@ $('ordClose').onclick=()=>$('orderBox').close();
 document.querySelectorAll('[data-ordscope]').forEach(b=>b.onclick=()=>{ordScope=b.dataset.ordscope;renderOrder()});
 
 /* ================= 系列書 ================= */
-function seriesFields(){return {series:$('bookSeries').value.trim(),seriesNo:$('bookSeriesNo').value.trim()}}
+function seriesFields(){return {series:$('bookSeries').value.trim(),seriesNo:$('bookSeriesNo').value.trim(),shelfShow:$('bookShelfShow').value}}
 function seriesNames(){const m=new Map();[...books,...pile].forEach(b=>{const s=String(b.series||'').trim();if(s)m.set(s,(m.get(s)||0)+1)});return [...m.entries()].sort((a,b)=>b[1]-a[1]).map(x=>x[0])}
 function seriesFillList(){const dl=$('seriesList');if(dl)dl.innerHTML=seriesNames().map(n=>`<option value="${esc(n)}">`).join('')}
 /* 集數：能轉成數字就照數字排，「上、中、下」「前傳」這類文字排在後面 */
