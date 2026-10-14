@@ -1211,6 +1211,14 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 .alb-tz .tz-go{font-size:12px;flex:none;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.alb-tz:before{animation:none;opacity:0}}
 </style>
+<style>.summary .nb{white-space:nowrap;display:inline-block}.summary{text-wrap:pretty}</style>
+<style>
+/* 月牌：象牙白搪瓷牌，跟木頭書櫃、書背拉開對比 */
+.mtag{background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 50%,rgba(90,60,20,.12)),#f1e7cb;color:#3a2a10;text-shadow:none;box-shadow:inset 0 0 0 1px rgba(90,60,20,.6),0 1px 1px rgba(0,0,0,.5),0 2px 4px -1px rgba(0,0,0,.4)}
+.mtag:before,.mtag:after{background:radial-gradient(circle at 35% 35%,#b8985f,#5c4318)}
+html[data-theme="dark"] .mtag{filter:brightness(.88) saturate(.9)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mtag{filter:brightness(.88) saturate(.9)}}
+</style>
 
 </head>
 <body>
@@ -1880,8 +1888,8 @@ function renderIntro(animateBars){
   let html;
   if(!n)html=books.length?'這一年的書架還空著。按「放一本書」放上第一本吧。':'每一本讀過的書，都會在這裡留下位置。';
   else{
-    html=`這一年讀了<em>${n}</em>本書`+(f?`，其中<em>${f}</em>本特別喜歡`:'')+'。';
-    if(best&&counts[best]>1)html+=`讀得最多的是<em>${best}</em>月，那個月讀了<em>${counts[best]}</em>本。`;
+    html=`<span class="nb">這一年讀了<em>${n}</em>本書${f?'，':'。'}</span>`+(f?`<span class="nb">其中<em>${f}</em>本特別喜歡。</span>`:'');
+    if(best&&counts[best]>1)html+=`<span class="nb">讀得最多的是<em>${best}</em>月，</span><span class="nb">那個月讀了<em>${counts[best]}</em>本。</span>`;
     if(years.includes(currentYear-1)){const prev=yearBooks(currentYear-1).length,d=n-prev;html+=`<span class="delta">${d>0?`比 ${currentYear-1} 年多 ${d} 本`:d<0?`比 ${currentYear-1} 年少 ${-d} 本`:`和 ${currentYear-1} 年一樣多`}</span>`}
   }
   $('summary').innerHTML=html;renderGoalRow();if(typeof renderStampRow==='function')renderStampRow();
