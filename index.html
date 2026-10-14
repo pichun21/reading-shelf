@@ -4669,7 +4669,8 @@ function updateLoginBanner(){
 }
 function scheduleSync(delay=3500){
   if(demoMode||!syncCfg())return;
-  if(syncState.status==='auth')return;
+  if(syncState.status==='auth'){if(!syncState.warned){syncState.warned=true;toast('雲端登入過期了，這次修改還沒上傳。請點右上角雲端圖示重新連線')}return}
+  if(syncCfg().type==='google'&&!gToken()){setSyncStatus('auth');syncState.warned=true;toast('雲端登入過期了，這次修改還沒上傳。請點右上角雲端圖示重新連線');return}
   if(syncState.status!=='busy')setSyncStatus('pending');
   clearTimeout(syncState.timer);syncState.timer=setTimeout(()=>runSync(),delay);
 }
