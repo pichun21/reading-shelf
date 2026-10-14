@@ -1195,6 +1195,10 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 .alb-ctl .btn:not(:disabled){box-shadow:0 1px 0 var(--alb-rule)}
 @media (max-height:760px){.alb-grid{gap:4px 10px;padding:2px 0}.stamp-name{margin-top:1px}.alb-page h2{margin-top:4px}}
 </style>
+<style>
+.stamp.rare .mystery{aspect-ratio:3/2}
+.stamp.rare .small{font-size:11px}
+</style>
 
 </head>
 <body>
@@ -1237,6 +1241,7 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
     <button type="button" id="mSeries">我的系列<span>整套書的進度</span></button>
     <button type="button" id="mOrder">調整書本順序<span>書架與書堆</span></button>
     <button type="button" id="mAlbum">閱讀集郵冊<span>收藏郵票</span></button>
+    <button type="button" id="mDedupe">移除重複的書<span>同一本只留一本</span></button>
     <button type="button" id="mTags">管理標籤<span>改名、合併、顏色</span></button>
     <hr>
     <button type="button" id="mBatch">逐本補上封面<span id="mBatchCount"></span></button>
@@ -2393,7 +2398,7 @@ function dataUrlBytes(data){const m=String(data||'').match(/^data:(image\/(?:png
 async function externalCoverBytes(url){try{const r=await fetch(url,{mode:'cors'});if(!r.ok)return null;const b=await r.blob();if(!String(b.type).startsWith('image/'))return null;const u=new Uint8Array(await b.arrayBuffer()),type=b.type.toLowerCase();return {bytes:u,mime:type,ext:type.includes('png')?'png':type.includes('webp')?'webp':'jpg'}}catch{return null}}
 async function exportExcel(){
   if(!window.JSZip){notify('Excel 元件還沒載入','請確認網路連線後重新整理頁面，再匯出一次。');return}
-  if(!books.length){notify('沒有可以匯出的書','書房裡還沒有任何紀錄。');return}
+  if(!books.length&&!pile.length){notify('沒有可以匯出的書','書房裡還沒有任何紀錄。');return}
   const btn=$('exportExcelBtn');btn.disabled=true;const label=btn.innerHTML;btn.innerHTML='<b>正在製作 Excel…</b><span>封面越多會越久一點</span>';
   try{
     const IMG_COL=13;
@@ -2401,11 +2406,16 @@ async function exportExcel(){
     const sorted=[...books].sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||String(a.month).localeCompare(String(b.month),'zh-Hant',{numeric:true})||orderKey(a)-orderKey(b));
     sorted.forEach(b=>rows.push([b.year,b.month,b.title,b.author||'',b.translator||'',(b.tags||[]).join('、'),b.favorite?'是':'',normFeel(b.feel),b.note||'',quotesToCell(b),Number(b.coverX??50),Number(b.coverY??50),Number(b.coverZoom??1),b.cover?'有':'']));
     const zip=new JSZip();
-    zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
+    zip.file('[Content_Types].xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
     zip.folder('_rels').file('.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
-    zip.folder('xl').file('workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="閱讀紀錄" sheetId="1" r:id="rId1"/></sheets></workbook>');
-    zip.folder('xl').folder('_rels').file('workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+    zip.folder('xl').file('workbook.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="閱讀紀錄" sheetId="1" r:id="rId1"/><sheet name="書堆" sheetId="2" r:id="rId3"/></sheets></workbook>');
+    zip.folder('xl').folder('_rels').file('workbook.xml.rels','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
     zip.folder('xl').file('styles.xml','<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="1"><font><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE699"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="2" borderId="0" xfId="0" applyFill="1"/></cellXfs></styleSheet>');
+    {const pr=[['狀態','書名','作者','譯者','標籤','格式','來源','筆記']];
+      const stOrd={reading:0,todo:1,want:2};
+      [...pile].sort((x,y)=>(stOrd[x.status]??9)-(stOrd[y.status]??9)||(x.addedAt||0)-(y.addedAt||0)).forEach(b=>pr.push([PILE_LABEL[b.status]||'想讀',b.title,b.author||'',b.translator||'',(b.tags||[]).join('、'),fmtLabel(b.format),srcLabel(b.source),b.note||'']));
+      let sr='';pr.forEach((vals,r)=>{sr+=`<row r="${r+1}">`+vals.map((v,c)=>`<c r="${colRef(c+1)}${r+1}" t="inlineStr"><is><t xml:space="preserve">${xesc(v)}</t></is></c>`).join('')+'</row>'});
+      zip.folder('xl').folder('worksheets').file('sheet2.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><cols><col min="1" max="1" width="8" customWidth="1"/><col min="2" max="2" width="34" customWidth="1"/><col min="3" max="5" width="16" customWidth="1"/><col min="6" max="7" width="10" customWidth="1"/><col min="8" max="8" width="36" customWidth="1"/></cols><sheetData>${sr}</sheetData></worksheet>`)}
     const imageItems=[];for(let i=0;i<sorted.length;i++){const b=sorted[i];if(!b.cover)continue;let im=dataUrlBytes(b.cover);if(!im&&/^https?:/i.test(b.cover))im=await externalCoverBytes(b.cover);if(im)imageItems.push({row:i+2,...im})}
     let sheetRows='';for(let r=0;r<rows.length;r++){const vals=rows[r],rn=r+1;let cells='';for(let c=0;c<vals.length;c++){const ref=colRef(c+1)+rn,val=vals[c];const style=(r>0&&c===2&&sorted[r-1]?.favorite)?' s="1"':'';if(typeof val==='number'&&Number.isFinite(val))cells+=`<c r="${ref}"${style}><v>${val}</v></c>`;else cells+=`<c r="${ref}" t="inlineStr"${style}><is><t xml:space="preserve">${xesc(val)}</t></is></c>`}sheetRows+=`<row r="${rn}"${rn>1?' ht="82" customHeight="1"':''}>${cells}</row>`}
     zip.folder('xl').folder('worksheets').file('sheet1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><cols><col min="1" max="1" width="9" customWidth="1"/><col min="2" max="2" width="10" customWidth="1"/><col min="3" max="3" width="42" customWidth="1"/><col min="4" max="5" width="18" customWidth="1"/><col min="6" max="6" width="18" customWidth="1"/><col min="7" max="7" width="8" customWidth="1"/><col min="8" max="8" width="12" customWidth="1"/><col min="9" max="10" width="45" customWidth="1"/><col min="11" max="13" width="12" customWidth="1"/><col min="14" max="14" width="18" customWidth="1"/></cols><sheetData>${sheetRows}</sheetData><drawing r:id="rId1"/></worksheet>`);
@@ -2415,7 +2425,7 @@ async function exportExcel(){
     zip.folder('xl').folder('drawings').file('drawing1.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${anchors}</xdr:wsDr>`);
     zip.folder('xl').folder('drawings').folder('_rels').file('drawing1.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${drawRels}</Relationships>`);
     const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',compression:'DEFLATE',compressionOptions:{level:6}});
-    download(blob,`頁間日子-${stamp()}.xlsx`);$('exportDialog').close();exported();toast(`Excel 已匯出${imageItems.length?`，含 ${imageItems.length} 張封面`:''}`);
+    download(blob,`頁間日子-${stamp()}.xlsx`);$('exportDialog').close();exported();toast(`Excel 已匯出${imageItems.length?`，含 ${imageItems.length} 張封面`:''}${pile.length?`，書堆 ${pile.length} 本在「書堆」工作表`:''}`);
   }catch(err){notify('Excel 匯出失敗',err.message)}finally{btn.disabled=false;btn.innerHTML=label}
 }
 $('mExport').onclick=()=>{closeMenu();$('exportDialog').showModal()};
@@ -2556,13 +2566,20 @@ async function parseXlsx(file,opts={}){
   const titleHeads=['書名','書籍','書籍名稱','title','book'],yearHeads=['年','年份','年度','year'],monthHeads=['月','月份','month'],authorHeads=['作者','author'],translatorHeads=['譯者','翻譯','translator'],tagHeads=['標籤','分類','類別','tag','tags','genre'],favHeads=['喜歡','收藏','最愛','favorite','fav'],noteHeads=['筆記','心得','閱讀筆記','note','notes'],feelHeads=['讀完的感覺','感覺','感受','feel','feeling'],quoteHeads=['書摘','金句','摘句','摘錄','quote','quotes'];
   const headMatch=(v,list)=>{const n=normHeader(v);return !!n&&list.some(h=>n===normHeader(h)||n.includes(normHeader(h)))};
   const records=[];let order=0;const noYear={},noMonth=[];
-  for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const defaultYear=Number(opts.years?.[sh.name])||yearFrom(sh.name);let headerRow=null,map={};
+  for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;if(sh.name==='書堆')continue;const defaultYear=Number(opts.years?.[sh.name])||yearFrom(sh.name);let headerRow=null,map={};
     for(const row of sd.rows.slice(0,25)){const tm={};for(const [i,c] of Object.entries(row.cells)){const v=c.v,k=Number(i);if(headMatch(v,titleHeads))tm.title=k;else if(headMatch(v,yearHeads))tm.year=k;else if(headMatch(v,monthHeads))tm.month=k;else if(headMatch(v,translatorHeads))tm.translator=k;else if(headMatch(v,authorHeads))tm.author=k;else if(headMatch(v,tagHeads))tm.tags=k;else if(headMatch(v,favHeads))tm.favorite=k;else if(headMatch(v,feelHeads))tm.feel=k;else if(headMatch(v,quoteHeads))tm.quotes=k;else if(headMatch(v,noteHeads))tm.note=k}if(tm.title!=null&&(tm.month!=null||tm.year!=null||defaultYear)){headerRow=row.r;map=tm;break}}
     if(headerRow==null)continue;let carryYear=defaultYear;
     for(const row of sd.rows.filter(r=>r.r>headerRow)){const title=String(row.cells[map.title]?.v??'').trim();if(!title)continue;const yv=map.year!=null?yearFrom(row.cells[map.year]?.v):null;if(yv)carryYear=yv;const year=yv||carryYear||defaultYear;const month=map.month!=null?monthFrom(row.cells[map.month]?.v):'';if(!year){noYear[sh.name]=(noYear[sh.name]||0)+1;continue}if(!month){noMonth.push(title);continue}const favCell=map.favorite!=null?row.cells[map.favorite]:null;const favorite=(favCell?boolFrom(favCell.v):false)||styleLooksHighlighted(row.cells[map.title]?.style,styles);
       records.push({id:'excel-'+Date.now()+'-'+order,title,year,month,author:String(map.author!=null?(row.cells[map.author]?.v??''):'').trim(),translator:String(map.translator!=null?(row.cells[map.translator]?.v??''):'').trim(),tags:map.tags!=null?splitTags(row.cells[map.tags]?.v):[],favorite,note:String(map.note!=null?(row.cells[map.note]?.v??''):'').trim(),...(map.feel!=null&&normFeel(row.cells[map.feel]?.v)?{feel:normFeel(row.cells[map.feel]?.v)}:{}),...(map.quotes!=null&&normQuotes(String(row.cells[map.quotes]?.v??'')).length?{quotes:normQuotes(String(row.cells[map.quotes]?.v??''))}:{}),cover:'',coverX:50,coverY:50,coverZoom:1,_sheet:sh.name,_row:row.r,_order:order++})}
   }
-  if(!records.length&&!Object.keys(noYear).length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
+  const pileRecs=[];
+  {const sd=sheetData['書堆'];if(sd){let hdr=null,m={};
+    for(const row of sd.rows.slice(0,5)){const t={};for(const [i,c] of Object.entries(row.cells)){const n=normHeader(c.v),k=Number(i);if(n==='狀態')t.st=k;else if(n==='書名')t.title=k;else if(n==='作者')t.author=k;else if(n==='譯者')t.tr=k;else if(n==='標籤')t.tags=k;else if(n==='格式')t.fmt=k;else if(n==='來源')t.src=k;else if(n==='筆記')t.note=k}if(t.title!=null){hdr=row.r;m=t;break}}
+    if(hdr!=null){let o=0;const g=(row,k)=>String(k!=null?(row.cells[k]?.v??''):'').trim();
+      for(const row of sd.rows.filter(r=>r.r>hdr)){const title=g(row,m.title);if(!title)continue;const st=({'在讀':'reading','待讀':'todo','想讀':'want'})[g(row,m.st)]||'want';
+        const f=PILE_FMT.find(x=>x.l===g(row,m.fmt))?.k||'',sc=PILE_SRC.find(x=>x.l===g(row,m.src))?.k||'';
+        pileRecs.push({id:'px'+Date.now()+'-'+(o++),status:st,addedAt:Date.now()+o,title,author:g(row,m.author),translator:g(row,m.tr),tags:m.tags!=null?splitTags(row.cells[m.tags]?.v):[],note:g(row,m.note),...(f?{format:f}:{}),...(sc?{source:sc}:{})})}}}}
+  if(!records.length&&!pileRecs.length&&!Object.keys(noYear).length)throw new Error('找不到可以辨識的書籍資料。Excel 至少要有「書名」和「年份、月份」欄位，或工作表名稱本身就是年份。');
   const images=[];
   for(const sh of sheets){const sd=sheetData[sh.name];if(!sd)continue;const draw=[...sd.doc.getElementsByTagNameNS('*','drawing')][0];if(!draw)continue;const rid=[...draw.attributes].find(a=>a.localName==='id')?.value;if(!rid)continue;const rf=zip.file(resolveZipPath(sh.path,`_rels/${sh.path.split('/').pop()}.rels`));if(!rf)continue;const rd=parser.parseFromString(await rf.async('text'),'application/xml'),rm={};[...rd.getElementsByTagNameNS('*','Relationship')].forEach(r=>rm[r.getAttribute('Id')]=r.getAttribute('Target'));const drawPath=resolveZipPath(sh.path,rm[rid]);const df=zip.file(drawPath);if(!df)continue;const dd=parser.parseFromString(await df.async('text'),'application/xml');const drf=zip.file(resolveZipPath(drawPath,`_rels/${drawPath.split('/').pop()}.rels`)),drm={};if(drf){const drd=parser.parseFromString(await drf.async('text'),'application/xml');[...drd.getElementsByTagNameNS('*','Relationship')].forEach(r=>drm[r.getAttribute('Id')]=r.getAttribute('Target'))}
     for(const anc of [...dd.documentElement.children].filter(n=>['oneCellAnchor','twoCellAnchor','absoluteAnchor'].includes(n.localName))){const from=[...anc.children].find(n=>n.localName==='from');const row=Number([...from?.children||[]].find(n=>n.localName==='row')?.textContent||0)+1,col=Number([...from?.children||[]].find(n=>n.localName==='col')?.textContent||0)+1;const blip=[...anc.getElementsByTagNameNS('*','blip')][0];const er=blip?[...blip.attributes].find(a=>a.localName==='embed')?.value:null;if(!er||!drm[er])continue;const mediaPath=resolveZipPath(drawPath,drm[er]),mf=zip.file(mediaPath);if(!mf)continue;const ext=mediaPath.split('.').pop().toLowerCase(),mime=ext==='png'?'image/png':ext==='webp'?'image/webp':'image/jpeg';try{const data=await resizeExcelImage(await mf.async('blob').then(b=>new Blob([b],{type:mime})));images.push({sheet:sh.name,row,col,data})}catch{}}
@@ -2573,12 +2590,12 @@ async function parseXlsx(file,opts={}){
   // 2) 圖片沒有落在任何書的那一列（例如稍微放歪了）：找最近、而且還沒有封面的書，最多差 2 列
   images.forEach((im,i)=>{if(used.has(i))return;const c=records.filter(r=>r._sheet===im.sheet&&!r.cover&&Math.abs(r._row-im.row)<=2).sort((a,b)=>Math.abs(a._row-im.row)-Math.abs(b._row-im.row));if(c[0]){c[0].cover=im.data;used.add(i)}});
   for(const y of [...new Set(records.map(r=>r.year))]){const ims=images.map((im,i)=>({...im,i})).filter(x=>!used.has(x.i)&&yearFrom(x.sheet)===y).sort((a,b)=>a.row-b.row||a.col-b.col);const recs=records.filter(r=>r.year===y&&!r.cover).sort((a,b)=>a._order-b._order);for(let i=0;i<Math.min(ims.length,recs.length);i++){recs[i].cover=ims[i].data;used.add(ims[i].i)}}
-  records.forEach(r=>{delete r._sheet;delete r._row;delete r._order});return {records,noYear,noMonth,imageCount:images.length,mappedCount:records.filter(r=>r.cover).length};
+  records.forEach(r=>{delete r._sheet;delete r._row;delete r._order});return {records,pile:pileRecs,noYear,noMonth,imageCount:images.length,mappedCount:records.filter(r=>r.cover).length};
 }
 let excelFile=null,excelYears={};
 function showExcelPreview(file,result){
   excelFile=file;document.querySelectorAll('#importPreview .imp-fix').forEach(x=>x.remove());
-  pendingExcelImport=result.records;$('importFileName').textContent=`${file.name}｜確認判讀結果後，再選擇合併或取代。`;
+  pendingExcelImport=result.records;pendingPileImport=result.pile?.length?result.pile:null;$('importFileName').textContent=`${file.name}｜確認判讀結果後，再選擇合併或取代。${result.pile?.length?`（另有書堆 ${result.pile.length} 本會一起匯入）`:''}`;
   $('impBooks').textContent=result.records.length;$('impImages').textContent=result.imageCount;$('impMapped').textContent=result.mappedCount;$('impFavs').textContent=result.records.filter(x=>x.favorite).length;
   $('importNote').textContent=result.imageCount?'圖片會先依「同一列」對應書籍；若圖片放在獨立的年份工作表，則依由上到下、由左到右的順序對應那一年的書。匯入後每本都還能再調整封面。':'這份 Excel 裡沒有嵌入圖片，書籍資料仍可以正常匯入。';
   const ny=Object.entries(result.noYear||{}),thisY=new Date().getFullYear();
@@ -2640,6 +2657,34 @@ $('tidyApply').onclick=async()=>{
 $('tidyAll').onclick=()=>{$('tidyGrid').querySelectorAll('input').forEach(c=>{c.checked=true;c.closest('.tidy-item').classList.add('on')});countTidy()};
 $('tidyNone').onclick=()=>{$('tidyGrid').querySelectorAll('input').forEach(c=>{c.checked=false;c.closest('.tidy-item').classList.remove('on')});countTidy()};
 $('tidyClose').onclick=$('tidyCancel').onclick=()=>$('tidyBox').close();
+var dupKeep=new Map();
+function dupPlan(){
+  const g=new Map();for(const b of [...books,...pile]){const k=normTitleKey(b.title);if(!k)continue;if(!g.has(k))g.set(k,[]);g.get(k).push(b)}
+  const score=b=>(b.cover?4:0)+(b.note?1:0)+(b.favorite?1:0)+((b.tags||[]).length?1:0),best=l=>[...l].sort((x,y)=>score(y)-score(x)||(y.updatedAt||0)-(x.updatedAt||0))[0];
+  const rm=[];dupKeep=new Map();
+  for(const l of g.values()){if(l.length<2)continue;
+    const done=l.filter(isDone),open=l.filter(b=>!isDone(b)),yrs=new Map();
+    done.forEach(b=>{const y=String(b.year||'');if(!yrs.has(y))yrs.set(y,[]);yrs.get(y).push(b)});
+    for(const ys of yrs.values()){const k=best(ys);ys.forEach(b=>{if(b!==k){rm.push(b);dupKeep.set(b.id,k)}})}
+    if(done.length){const dk=best(done);open.forEach(b=>{rm.push(b);dupKeep.set(b.id,dk)})}else{const k=best(open);open.forEach(b=>{if(b!==k){rm.push(b);dupKeep.set(b.id,k)}})}
+  }
+  return rm;
+}
+$('mDedupe').onclick=async()=>{
+  closeMenu();const rm=dupPlan();
+  if(!rm.length){toast('沒有找到重複的書');return}
+  const names=[...new Set(rm.map(b=>'《'+b.title+'》'))].slice(0,5).join('、');
+  const ok=await ask({title:`找到 ${rm.length} 本重複的書`,body:`${names}${rm.length>5?' …':''}\n\n同一本書只會留下一本（優先留有封面、資料比較完整、比較新的）。被刪掉那本的標籤、筆記、封面、喜歡標記，會先補進留下來的那本，不會遺失。如果有開同步，另一台裝置也會一起刪。建議先匯出一份備份。`,buttons:[{label:'取消',value:false},{label:`刪除這 ${rm.length} 本重複`,value:true,cls:'primary'}]});
+  if(!ok)return;
+  const touched=new Map();
+  for(const b of rm){const k=dupKeep.get(b.id);if(!k)continue;
+    k.tags=[...new Set([...(k.tags||[]),...(b.tags||[])])];
+    for(const f of ['author','note','cover','coverOriginal','coverRef','source','format'])if(!k[f]&&b[f])k[f]=b[f];
+    if(b.favorite)k.favorite=true;touched.set(k.id,k)}
+  for(const k of touched.values())await saveBook(k);
+  for(const b of rm)await removeBook(b.id);
+  await reload();render(false);toast(`已移除 ${rm.length} 本重複的書`);
+};
 $('mTidy').onclick=openTidy;$('tidyBannerGo').onclick=openTidy;
 $('tidyBannerX').onclick=()=>{ls.set('tidy-dismissed','1');updateTidyBanner()};
 /* ================= 開燈／關燈 ================= */
@@ -3652,8 +3697,23 @@ const ALB_STAMPS=[
   {n:20,name:'夜讀檯燈',f:'s05'},{n:24,name:'舒適閱讀椅',f:'s06'},{n:28,name:'完整小書房',f:'s07'},{n:32,name:'閱讀松鼠',f:'s08'},
   {n:36,name:'湖畔閱讀小船',f:'s09'},{n:40,name:'樹屋祕密圖書館',f:'s10'}
 ];
-const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER);
-const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —'];
+/* 典藏款：集滿十枚之外的兩枚額外郵票（一年讀滿 45 本／一年十二個月都有讀） */
+const ALB_RARE=[
+  {k:'count',name:'雨窗讀書天',f:'c02',n:45,need:'一年讀滿 45 本',short:'年讀 45 本'},
+  {k:'months',name:'樹蔭吊床',f:'c01',need:'一年十二個月都有讀',short:'每月都有讀'}
+];
+const ALB_RARE_BASE=100;
+const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER)+1;
+const albStampAt=i=>i>=ALB_RARE_BASE?ALB_RARE[i-ALB_RARE_BASE]:ALB_STAMPS[i];
+const albPageOf=i=>i>=ALB_RARE_BASE?ALB_PAGES-1:Math.floor(i/ALB_PER);
+const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —','— 典藏款 · 04 —'];
+function albYearBooks(y){return books.filter(b=>Number(b.year)===Number(y))}
+function albMonthsOf(list){const m=new Set();list.forEach(b=>{const n=monthNum(b.month);if(n)m.add(n)});return m}
+function albRareProg(r,y=albCurYear(),list=albYearBooks(y),extra=(demoMode?albDemoExtra:0)){
+  if(r.k==='count'){const c=list.length+extra;return {have:Math.min(c,r.n),need:r.n,done:c>=r.n}}
+  const m=Math.min(12,albMonthsOf(list).size+extra);return {have:m,need:12,done:m>=12};
+}
+function albRareDone(){return ALB_RARE.filter(r=>albRareProg(r).done).length}
 const albImg=s=>`stamps/${s.f}.webp`;
 var albForce=false,albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
 /* 集郵冊是「年度」的：每一年各有一本，只算那一年讀完的書。從 2026 年開始。 */
@@ -3673,6 +3733,15 @@ function albDate(n){
   const arr=books.filter(b=>Number(b.year)===albCurYear()).sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b));
   const b=arr[n-1];if(!b)return String(albCurYear());
   const m=monthNum(b.month);return m?`${b.year}.${String(m).padStart(2,'0')}`:String(b.year);
+}
+function albRareDate(r){
+  if(r.k==='count')return albDate(r.n);
+  const arr=albYearBooks(albCurYear()).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b));
+  const seen=new Set();let hit=null;
+  for(const b of arr){const m=monthNum(b.month);if(m){seen.add(m);if(seen.size>=12){hit=b;break}}}
+  if(!hit)return String(albCurYear());
+  const last=arr.filter(b=>monthNum(b.month)).sort((a,b)=>Number(a.year)-Number(b.year)||monthNum(a.month)-monthNum(b.month)||orderKey(a)-orderKey(b)).pop()||hit;
+  return `${last.year}.${String(monthNum(last.month)).padStart(2,'0')}`;
 }
 const albLater=(fn,ms)=>{const t=setTimeout(fn,ms);albT.push(t);return t};
 const albClear=()=>{albT.forEach(clearTimeout);albT=[]};
@@ -3723,30 +3792,33 @@ function albSound(kind){
 /* ---- 畫面 ---- */
 const albEl=id=>$(id);
 function albStampHTML(s,i,count,opts={}){
-  const owned=s.n<=count;
-  const fin=i===ALB_STAMPS.length-1;
-  if(!owned)return `<button type="button" class="stamp locked${fin?' final':''}" data-i="${i}" aria-label="${fin?'壓軸郵票':'神祕郵票'}，累積讀完 ${s.n} 本解鎖"><span class="mystery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span class="stamp-name">${fin?'壓軸郵票':'神祕郵票'}</span><span class="small">累積讀完 ${s.n} 本</span></button>`;
+  const rare=i>=ALB_RARE_BASE,rp=rare?albRareProg(s):null;
+  const owned=rare?rp.done:s.n<=count;
+  const fin=rare||i===ALB_STAMPS.length-1;
+  if(!owned)return `<button type="button" class="stamp locked${fin?' final':''}${rare?' rare':''}" data-i="${i}" aria-label="${rare?'典藏款郵票，'+s.need+'解鎖':(fin?'壓軸郵票':'神祕郵票')+'，累積讀完 '+s.n+' 本解鎖'}"><span class="mystery"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></span><span class="stamp-name">${rare?'典藏款':fin?'壓軸郵票':'神祕郵票'}</span><span class="small">${rare?s.short+'・'+rp.have+'／'+rp.need:'累積讀完 '+s.n+' 本'}</span></button>`;
   const land=opts.land!=null;
-  return `<button type="button" class="stamp${land?' land':''}${fin?' final':''}" data-i="${i}"${land?` style="--d:${opts.land}ms"`:''} aria-label="${s.name}，已收藏"><span class="s-img"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"><i class="ring" aria-hidden="true"></i></span><span class="stamp-name">${s.name}</span><span class="postmark">${land?'<em>':''}已收藏 · ${albDate(s.n)}${land?'</em>':''}</span></button>`;
+  return `<button type="button" class="stamp${land?' land':''}${fin?' final':''}${rare?' rare':''}" data-i="${i}"${land?` style="--d:${opts.land}ms"`:''} aria-label="${s.name}，已收藏"><span class="s-img"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"><i class="ring" aria-hidden="true"></i></span><span class="stamp-name">${s.name}</span><span class="postmark">${land?'<em>':''}已收藏 · ${rare?albRareDate(s):albDate(s.n)}${land?'</em>':''}</span></button>`;
 }
 function albGridHTML(page,count,animate){
   const seen=albSeen();let k=0;
+  if(page===ALB_PAGES-1)return ALB_RARE.map((r,j)=>{const i=ALB_RARE_BASE+j,fresh=animate&&albRareProg(r).done&&(albForce||!seen.has(i));return albStampHTML(r,i,count,fresh?{land:260+(k++)*420}:{})}).join('');
   return ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).map((s,j)=>{
     const i=page*ALB_PER+j,fresh=animate&&s.n<=count&&(albForce||!seen.has(i));
     return albStampHTML(s,i,count,fresh?{land:260+(k++)*420}:{});
   }).join('')+Array.from({length:Math.max(0,ALB_PER-ALB_STAMPS.slice(page*ALB_PER,page*ALB_PER+ALB_PER).length)},()=>'<div class="stamp filler" aria-hidden="true"><span class="mystery ghost"></span><span class="stamp-name">&nbsp;</span><span class="small">&nbsp;</span></div>').join('');
 }
+function albPageHas(p,count=albCount()){return p===ALB_PAGES-1?albRareDone()>0:ALB_STAMPS.slice(p*ALB_PER,p*ALB_PER+ALB_PER).some(s=>s.n<=count)}
 function albRender(animate){
   const count=albCount(),owned=albOwned(count),next=ALB_STAMPS.find(s=>s.n>count);
   const ys=albYears(),yi=ys.indexOf(albCurYear());albEl('albTotal').textContent=`${albCurYear()} 年　已收藏 ${owned}／${ALB_STAMPS.length} 枚`;
   albEl('albYPrev').hidden=albEl('albYNext').hidden=ys.length<2;albEl('albYPrev').disabled=yi<=0;albEl('albYNext').disabled=yi>=ys.length-1;
-  albEl('albNext').textContent=next?`${albCurYear()} 年再讀 ${next.n-count} 本，就能揭曉下一枚神祕郵票`:`${albCurYear()} 年的十枚郵票收藏完成，謝謝每一本書的陪伴。`;
+  albEl('albNext').textContent=next?`${albCurYear()} 年再讀 ${next.n-count} 本，就能揭曉下一枚神祕郵票`:`${albCurYear()} 年的十枚郵票收藏完成，謝謝每一本書的陪伴。${albRareDone()<ALB_RARE.length?'翻到最後一頁，還有 '+(ALB_RARE.length-albRareDone())+' 枚典藏款等著你。':'兩枚典藏款也都收齊了。'}`;
   const prev=owned?ALB_STAMPS[owned-1].n:0,pct=next?Math.max(0,Math.min(100,100*(count-prev)/(next.n-prev))):100;
   albEl('albBar').style.width=pct+'%';albEl('albProg').setAttribute('aria-valuenow',Math.round(pct));
   albEl('albPageNo').textContent=`${albPage+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[albPage]||'';
   albEl('albPrev').disabled=albPage===0;albEl('albNextPg').disabled=albPage===ALB_PAGES-1;
   albEl('albGrid').innerHTML=albGridHTML(albPage,count,animate);
-  albEl('albReplay').hidden=!ALB_STAMPS.slice(albPage*ALB_PER,albPage*ALB_PER+ALB_PER).some(s=>s.n<=count);
+  albEl('albReplay').hidden=!albPageHas(albPage,count);
   if(animate)albPlayLands();
 }
 /* 新郵票逐枚「蓋」上去：每一枚落下時各配一聲 */
@@ -3761,7 +3833,7 @@ function albPlayLands(){
 function albSetState(open){albOpenState=open;albEl('albStage').dataset.state=open?'open':'closed';albEl('albOpen').hidden=open;albEl('albShut').hidden=!open}
 function albOpenBook(jumpTo){
   if(albBusy||albOpenState)return;albBusy=true;
-  if(typeof jumpTo==='number')albPage=Math.floor(jumpTo/ALB_PER);
+  if(typeof jumpTo==='number')albPage=albPageOf(jumpTo);
   albEl('albStage').classList.remove('closing');albEl('albStage').classList.add('moving');albRender(false);albSetState(true);albSound('open');
   const wait=reduceMotion()?60:1000;
   albLater(()=>{albBusy=false;albEl('albStage').classList.remove('moving');albRender(true)},wait);
@@ -3791,8 +3863,8 @@ function albTurn(dir){
 /* ---- 放大看郵票 ---- */
 var albChosen=null;
 function albDetail(i){
-  const s=ALB_STAMPS[i],count=albCount(),owned=s.n<=count,d=albEl('albDetail');albChosen=s;
-  d.innerHTML=`<div class="albd-card"><p class="albd-t">${owned?s.name:'神祕郵票'} · ${s.n} 本紀念</p>${owned?`<div class="albd-art" id="albdArt"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"></div>`:'<div class="mystery big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'}<p class="small">${owned?'收藏日期：'+albDate(s.n)+'（讀完第 '+s.n+' 本）':'再讀 '+(s.n-count)+' 本就能收藏，進度跨年保留。'}</p><div class="albd-act">${owned?'<button type="button" class="btn primary" id="albdShare">分享我的進度</button><button type="button" class="btn" id="albdReplay">重看收到郵票</button><button type="button" class="btn" id="albdDl">下載郵票 PNG</button>':''}<button type="button" class="btn" id="albdX">收起</button></div></div>`;
+  const s=albStampAt(i),rare=i>=ALB_RARE_BASE,rp=rare?albRareProg(s):null,count=albCount(),owned=rare?rp.done:s.n<=count,d=albEl('albDetail');albChosen=s;
+  d.innerHTML=`<div class="albd-card"><p class="albd-t">${owned?s.name:(rare?'典藏款郵票':'神祕郵票')} · ${rare?'典藏款':s.n+' 本紀念'}</p>${owned?`<div class="albd-art" id="albdArt"><img src="${albImg(s)}" alt="${s.name}郵票" draggable="false"></div>`:'<div class="mystery big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg></div>'}<p class="small">${rare?(owned?'收藏日期：'+albRareDate(s)+'（'+s.need+'）':'解鎖條件：'+s.need+'。目前 '+rp.have+'／'+rp.need+(s.k==='months'?' 個月。':' 本。')):(owned?'收藏日期：'+albDate(s.n)+'（讀完第 '+s.n+' 本）':'再讀 '+(s.n-count)+' 本就能收藏，進度跨年保留。')}</p><div class="albd-act">${owned?'<button type="button" class="btn primary" id="albdShare">分享我的進度</button><button type="button" class="btn" id="albdReplay">重看收到郵票</button><button type="button" class="btn" id="albdDl">下載郵票 PNG</button>':''}<button type="button" class="btn" id="albdX">收起</button></div></div>`;
   if(!d.open)d.showModal();
   albEl('albdX').onclick=()=>d.close();
   if(owned){
@@ -3810,7 +3882,7 @@ async function albDownload(s){
     const img=await new Promise((ok,no)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=no;m.src=albImg(s)});
     const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);
     const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)throw 0;
-    const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`頁間日子-${s.n}本-${s.name}.png`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);
+    const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=`頁間日子-${s.n?s.n+'本':'典藏'}-${s.name}.png`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);
     b.textContent='下載郵票 PNG';b.disabled=false;
   }catch{b.textContent='下載失敗，再試一次';b.disabled=false}
 }
@@ -3818,7 +3890,7 @@ async function albDownload(s){
 function albOpenDialog(jumpTo,autoOpen,year){
   if(year)albYear=Number(year);
   closeMenu&&closeMenu();albClear();albBusy=false;
-  albPage=typeof jumpTo==='number'?Math.floor(jumpTo/ALB_PER):0;
+  albPage=typeof jumpTo==='number'?albPageOf(jumpTo):0;
   albEl('albDemo').hidden=!demoMode;
   albSetState(false);albRender(false);albEl('album').showModal();
   albEl('albMute').setAttribute('aria-pressed',albMuted);albEl('albMute').dataset.m=albMuted?'1':'0';
@@ -3839,8 +3911,9 @@ albEl('albDetail').addEventListener('click',e=>{if(e.target===albEl('albDetail')
 albEl('albMute').onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');albEl('albMute').dataset.m=albMuted?'1':'0';albEl('albMute').setAttribute('aria-pressed',albMuted);if(!albMuted)albSound('flip')};
 /* 示範書櫃專用：模擬讀完一本，看看蓋章的感覺 */
 albEl('albSim').onclick=()=>{
-  if(albBusy)return;const before=albOwned();albDemoExtra++;const after=albOwned();
-  if(after>before){albPage=Math.floor((after-1)/ALB_PER);albRender(false);albBusy=true;albEl('albGrid').querySelectorAll('.stamp').forEach(()=>{});albCelebrateIn(after-1)}
+  if(albBusy)return;const before=albOwned(),rb=ALB_RARE.map(r=>albRareProg(r).done);albDemoExtra++;const after=albOwned(),newR=ALB_RARE.findIndex((r,j)=>albRareProg(r).done&&!rb[j]);
+  if(after>before){albPage=albPageOf(after-1);albRender(false);albBusy=true;albCelebrateIn(after-1)}
+  else if(newR>=0){albPage=ALB_PAGES-1;albRender(false);albBusy=true;albCelebrateIn(ALB_RARE_BASE+newR)}
   else{albRender(false);toast('已多讀完一本（示範）')}
 };
 function albCelebrateIn(i){albRender(true);albBusy=false}
@@ -3855,17 +3928,19 @@ function albAfterFinish(b,before,done){
   if(Number(b.year)<ALB_FIRST){albMenuLabel();done&&done();return}
   const after=albYearCount(b.year),o0=albOwned(before),o1=albOwned(after);
   albMenuLabel();renderStampRow();
-  if(o1>o0&&!demoMode){albCelebrate(o1-1,done);return}
+  const yl=albYearBooks(b.year),yb=yl.filter(x=>x.id!==b.id);
+  const newRare=ALB_RARE.map((r,j)=>j).filter(j=>albRareProg(ALB_RARE[j],b.year,yl,0).done&&!albRareProg(ALB_RARE[j],b.year,yb,0).done);
+  if(!demoMode&&(o1>o0||newRare.length)){const seq=[];if(o1>o0)seq.push(o1-1);newRare.forEach(j=>seq.push(ALB_RARE_BASE+j));const run=k=>k<seq.length?albCelebrate(seq[k],()=>run(k+1)):(done&&done());run(0);return}
   done&&done();
   const left=ALB_STAMPS.find(s=>s.n>after);
   if(left&&albOwned(after)>0||left)albLater(()=>{if(!$('tkNudge')||$('tkNudge').hidden)toast(`再讀 ${left.n-after} 本，就能收到下一枚郵票`)},4200);
 }
 function albCelebrate(i,done,replay){
-  const s=ALB_STAMPS[i],w=albEl('albWin');albEl('albwOpen').hidden=!!replay;
+  const s=albStampAt(i),w=albEl('albWin'),rare=i>=ALB_RARE_BASE;albEl('albwOpen').hidden=!!replay;
   albEl('albwImg').src=albImg(s);albEl('albwName').textContent=s.name;
-  const last=i===ALB_STAMPS.length-1;
-  w.classList.toggle('final',last);albEl('albwKick').textContent=last?`${albCurYear()} 年集郵冊完成`:'收到新郵票';
-  albEl('albwSub').textContent=replay&&!last?`第 ${i+1} 枚：讀完第 ${s.n} 本時收到的郵票。`:last?`整整一年，收齊了 ${ALB_STAMPS.length} 枚郵票。謝謝每一本書的陪伴。`:`讀完第 ${s.n} 本，收進集郵冊的第 ${i+1} 枚。`;
+  const last=rare||i===ALB_STAMPS.length-1;
+  w.classList.toggle('final',last);albEl('albwKick').textContent=rare?'典藏款郵票解鎖':last?`${albCurYear()} 年集郵冊完成`:'收到新郵票';
+  albEl('albwSub').textContent=rare?`${s.need}，收進集郵冊的典藏款。`:replay&&!last?`第 ${i+1} 枚：讀完第 ${s.n} 本時收到的郵票。`:last?`整整一年，收齊了 ${ALB_STAMPS.length} 枚郵票。謝謝每一本書的陪伴。`:`讀完第 ${s.n} 本，收進集郵冊的第 ${i+1} 枚。`;
   albMarkSeen(i);
   const sp=albEl('albwSpark');sp.innerHTML=Array.from({length:last?30:14},(_,k)=>{const a=k/(last?30:14)*Math.PI*2+Math.random()*.4,r=90+Math.random()*60;return `<i style="--x:${Math.cos(a)*r}px;--y:${Math.sin(a)*r}px;--s:${.6+Math.random()*.8};--dl:${Math.random()*120}ms"></i>`}).join('');
   w.classList.remove('go');w.showModal();void w.offsetWidth;w.classList.add('go');
@@ -3911,7 +3986,7 @@ var asIdx=0,asFmt='post',asBlob=null,asBusy=false;
 const asImgCache={};
 function asLoad(src){return asImgCache[src]||(asImgCache[src]=new Promise((ok,no)=>{const m=new Image();m.onload=()=>ok(m);m.onerror=no;m.src=src}))}
 async function albMakeCard(i,fmt){
-  const s=ALB_STAMPS[i],y=albCurYear(),nAll=albCount(),latest=i>=albOwned(nAll)-1,n=latest?nAll:s.n,owned=latest?albOwned(nAll):i+1,W=1080,H=fmt==='story'?1920:1350;
+  const rare=i>=ALB_RARE_BASE,s=albStampAt(i),y=albCurYear(),nAll=albCount(),latest=rare||i>=albOwned(nAll)-1,n=latest?nAll:s.n,owned=(latest||rare)?albOwned(nAll):i+1,W=1080,H=fmt==='story'?1920:1350;
   try{await document.fonts.ready}catch(_){}
   const cs=getComputedStyle(document.documentElement),FD=cs.getPropertyValue('--f-display')||'serif',FN=cs.getPropertyValue('--f-num')||'serif',FB=cs.getPropertyValue('--f-body')||'sans-serif';
   const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
@@ -3932,7 +4007,7 @@ async function albMakeCard(i,fmt){
   const nw=g.measureText(String(n)).width;g.fillStyle='#2f4a46';g.font=`700 64px ${FD}`;g.textAlign='left';g.fillText('本書',cx-52+nw/2+16,y0);g.textAlign='center';
   y0+=(fmt==='story'?96:80);
   g.fillStyle='#5b6b66';g.font=`400 36px ${FD}`;
-  g.fillText(i===ALB_STAMPS.length-1?`收齊 ${y} 年的 ${ALB_STAMPS.length} 枚郵票`:`收進第 ${i+1} 枚郵票・${s.name}`,cx,y0);
+  g.fillText(rare?`收進典藏款郵票・${s.name}`:i===ALB_STAMPS.length-1?`收齊 ${y} 年的 ${ALB_STAMPS.length} 枚郵票`:`收進第 ${i+1} 枚郵票・${s.name}`,cx,y0);
   y0+=(fmt==='story'?92:72);
   const tot=ALB_STAMPS.length,bw=38,gap=14,x0=cx-(tot*bw+(tot-1)*gap)/2;
   for(let k=0;k<tot;k++){g.fillStyle=k<owned?'#9a6f22':'rgba(90,80,50,.18)';const x=x0+k*(bw+gap);g.beginPath();g.roundRect?g.roundRect(x,y0,bw,bw*.72,6):g.rect(x,y0,bw,bw*.72);g.fill()}
@@ -3964,7 +4039,7 @@ albEl('asDl').onclick=async()=>{if(!asBlob)await asRefresh();if(asBlob)download(
 /* 重播這一頁的蓋章：已經收到的郵票再蓋一次 */
 function albReplayPage(){
   if(albBusy||!albOpenState)return;
-  const has=ALB_STAMPS.slice(albPage*ALB_PER,albPage*ALB_PER+ALB_PER).some(s=>s.n<=albCount());if(!has)return;
+  if(!albPageHas(albPage))return;
   albClear();albForce=true;albRender(true);albForce=false;
 }
 albEl('albReplay').onclick=albReplayPage;
@@ -4708,6 +4783,13 @@ async function syncOnce(be,{replace=false}={}){
   const localMap=new Map(local.map(b=>[String(b.id),b]));
   const remoteMap=new Map((remote.books||[]).map(b=>[String(b.id),b]));
   for(const b of local){if(/^data:image/.test(b.cover||'')){const h=await sha(b.cover);if(b.coverRef!==h){b.coverRef=h;b._refChanged=true}}else if(b.coverRef){delete b.coverRef;b._refChanged=true}}
+  /* 兩台裝置各自存了同一本書（ID 不同）：認出來，只留一本，不要變成兩本 */
+  for(const [id,L] of [...localMap]){
+    if(remoteMap.has(id))continue;const k=dupKey(L);if(!k)continue;
+    const R=[...remoteMap.values()].find(r=>!localMap.has(String(r.id))&&dupKey(r)===k);if(!R)continue;
+    await delBook(id);localMap.delete(id);localChanged++;
+    if((L.updatedAt||0)>(R.updatedAt||0)){const nb={...L,id:R.id};localMap.set(String(R.id),nb);await putBook(nb)}
+  }
   const ids=new Set([...localMap.keys(),...remoteMap.keys()]);
   const outBooks=[];let localChanged=0;const toUpload=[];const toDownload=[];
   for(const id of ids){
@@ -4754,6 +4836,7 @@ async function syncOnce(be,{replace=false}={}){
   setTombstones(payload.deleted);
   if(localChanged||tmChanged){await reload();render(false)}else if(goalsChanged)renderGoalRow();
 }
+function dupKey(b){const t=normTitleKey(b.title);if(!t)return '';return t+'|'+(isDone(b)?'d'+(b.year||''):'p')}
 function sortBooks(a){return [...a].sort((x,y)=>String(x.id).localeCompare(String(y.id)))}
 function pruneTombstones(d){const cut=Date.now()-400*864e5;const o={};for(const [k,v] of Object.entries(d))if(v>cut)o[k]=v;return o}
 function toRemote(b){
@@ -4775,7 +4858,8 @@ async function firstSyncChoice(be,label){
   if(Number(ls.get('sync-last'))||!books.length)return false;
   const {data}=await be.readShelf();
   if(!data||!(data.books||[]).length)return false;
-  const choice=await ask({title:`${label}${sp}上已經有你的書`,body:`這台裝置上也有 ${books.length} 本書。\n・合併：兩邊的書都保留，同一本以較新的為準。\n・以${sp}${label}${sp}為準：這台裝置上${sp}${label}${sp}沒有的書會被移除。`,buttons:[{label:'取消',value:null},{label:`以${sp}${label}${sp}為準`,value:'replace'},{label:'合併',value:'merge',cls:'primary'}]});
+  const rn=(data.books||[]).length;
+  const choice=await ask({title:`${label}${sp}上已經有書了`,body:`${label}${sp}上有 ${rn} 本，這台裝置上有 ${books.length+pile.length} 本。\n\n請選一種：\n・兩邊合在一起（建議）：兩邊的書都留下，同一本書只會留一本。\n・只留${sp}${label}${sp}的：這台裝置上${sp}${label}${sp}沒有的書會被刪掉，換成${sp}${label}${sp}的內容。`,buttons:[{label:'取消',value:null},{label:`只留${sp}${label}${sp}的`,value:'replace'},{label:'兩邊合在一起',value:'merge',cls:'primary'}]});
   if(!choice)throw Object.assign(new Error('已取消'),{cancel:true});
   return choice==='replace';
 }
@@ -4879,6 +4963,9 @@ $('syncForm').onsubmit=async e=>{
   finally{btn.disabled=false;btn.textContent='連線並同步'}
 };
 window.addEventListener('online',()=>scheduleSync(500));
+/* 電腦開著不動時，每幾分鐘也去雲端看一次有沒有新的（手機改了書堆狀態等） */
+setInterval(()=>{if(document.visibilityState==='visible'&&syncCfg()&&!demoMode)scheduleSync(200)},4*60*1000);
+window.addEventListener('focus',()=>{if(syncCfg()&&Date.now()-(Number(ls.get('sync-last'))||0)>30000)scheduleSync(300)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&syncCfg()){const last=Number(ls.get('sync-last'))||0;if(Date.now()-last>60000)scheduleSync(300)}});
 
 </script>
