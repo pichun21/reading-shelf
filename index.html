@@ -1226,6 +1226,32 @@ html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
 .sort-row button{height:28px;padding:0 12px;border-radius:999px;font-size:12.5px;color:var(--ink-soft);border:1px solid var(--rule);background:transparent}
 .sort-row button.on{background:var(--paper);color:var(--ink);border-color:var(--ink-soft);box-shadow:0 1px 3px var(--shadow);font-weight:600}
 </style>
+<style>
+#drawBox{background:transparent;border:0;padding:0;max-width:100vw;max-height:100vh;overflow:visible}
+#drawBox::backdrop{background:radial-gradient(circle at 50% 44%,rgba(86,58,20,.62),rgba(8,10,10,.9) 70%);backdrop-filter:blur(3px)}
+.draw-stage{position:relative;padding:10px 24px}
+.draw-stage:before{content:"";position:absolute;left:50%;top:48%;width:340px;height:340px;margin:-170px 0 0 -170px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,130,.38),rgba(255,214,130,0) 68%);pointer-events:none;animation:drawGlow 2.4s ease-in-out infinite}
+.draw-card{position:relative;transition:box-shadow .3s}
+.draw-card.spin{animation:drawShuf .13s ease-out}
+.draw-card.spin2{animation:drawShuf2 .13s ease-out}
+@keyframes drawShuf{from{transform:translateX(-26px) rotate(-7deg) translateY(6px)}to{transform:none}}
+@keyframes drawShuf2{from{transform:translateX(26px) rotate(7deg) translateY(6px)}to{transform:none}}
+.draw-card.pick{animation:drawPick .7s cubic-bezier(.2,1.25,.3,1) both;box-shadow:0 0 0 2px #f3dfa0,0 0 44px 12px rgba(255,214,120,.55),0 30px 60px rgba(0,0,0,.5)}
+@keyframes drawPick{0%{transform:scale(.88) rotate(-2deg)}60%{transform:scale(1.1) rotate(1deg)}100%{transform:scale(1.06)}}
+@keyframes drawGlow{0%,100%{opacity:.7;transform:scale(.95)}50%{opacity:1;transform:scale(1.06)}}
+.draw-sub{min-height:46px;text-align:center;color:#f5ecda;opacity:0;transform:translateY(8px);transition:opacity .45s .15s,transform .45s .15s;max-width:260px}
+.draw-sub.in{opacity:1;transform:none}
+.draw-sub b{display:block;font-family:var(--f-display);font-size:17px;font-weight:600;letter-spacing:.06em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.draw-sub span{display:block;margin-top:4px;font-size:12px;opacity:.75;letter-spacing:.1em}
+.draw-mute{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#f5ecda;background:#ffffff18;border:1px solid #ffffff30}
+.draw-mute svg{width:20px;height:20px}.draw-mute .off{display:none}.draw-mute[data-m="1"] .on{display:none}.draw-mute[data-m="1"] .off{display:block}
+@media (prefers-reduced-motion:reduce){.draw-stage:before{animation:none}}
+</style>
+<style>
+.views{overflow-x:auto;scrollbar-width:none}.views::-webkit-scrollbar{display:none}
+.views button{white-space:nowrap;min-height:43px}
+.views button:focus-visible{outline:3px solid var(--accent,#ad9059);outline-offset:-3px;border-radius:6px}
+</style>
 
 </head>
 <body>
@@ -1457,7 +1483,8 @@ html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
 
 <!-- 抽書 -->
 <dialog id="drawBox" aria-label="抽一本書">
-  <div class="draw-stage"><div class="draw-label" id="drawLabel">洗牌中…</div><div class="draw-card" id="drawCard"></div></div>
+  <button type="button" class="draw-mute" id="drawMute" data-m="0" aria-label="開關音效"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="off" d="m17 9 5 6m0-6-5 6"/></svg></button>
+  <div class="draw-stage"><div class="draw-label" id="drawLabel">從書架抽一本…</div><div class="draw-card" id="drawCard"></div><div class="draw-sub" id="drawSub" aria-live="polite"></div></div>
 </dialog>
 
 <!-- 年度回顧 -->
@@ -1951,7 +1978,19 @@ function setYear(y){if(y===currentYear)return;currentYear=y;render()}
 function markViewTabs(v){
   document.documentElement.dataset.view=v;
   document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v||(v==='wall'&&b.dataset.view==='shelf'&&!!b.closest('.tabbar'))));
+  document.querySelectorAll('nav.views [data-view]').forEach(b=>{const s=b.dataset.view===v||(v==='wall'&&b.dataset.view==='shelf');b.setAttribute('aria-selected',s?'true':'false');b.tabIndex=s?0:-1});
 }
+(function(){
+  const nav=document.querySelector('nav.views');if(!nav)return;
+  const tabs=()=>[...nav.querySelectorAll('[data-view]')];
+  tabs().forEach(b=>b.setAttribute('role','tab'));
+  const wrap=nav;wrap.setAttribute('role','tablist');
+  nav.addEventListener('keydown',e=>{
+    const t=tabs(),i=t.indexOf(document.activeElement);if(i<0)return;
+    let n;if(e.key==='ArrowRight')n=(i+1)%t.length;else if(e.key==='ArrowLeft')n=(i+t.length-1)%t.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=t.length-1;
+    if(n===undefined)return;e.preventDefault();t[n].focus();t[n].scrollIntoView({block:'nearest',inline:'nearest'});t[n].click();
+  });
+})();
 function setView(v){
   view=v;
   markViewTabs(v);
@@ -2071,21 +2110,41 @@ $('closeSearch').onclick=()=>$('searchBox').close();
 
 /* ================= 隨手抽一本 ================= */
 let lastDrawn=null;
+var drawTimers=[],drawGo=null;
+function drawStop(){drawTimers.forEach(clearTimeout);drawTimers=[];drawGo=null}
 function drawOne(){
   if(!books.length){toast('書房裡還沒有書');return}
   let pool=books.filter(b=>b.id!==lastDrawn);if(!pool.length)pool=books;
   const pick=pool[Math.floor(Math.random()*pool.length)];lastDrawn=pick.id;
   if(reduceMotion()){openBook(pick.id,[pick.id],{recall:true});return}
-  const d=$('drawBox'),card=$('drawCard'),label=$('drawLabel');label.textContent='洗牌中…';d.showModal();
-  let n=0;const steps=9;
+  drawStop();
+  const d=$('drawBox'),card=$('drawCard'),label=$('drawLabel'),sub=$('drawSub');
+  label.textContent='從書架抽一本…';sub.textContent='';sub.classList.remove('in');card.className='draw-card';
+  if(typeof albMuted!=='undefined')$('drawMute').dataset.m=albMuted?'1':'0';
+  if(!d.open)d.showModal();
+  const snd=k=>{try{typeof albSound==='function'&&albSound(k)}catch(_){}};
+  const later=(fn,ms)=>{const t=setTimeout(fn,ms);drawTimers.push(t)};
+  const steps=14;let n=0;
+  const go=()=>{drawStop();d.close();openBook(pick.id,[pick.id],{recall:true})};
   const tick=()=>{
-    const r=n<steps-1?books[Math.floor(Math.random()*books.length)]:pick;
-    card.innerHTML=coverInner(r);card.classList.remove('spin');void card.offsetWidth;if(n<steps-1)card.classList.add('spin');
+    const last=n===steps-1,r=last?pick:books[Math.floor(Math.random()*books.length)];
+    card.innerHTML=coverInner(r);
+    card.classList.remove('spin','spin2');void card.offsetWidth;
+    if(!last){card.classList.add(n%2?'spin':'spin2');snd('tick');if(n>steps-5)label.textContent='快到了…'}
     n++;
-    if(n<steps)setTimeout(tick,70+n*14);
-    else{label.textContent='就是這本';setTimeout(()=>{d.close();openBook(pick.id,[pick.id],{recall:true})},650)}
+    if(n<steps)later(tick,52+Math.pow(n,1.75)*3.2);
+    else{
+      later(()=>{
+        label.textContent='就是這本';card.classList.add('pick');snd('pick');
+        try{navigator.vibrate&&navigator.vibrate(18)}catch(_){}
+        sub.innerHTML=`<b>${esc(pick.title)}</b><span>${esc(pick.year)} 年${esc(monthLabel(pick.month))}讀完</span>`;sub.classList.add('in');
+        drawGo=go;later(go,1900);
+      },90);
+    }
   };tick();
 }
+$('drawBox').addEventListener('click',e=>{if(e.target.closest('#drawMute')){albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');$('drawMute').dataset.m=albMuted?'1':'0';return}if(drawGo)drawGo()});
+$('drawBox').addEventListener('close',drawStop);
 $('drawBtn').onclick=drawOne;$('drawTop').onclick=drawOne;
 
 /* ================= 年度回顧 ================= */
@@ -3829,6 +3888,11 @@ function albSound(kind){
       thump(t0+.01,140,95,.07,.07);
     }else if(kind==='chime'){                            /* 新郵票解鎖：兩個輕輕的鈴聲 */
       tone(t0,1318.5,.7,.16);tone(t0+.12,1760,.9,.14);tone(t0+.26,2093,1.1,.1);
+    }else if(kind==='tick'){                             /* 抽書洗牌：一張一張翻過去的輕響 */
+      play(noise(.04,p=>Math.pow(1-p,1.6)),t0,'bandpass',2000+Math.random()*1500,0,1.1,.38);thump(t0,170+Math.random()*50,110,.04,.07);
+    }else if(kind==='pick'){                             /* 抽中：落定的一聲＋輕輕的鈴 */
+      thump(t0,120,52,.3,.5);play(noise(.28,p=>Math.sin(p*Math.PI)*.8),t0,'bandpass',500,1800,.8,.3);
+      tone(t0+.06,1046.5,.8,.12);tone(t0+.17,1318.5,.9,.11);tone(t0+.3,1568,1.1,.09);
     }else if(kind==='knock'){                            /* 點到還沒解鎖的格子：輕敲 */
       thump(t0,240,150,.07,.4);play(noise(.03,p=>1-p),t0,'bandpass',1200,0,1,.25);
     }
