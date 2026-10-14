@@ -1219,6 +1219,13 @@ dialog.albw::backdrop{background:radial-gradient(circle at 50% 42%,#1d3a36dd,#0b
 html[data-theme="dark"] .mtag{filter:brightness(.88) saturate(.9)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .mtag{filter:brightness(.88) saturate(.9)}}
 </style>
+<style>
+.sort-row{display:none;align-items:center;gap:4px;margin:0 0 12px;font-size:12.5px;color:var(--ink-soft)}
+html[data-view="shelf"] .sort-row,html[data-view="wall"] .sort-row{display:flex}
+.sort-row>span{margin-right:4px}
+.sort-row button{height:28px;padding:0 12px;border-radius:999px;font-size:12.5px;color:var(--ink-soft);border:1px solid var(--rule);background:transparent}
+.sort-row button.on{background:var(--paper);color:var(--ink);border-color:var(--ink-soft);box-shadow:0 1px 3px var(--shadow);font-weight:600}
+</style>
 
 </head>
 <body>
@@ -1306,6 +1313,7 @@ html[data-theme="dark"] .mtag{filter:brightness(.88) saturate(.9)}
   <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
   <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button></div>
+  <div class="sort-row" id="sortRow" role="group" aria-label="書架排列順序"><span>排列</span><button type="button" data-dir="old">最早在上</button><button type="button" data-dir="new">最新在上</button></div>
   <main id="stage" aria-live="polite"></main>
   <div id="storageNotice" class="notice" hidden>目前無法使用瀏覽器的儲存空間，這次的修改在重新整理後不會保留。</div>
   <footer class="site-foot">
@@ -1902,6 +1910,11 @@ function renderIntro(animateBars){
 }
 function jumpToMonth(m){const el=document.querySelector(`[data-mnum="${m}"]`);if(!el)return;el.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'center'});flashMonth(m)}
 function flashMonth(m){document.querySelectorAll(`[data-of="${m}"] .book,[data-mnum="${m}"] .tile`).forEach(x=>{x.classList.add('flash');setTimeout(()=>x.classList.remove('flash'),1400)})}
+/* 書架的排列方向：由舊到新（1 月在最上層）或由新到舊（最新的月份在最上層） */
+var shelfDir=['old','new'].includes(ls.get('shelf-dir'))?ls.get('shelf-dir'):'';
+function shelfDirNow(){return shelfDir||(view==='wall'?'new':'old')}
+function syncSortRow(){const d=shelfDirNow();document.querySelectorAll('#sortRow [data-dir]').forEach(b=>{const on=b.dataset.dir===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
+document.querySelectorAll('#sortRow [data-dir]').forEach(b=>b.onclick=()=>{shelfDir=b.dataset.dir;if(!demoMode)ls.set('shelf-dir',shelfDir);renderStage()});
 function groupByMonth(list){
   const g={};list.forEach(b=>(g[b.month]??=[]).push(b));
   return Object.keys(g).sort((a,b)=>monthNum(b)-monthNum(a)||String(b).localeCompare(String(a))).map(k=>({month:k,items:g[k].sort(sortInMonth)}));
@@ -1914,12 +1927,13 @@ function renderStage(){
   if(view==='pile'){renderPile(st);return}
   const groups=groupByMonth(yearBooks());
   stageCtx=groups.flatMap(g=>g.items.map(b=>b.id));
+  const dir=shelfDirNow();syncSortRow();
   if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button><button type="button" class="btn" id="wSync">${googleReady()?'用 Google 帳號登入':'從其他裝置同步'}</button><button type="button" class="btn" id="wImport">匯入備份檔</button></div><button type="button" class="demo-link" id="wDemo">還不確定？先逛逛示範書櫃 →</button></div>`;$('wDemo').onclick=()=>enterDemo();$('wAdd').onclick=()=>openEditor();$('wSync').onclick=()=>googleReady()?startGoogleLogin():openSyncBox();$('wImport').onclick=()=>chooseImport();return}
   if(!groups.length){st.innerHTML=`<div class="empty">${currentYear} 年的書架還空著。<br><button type="button" class="btn primary" id="emptyAdd">放上第一本書</button></div>`;$('emptyAdd').onclick=()=>openEditor();return}
   if(view==='wall'){
-    st.innerHTML=groups.map(g=>`<section class="wall-month" data-mnum="${monthNum(g.month)}"><h3>${esc(monthLabel(g.month))}<small>${g.items.length} 本</small></h3><div class="wall">${g.items.map(b=>tileEl(b,b.author||monthLabel(b.month))).join('')}</div></section>`).join('');
+    st.innerHTML=(dir==='new'?groups:[...groups].reverse()).map(g=>`<section class="wall-month" data-mnum="${monthNum(g.month)}"><h3>${esc(monthLabel(g.month))}<small>${g.items.length} 本</small></h3><div class="wall">${g.items.map(b=>tileEl(b,b.author||monthLabel(b.month))).join('')}</div></section>`).join('');
   }else{
-    const asc=[...groups].reverse();stageCtx=asc.flatMap(g=>g.items.map(b=>b.id));
+    const asc=dir==='new'?groups.map(g=>({...g,items:[...g.items].reverse()})):[...groups].reverse();stageCtx=asc.flatMap(g=>g.items.map(b=>b.id));
     st.innerHTML=`<div class="bookcase">${asc.map(g=>{const m=monthNum(g.month);const num=/^\d{1,2}\s*月?$/.test(String(g.month).trim());const tag=`<div class="divider" data-mnum="${m}"><button type="button" class="mtag" data-jump="${m}" aria-label="${esc(monthLabel(g.month))}，${g.items.length} 本"><span class="mt-t">${num?m+'月':esc(g.month)}\u2002·\u2002${g.items.length}本</span></button></div>`;return g.items.map((b,k)=>`<div class="slot${k===0?' gs':''}${g.items.length===1?' solo':''}" data-of="${m}">${k===0?tag:''}${bookEl(b)}</div>`).join('')}).join('')}</div>`;
     st.querySelectorAll('[data-jump]').forEach(b=>b.onclick=()=>flashMonth(Number(b.dataset.jump)));
   }
