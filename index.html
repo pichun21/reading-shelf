@@ -1788,6 +1788,11 @@ html[data-view="wall"] .so-shelf{display:none}
           <li>書和封面會存在<b>你自己的 Google 雲端硬碟</b>裡一個 App 專用的隱藏資料夾，只有頁間日子讀得到，不會佔用或動到你其他的檔案。</li>
           <li id="gNoteLocal">不登入也能照常使用，書只會存在這個瀏覽器裡。</li>
         </ul>
+        <details class="howto" id="whyRelogin"><summary>為什麼偶爾要重新連線 Google？</summary>
+          <p>Google 給網頁 App 的登入憑證，效期只有<b>約 1 小時</b>。</p>
+          <p>一般 App 會靠自己的伺服器保管「續期憑證」，在背後自動延長登入。但頁間日子是<b>免費、純網頁</b>的小工具，沒有自己的伺服器（所以也沒有廣告，不蒐集你的資料），沒辦法替你長期保管憑證，憑證過期了就得請你重新連線一次。</p>
+          <p>每次回到畫面，頁間日子會先試著悄悄續期；只有 Google 要你確認時，才需要再按一次「重新連線」。重新連線不會影響資料：書都還在你的瀏覽器和雲端硬碟裡，還沒上傳的修改，連線後會自動補上傳。</p>
+        </details>
       </div>
       <details class="howto" id="ghDetails"><summary>進階：改用 GitHub 私人儲存庫同步</summary>
         <form id="syncForm" novalidate style="margin-top:12px">
@@ -5013,8 +5018,8 @@ function updateLoginBanner(){
 }
 function scheduleSync(delay=3500){
   if(demoMode||!syncCfg())return;
-  if(syncState.status==='auth'){if(!syncState.warned){syncState.warned=true;toast('雲端登入過期了，這次修改還沒上傳。請點右上角雲端圖示重新連線')}return}
-  if(syncCfg().type==='google'&&!gToken()){setSyncStatus('auth');syncState.warned=true;toast('雲端登入過期了，這次修改還沒上傳。請點右上角雲端圖示重新連線');return}
+  if(syncState.status==='auth'){if(!syncState.warned){syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線')}return}
+  if(syncCfg().type==='google'&&!gToken()){setSyncStatus('auth');syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線');return}
   if(syncState.status!=='busy')setSyncStatus('pending');
   clearTimeout(syncState.timer);syncState.timer=setTimeout(()=>runSync(),delay);
 }
@@ -5194,7 +5199,7 @@ function renderSyncBox(){
   $('gNoteLocal').hidden=!!cfg;
   $('syncNow').hidden=!cfg;$('syncOff').hidden=!cfg;
   $('syncOff').textContent=cfg?.type==='google'?'登出 Google':'中斷同步';
-  $('syncReauth').hidden=!(cfg?.type==='google'&&syncState.status==='auth');
+  $('syncReauth').hidden=!(cfg?.type==='google'&&syncState.status==='auth');{const w=$('whyRelogin');if(w&&syncState.status==='auth')w.open=true}
   const c=cfg?.type==='github'?cfg:{};
   $('syncOwner').value=c.owner||'';$('syncRepo').value=c.repo||'reading-shelf-data';$('syncToken').value=c.token||'';
   $('syncErr').hidden=true;
