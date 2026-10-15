@@ -1358,6 +1358,18 @@ html,body{overscroll-behavior-y:contain}
 #ptr.spin .ptr-i{animation:ptrSpin .8s linear infinite}
 @keyframes ptrSpin{to{transform:rotate(360deg)}}
 </style>
+<style>
+.crop-hint{margin:8px 0 0;font-size:12px;color:var(--ink-soft)}
+.zoomline{gap:6px;margin-top:6px}
+.zoomline .zbtn{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);color:var(--ink);font-size:18px;line-height:1;display:grid;place-items:center}
+.zoomline input[type=range]{-webkit-appearance:none;appearance:none;height:36px;background:transparent;padding:0;margin:0}
+.zoomline input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:999px;background:var(--rule)}
+.zoomline input[type=range]::-moz-range-track{height:6px;border-radius:999px;background:var(--rule)}
+.zoomline input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:var(--accent);border:3px solid var(--paper);box-shadow:0 1px 4px var(--shadow)}
+.zoomline input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--paper);box-shadow:0 1px 4px var(--shadow)}
+.crop-reset{margin-top:6px;min-height:34px}
+.cover-crop-stage{touch-action:none;-webkit-user-select:none;user-select:none}
+</style>
 
 </head>
 <body>
@@ -1518,7 +1530,9 @@ html,body{overscroll-behavior-y:contain}
         <div class="cover-row">
           <div>
             <div id="coverCropStage" class="cover-crop-stage" aria-label="封面裁切預覽"></div>
-            <div class="zoomline"><label for="coverZoom">縮放</label><input id="coverZoom" type="range" min="1" max="2.2" value="1" step="0.01"><button type="button" id="resetCrop" class="chip">重設</button></div>
+            <p class="crop-hint">拖曳移動位置，兩指（或滑桿）縮放</p>
+            <div class="zoomline"><button type="button" class="zbtn" id="zoomOut" aria-label="縮小">－</button><input id="coverZoom" type="range" min="1" max="3" value="1" step="0.01" aria-label="封面縮放"><button type="button" class="zbtn" id="zoomIn" aria-label="放大">＋</button></div>
+            <button type="button" id="resetCrop" class="chip crop-reset">重設位置與縮放</button>
           </div>
           <div>
             <input id="bookCoverFile" type="file" accept="image/*" hidden>
@@ -1997,7 +2011,7 @@ function yearBooks(y=currentYear){return books.filter(b=>Number(b.year)===Number
 function ordKey(b){return Number.isFinite(Number(b.ord))&&b.ord!==''&&b.ord!=null?Number(b.ord):1e15+orderKey(b)}
 function sortInMonth(a,b){return ordKey(a)-ordKey(b)}
 function cropOf(b){return {x:Number.isFinite(Number(b?.coverX))?Number(b.coverX):50,y:Number.isFinite(Number(b?.coverY))?Number(b.coverY):50,zoom:Number.isFinite(Number(b?.coverZoom))?Math.max(1,Number(b.coverZoom)):1}}
-function cropTransform(c){const z=Math.max(1,Number(c.zoom)||1);const maxShift=((z-1)*50)/z;const tx=((50-(Number(c.x)||50))/50)*maxShift;const ty=((50-(Number(c.y)||50))/50)*maxShift;return `object-position:50% 50%;transform:translate(${tx}%, ${ty}%) scale(${z})`}
+function cropTransform(c){const z=Math.max(1,Number(c.zoom)||1);const fx=Number.isFinite(Number(c.x))?Math.max(0,Math.min(100,Number(c.x))):50,fy=Number.isFinite(Number(c.y))?Math.max(0,Math.min(100,Number(c.y))):50;const maxShift=((z-1)*50)/z;const tx=((50-fx)/50)*maxShift;const ty=((50-fy)/50)*maxShift;return `object-position:${fx}% ${fy}%;transform:translate(${tx}%, ${ty}%) scale(${z})`}
 function coverInner(b){
   if(b.cover)return `<img src="${esc(b.cover)}" alt="《${esc(b.title)}》封面" style="${cropTransform(cropOf(b))}" loading="lazy" decoding="async">`;
   return `<div class="gen" style="--h:${hue(b.title)}"><span class="s">${esc(b.year)}</span><span class="t">${esc(b.title)}</span><span class="a">${esc(b.author||'')}</span></div>`;
@@ -2474,12 +2488,28 @@ function updatePreview(){
   stage.querySelector('img')?.addEventListener('error',()=>{$('coverStatus').textContent='這張圖片載入不了（來源網站可能不讓其他網頁直接顯示）。請改用螢幕剪取框選封面再貼上，或另存後上傳。'});
 }
 function resetPendingCrop(){pendingCrop={x:50,y:50,zoom:1};updatePreview()}
-let cropDrag=null;const cropStage=$('coverCropStage');
-cropStage.addEventListener('pointerdown',e=>{if(!pendingCover)return;e.preventDefault();e.stopPropagation();if((Number(pendingCrop.zoom)||1)<=1.001){pendingCrop.zoom=1.08;$('coverZoom').value='1.08';updatePreview()}cropDrag={id:e.pointerId,x:e.clientX,y:e.clientY,startX:pendingCrop.x,startY:pendingCrop.y};cropStage.setPointerCapture?.(e.pointerId)});
-cropStage.addEventListener('pointermove',e=>{if(!cropDrag||cropDrag.id!==e.pointerId)return;e.preventDefault();const r=cropStage.getBoundingClientRect();const dx=(e.clientX-cropDrag.x)/Math.max(1,r.width)*100;const dy=(e.clientY-cropDrag.y)/Math.max(1,r.height)*100;pendingCrop.x=Math.max(0,Math.min(100,cropDrag.startX-dx));pendingCrop.y=Math.max(0,Math.min(100,cropDrag.startY-dy));const img=cropStage.querySelector('img');if(img)img.style.cssText=cropTransform(pendingCrop)});
-function endCropDrag(e){if(cropDrag&&(!e||cropDrag.id===e.pointerId))cropDrag=null}
+const cropStage=$('coverCropStage'),cropPtrs=new Map();let cropG=null;
+function cropApply(){const img=cropStage.querySelector('img');if(img)img.style.cssText=cropTransform(pendingCrop);$('coverZoom').value=String(pendingCrop.zoom||1)}
+/* 手指移動 1 px，圖就跟著移動 1 px：先算出目前圖片可以移動的總距離 */
+function cropRange(){
+  const img=cropStage.querySelector('img'),r=cropStage.getBoundingClientRect();if(!img||!img.naturalWidth)return {x:r.width,y:r.height};
+  const w=r.width,h=r.height,s=Math.max(w/img.naturalWidth,h/img.naturalHeight),iw=img.naturalWidth*s,ih=img.naturalHeight*s,z=Math.max(1,Number(pendingCrop.zoom)||1);
+  return {x:Math.max(8,z*(iw-w)+(z-1)*w/z),y:Math.max(8,z*(ih-h)+(z-1)*h/z)};
+}
+function cropSetZoom(z){pendingCrop.zoom=Math.round(Math.max(1,Math.min(3,z))*100)/100;cropApply()}
+cropStage.addEventListener('pointerdown',e=>{if(!pendingCover)return;e.preventDefault();e.stopPropagation();cropPtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});cropStage.setPointerCapture?.(e.pointerId);
+  if(cropPtrs.size===1){const rg=cropRange();cropG={mode:'pan',x:e.clientX,y:e.clientY,sx:pendingCrop.x,sy:pendingCrop.y,rg}}
+  else if(cropPtrs.size===2){const [p,q]=[...cropPtrs.values()];cropG={mode:'pinch',d:Math.hypot(p.x-q.x,p.y-q.y)||1,z:Number(pendingCrop.zoom)||1}}});
+cropStage.addEventListener('pointermove',e=>{if(!cropPtrs.has(e.pointerId)||!cropG)return;e.preventDefault();cropPtrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(cropG.mode==='pinch'&&cropPtrs.size>=2){const [p,q]=[...cropPtrs.values()];cropSetZoom(cropG.z*(Math.hypot(p.x-q.x,p.y-q.y)||1)/cropG.d);return}
+  if(cropG.mode==='pan'&&cropPtrs.size===1){const dx=e.clientX-cropG.x,dy=e.clientY-cropG.y;
+    pendingCrop.x=Math.max(0,Math.min(100,cropG.sx-dx/cropG.rg.x*100));pendingCrop.y=Math.max(0,Math.min(100,cropG.sy-dy/cropG.rg.y*100));cropApply()}});
+function endCropDrag(e){cropPtrs.delete(e.pointerId);if(cropPtrs.size===0)cropG=null;else if(cropPtrs.size===1){const [p]=[...cropPtrs.values()];cropG={mode:'pan',x:p.x,y:p.y,sx:pendingCrop.x,sy:pendingCrop.y,rg:cropRange()}}}
 cropStage.addEventListener('pointerup',endCropDrag);cropStage.addEventListener('pointercancel',endCropDrag);
-$('coverZoom').addEventListener('input',e=>{pendingCrop.zoom=Math.max(1,Math.min(2.2,Number(e.target.value)||1));const img=cropStage.querySelector('img');if(img)img.style.cssText=cropTransform(pendingCrop)});
+cropStage.addEventListener('wheel',e=>{if(!pendingCover)return;e.preventDefault();cropSetZoom((Number(pendingCrop.zoom)||1)*(e.deltaY<0?1.06:1/1.06))},{passive:false});
+cropStage.addEventListener('dblclick',()=>{if(pendingCover)resetPendingCrop()});
+$('coverZoom').addEventListener('input',e=>cropSetZoom(Number(e.target.value)||1));
+$('zoomIn').onclick=()=>cropSetZoom((Number(pendingCrop.zoom)||1)+.15);$('zoomOut').onclick=()=>cropSetZoom((Number(pendingCrop.zoom)||1)-.15);
 $('resetCrop').onclick=resetPendingCrop;
 async function compress(file){
   return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=520;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.78))};img.src=fr.result};fr.readAsDataURL(file)})
@@ -4639,8 +4669,9 @@ function vCover(ctx,b,img,x,y,w,h){
     const c=cropOf(b),z=Math.max(1,Number(c.zoom)||1),ms=((z-1)*50)/z;
     const tx=((50-(Number(c.x)||50))/50)*ms/100*w, ty=((50-(Number(c.y)||50))/50)*ms/100*h;
     const s=Math.max(w/img.naturalWidth,h/img.naturalHeight),iw=img.naturalWidth*s,ih=img.naturalHeight*s;
+    const fx=(Number.isFinite(Number(c.x))?Math.max(0,Math.min(100,Number(c.x))):50)/100,fy=(Number.isFinite(Number(c.y))?Math.max(0,Math.min(100,Number(c.y))):50)/100;
     ctx.translate(x+w/2+tx,y+h/2+ty);ctx.scale(z,z);
-    ctx.drawImage(img,-iw/2,-ih/2,iw,ih);
+    ctx.drawImage(img,(w-iw)*fx-w/2,(h-ih)*fy-h/2,iw,ih);
   }else{
     const hu=hue(b.title);
     ctx.fillStyle=`hsl(${hu} 30% 34%)`;ctx.fillRect(x,y,w,h);
