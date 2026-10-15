@@ -1328,6 +1328,27 @@ html[data-view="wall"] .so-shelf{display:none}
 @media (min-width:701px){.shelf-opts .sort-row{flex-direction:row;flex-wrap:wrap;gap:8px 28px}}
 </style>
 <style>html[data-view] .shelf-opts[data-open="0"] .sort-row{display:none}</style>
+<style>
+/* 書櫃設定：與「書架／封面牆」同一列，點開是浮出的小面板 */
+.shelf-bar{display:none;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+html[data-view="shelf"] .shelf-bar,html[data-view="wall"] .shelf-bar{display:flex}
+.shelf-bar .stage-switch{margin:0 !important}
+.shelf-opts{display:block !important;position:relative;margin:0 0 0 auto}
+.so-toggle{min-height:38px;padding:0 14px 0 11px;gap:7px;font-size:13px;color:var(--ink);background:var(--paper);border:1px solid var(--rule);box-shadow:0 1px 3px var(--shadow)}
+.so-toggle svg{width:17px;height:17px;transform:none !important;transition:none}
+.so-toggle .so-t{font-weight:600}
+.shelf-opts[data-open="1"] .so-toggle{border-color:var(--ink-soft)}
+html[data-view] .shelf-opts .sort-row{display:none;position:absolute;right:0;top:calc(100% + 8px);z-index:30;width:min(330px,calc(100vw - 32px));margin:0;padding:14px;gap:14px;flex-direction:column;align-items:stretch;border:1px solid var(--rule);border-radius:18px;background:var(--paper);box-shadow:0 16px 36px -12px var(--shadow),0 2px 6px var(--shadow)}
+html[data-view] .shelf-opts[data-open="1"] .sort-row{display:flex}
+.shelf-opts .sort-row:before{content:"";position:absolute;right:26px;top:-6px;width:10px;height:10px;background:var(--paper);border-left:1px solid var(--rule);border-top:1px solid var(--rule);transform:rotate(45deg)}
+.so-g{display:block}
+.so-l{display:block;width:auto;margin:0 0 6px 4px;font-size:12px;letter-spacing:.08em;color:var(--ink-soft)}
+.so-b{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--wall-2);flex-wrap:nowrap}
+.so-b button{flex:1 1 0;min-width:0;height:34px;padding:0 6px;border:0;border-radius:999px;background:transparent;font-size:13.5px;color:var(--ink-soft);white-space:nowrap;box-shadow:none;font-weight:400}
+.so-b button.on{background:var(--paper);color:var(--ink);font-weight:700;box-shadow:0 1px 3px var(--shadow)}
+html[data-view="wall"] .so-shelf{display:none}
+</style>
+<style>#showRow.so-b,.case-row.so-b{display:flex;gap:2px}</style>
 
 </head>
 <body>
@@ -1414,13 +1435,15 @@ html[data-view="wall"] .so-shelf{display:none}
 
   <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
+  <div class="shelf-bar">
   <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button></div>
-  <div class="shelf-opts" id="shelfOpts" data-open="0">
-    <button type="button" class="so-toggle" id="soToggle" aria-expanded="false" aria-controls="sortRow"><span class="so-t">書櫃設定</span><span class="so-sum" id="soSum"></span><svg viewBox="0 0 12 8" aria-hidden="true"><path d="m1 1.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <div class="sort-row" id="sortRow" role="group" aria-label="書櫃設定">
-      <div class="so-g"><span class="so-l">排列</span><span class="so-b"><button type="button" data-dir="old">最早在上</button><button type="button" data-dir="new">最新在上</button></span></div>
-      <div class="so-g so-shelf"><span class="so-l">呈現</span><span class="so-b" id="showRow" role="group" aria-label="書櫃呈現方式"><button type="button" data-show="auto">自動</button><button type="button" data-show="cover">全部封面</button><button type="button" data-show="spine">全部書背</button></span></div>
-      <div class="so-g so-shelf"><span class="so-l">書櫃</span><span class="so-b case-row" id="caseRow" role="group" aria-label="書櫃主題"><button type="button" data-case="oak">原木</button><button type="button" data-case="walnut">胡桃木</button><button type="button" data-case="nordic">白漆</button></span></div>
+    <div class="shelf-opts" id="shelfOpts" data-open="0">
+      <button type="button" class="so-toggle" id="soToggle" aria-expanded="false" aria-controls="sortRow" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="so-t">書櫃設定</span></button>
+      <div class="sort-row" id="sortRow" role="group" aria-label="書櫃設定">
+        <div class="so-g"><span class="so-l">月份由上往下</span><span class="so-b"><button type="button" data-dir="old">舊 → 新</button><button type="button" data-dir="new">新 → 舊</button></span></div>
+        <div class="so-g so-shelf"><span class="so-l">書櫃上的書</span><span class="so-b" id="showRow" role="group" aria-label="書櫃呈現方式"><button type="button" data-show="auto">自動</button><button type="button" data-show="cover">全封面</button><button type="button" data-show="spine">全書背</button></span></div>
+        <div class="so-g so-shelf"><span class="so-l">書櫃風格</span><span class="so-b case-row" id="caseRow" role="group" aria-label="書櫃主題"><button type="button" data-case="oak">原木</button><button type="button" data-case="walnut">胡桃木</button><button type="button" data-case="nordic">白漆</button></span></div>
+      </div>
     </div>
   </div>
   <main id="stage" aria-live="polite"></main>
@@ -2063,14 +2086,13 @@ document.querySelectorAll('#showRow [data-show]').forEach(b=>b.onclick=()=>{shel
 let caseTheme=(()=>{const v=ls.get('case-theme');return v==='walnut'||v==='nordic'?v:'oak'})();
 function applyCase(){if(caseTheme==='oak')delete document.documentElement.dataset.case;else document.documentElement.dataset.case=caseTheme;document.querySelectorAll('#caseRow [data-case]').forEach(b=>{const on=b.dataset.case===caseTheme;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 document.querySelectorAll('#caseRow [data-case]').forEach(b=>b.onclick=()=>{caseTheme=b.dataset.case;ls.set('case-theme',caseTheme);applyCase();syncOpts()});
-let soOpen=ls.get('shelf-opts')==='1';
+let soOpen=false;
 function syncOpts(){
   const o=$('shelfOpts');if(!o)return;o.dataset.open=soOpen?'1':'0';$('soToggle').setAttribute('aria-expanded',String(soOpen));
-  const sm=[shelfDirNow()==='new'?'最新在上':'最早在上'];
-  if(view!=='wall'){sm.push({auto:'自動',cover:'全部封面',spine:'全部書背'}[shelfShow]);sm.push({oak:'原木',walnut:'胡桃木',nordic:'白漆'}[caseTheme])}
-  $('soSum').textContent=sm.join('・');
 }
-$('soToggle').onclick=()=>{soOpen=!soOpen;ls.set('shelf-opts',soOpen?'1':'0');syncOpts()};
+$('soToggle').onclick=e=>{e.stopPropagation();soOpen=!soOpen;syncOpts()};
+document.addEventListener('click',e=>{if(soOpen&&!e.target.closest('#shelfOpts')){soOpen=false;syncOpts()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&soOpen){soOpen=false;syncOpts();$('soToggle').focus()}});
 function syncSortRow(){const d=shelfDirNow();document.querySelectorAll('#sortRow [data-dir]').forEach(b=>{const on=b.dataset.dir===d;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on))})}
 document.querySelectorAll('#sortRow [data-dir]').forEach(b=>b.onclick=()=>{shelfDir=b.dataset.dir;if(!demoMode)ls.set('shelf-dir',shelfDir);renderStage()});
 function groupByMonth(list){
