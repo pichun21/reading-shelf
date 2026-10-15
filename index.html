@@ -1349,6 +1349,15 @@ html[data-view] .shelf-opts[data-open="1"] .sort-row{display:flex}
 html[data-view="wall"] .so-shelf{display:none}
 </style>
 <style>#showRow.so-b,.case-row.so-b{display:flex;gap:2px}</style>
+<style>
+html,body{overscroll-behavior-y:contain}
+#ptr{position:fixed;left:50%;top:max(env(safe-area-inset-top),0px);z-index:60;display:flex;align-items:center;gap:8px;padding:8px 16px 8px 10px;border-radius:999px;background:var(--paper);color:var(--ink-soft);border:1px solid var(--rule);box-shadow:0 8px 20px -8px var(--shadow);font-size:13px;pointer-events:none;opacity:0;transform:translate(-50%,-60px);white-space:nowrap}
+#ptr .ptr-i{display:grid;place-items:center;width:24px;height:24px}
+#ptr svg{width:20px;height:20px}
+#ptr.ready{color:var(--ink);border-color:var(--ink-soft)}
+#ptr.spin .ptr-i{animation:ptrSpin .8s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
+</style>
 
 </head>
 <body>
@@ -3008,6 +3017,42 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   if(restored)toast(`已從原始 Excel 補回 ${restored} 張封面`);
   if(googleRedirectReturn()){}else if(syncCfg()){setSyncStatus('pending');runSync()}else setSyncStatus('off');
 })().catch(err=>{$('stage').innerHTML=`<div class="empty">書房打不開：${esc(err.message)}</div>`});
+
+/* 在頁面最上方往下拉 → 重新整理（PWA 沒有瀏覽器內建的下拉更新，所以自己做一個） */
+(function(){
+  const TH=78,MAX=130;
+  let sy=0,sx=0,pull=0,on=false,busy=false,ind=null;
+  function mk(){if(ind)return ind;ind=document.createElement('div');ind.id='ptr';ind.setAttribute('aria-hidden','true');
+    ind.innerHTML='<span class="ptr-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="ptr-t">下拉重新整理</span>';
+    document.body.appendChild(ind);return ind}
+  const blocked=t=>!!(t.closest&&t.closest('input,textarea,select,[contenteditable="true"],.bookcase,.pile-chips,.views,.tabbar'))||anyDialogOpen();
+  function paint(){
+    const el=mk(),p=Math.min(pull,MAX),r=Math.min(1,p/TH);
+    el.style.opacity=String(Math.min(1,p/30));el.style.transform=`translate(-50%,${p-56}px)`;
+    el.querySelector('.ptr-i').style.transform=`rotate(${p*3}deg)`;
+    el.classList.toggle('ready',r>=1);
+    el.querySelector('.ptr-t').textContent=r>=1?'放開就重新整理':'下拉重新整理';
+  }
+  function reset(anim){if(!ind)return;ind.classList.remove('spin');ind.style.transition=anim?'transform .25s,opacity .25s':'';ind.style.opacity='0';ind.style.transform='translate(-50%,-60px)';pull=0;on=false}
+  addEventListener('touchstart',e=>{
+    if(busy||e.touches.length!==1||blocked(e.target)||(window.scrollY||document.documentElement.scrollTop)>0){on=false;return}
+    sy=e.touches[0].clientY;sx=e.touches[0].clientX;pull=0;on=true;if(ind)ind.style.transition='';
+  },{passive:true});
+  addEventListener('touchmove',e=>{
+    if(!on||busy)return;
+    const dy=e.touches[0].clientY-sy,dx=e.touches[0].clientX-sx;
+    if(dy<=0||(pull===0&&Math.abs(dx)>Math.abs(dy))||(window.scrollY||0)>0){if(pull>0)reset(true);on=pull>0?false:on;return}
+    pull=dy*.5;paint();if(e.cancelable)e.preventDefault();
+  },{passive:false});
+  addEventListener('touchend',()=>{
+    if(!on||busy)return;
+    if(pull>=TH){busy=true;const el=mk();el.classList.add('spin','ready');el.style.transition='transform .2s';el.style.transform='translate(-50%,28px)';el.querySelector('.ptr-i').style.transform='';el.querySelector('.ptr-t').textContent='重新整理中…';
+      setTimeout(()=>location.reload(),350)}
+    else reset(true);
+    on=false;
+  },{passive:true});
+  addEventListener('touchcancel',()=>{if(!busy)reset(true)},{passive:true});
+})();
 
 /* ================= 年度目標 ================= */
 function goalsAll(){if(demoMode)return demoGoals;try{const g=JSON.parse(ls.get('shelf-goals')||'{}');return g&&typeof g==='object'?g:{}}catch{return {}}}
