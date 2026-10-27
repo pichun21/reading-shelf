@@ -1415,6 +1415,7 @@ html,body{overscroll-behavior-y:contain}
     <button type="button" id="mDemo">逛逛示範書櫃<span>先看看書房能做什麼</span></button>
     <button type="button" id="mInstall" hidden>安裝到主畫面<span>像 App 一樣開啟</span></button>
     <button type="button" id="mSync">保存與同步<span>Google 帳號</span></button>
+    <button type="button" id="mDedupe">清理重複的書<span>合併同名的書</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel／Notion</span></button>
     <hr>
@@ -5156,7 +5157,7 @@ async function runSync({manual=false,replace=false}={}){
   try{
     let tries=0;const be=backendFor(cfg);
     while(true){try{await syncOnce(be,{replace});break}catch(e){if(e.conflict&&tries++<2)continue;throw e}}
-    ls.set('sync-last',String(Date.now()));setSyncStatus('ok');
+    ls.set('sync-last',String(Date.now()));setSyncStatus('ok');maybeOfferDedupe();
     if(manual)toast('已同步');
     return true;
   }catch(e){
@@ -5378,6 +5379,30 @@ window.addEventListener('online',()=>{scheduleSync(500);setTimeout(silentRenew,8
 setInterval(()=>{if(document.visibilityState==='visible'&&syncCfg()&&!demoMode)scheduleSync(200)},4*60*1000);
 window.addEventListener('focus',()=>{if(syncCfg()&&Date.now()-(Number(ls.get('sync-last'))||0)>30000)scheduleSync(300)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(silentRenew,600);if(document.visibilityState==='visible'&&syncCfg()){const last=Number(ls.get('sync-last'))||0;if(Date.now()-last>60000)scheduleSync(300)}});
+
+/* ---------------- 清理重複的書：同名、同狀態的只留一本（內容較完整、較新的那本） ---------------- */
+function dupGroups(){
+  const m=new Map();
+  for(const b of [...books,...pile]){const k=dupKey(b);if(!k)continue;(m.get(k)||m.set(k,[]).get(k)).push(b)}
+  return [...m.values()].filter(g=>g.length>1);
+}
+function richScore(b){let n=0;for(const k of Object.keys(b)){const v=b[k];if(v==null||v===''||(Array.isArray(v)&&!v.length))continue;n++}try{n+=quotesOf(b).length*3}catch{}return n}
+async function dedupeFlow(auto){
+  const gs=dupGroups();
+  if(!gs.length){if(!auto)toast('沒有發現重複的書');return}
+  const names=gs.slice(0,8).map(g=>`・${g[0].title}（${g.length} 本）`).join('\n');
+  const extra=gs.reduce((a,g)=>a+g.length-1,0);
+  const ok=await ask({title:'發現重複的書',body:`有 ${gs.length} 組同名的書，合併後會少 ${extra} 本：\n${names}\n\n每組只留內容最完整、最新的那一本，其他的會刪除（書摘不會合併，請留意）。`,buttons:[{label:'先不要',value:false},{label:'合併',value:true,cls:'primary'}]});
+  if(!ok)return;
+  for(const g of gs){
+    const keep=[...g].sort((a,b)=>richScore(b)-richScore(a)||(b.updatedAt||0)-(a.updatedAt||0))[0];
+    for(const b of g)if(b!==keep)await removeBook(b.id);
+  }
+  await reload();render(false);toast('已合併重複的書');
+}
+$('mDedupe').onclick=()=>{closeMenu();dedupeFlow(false)};
+let dupAsked=false;
+function maybeOfferDedupe(){if(dupAsked||demoMode)return;if(dupGroups().length){dupAsked=true;setTimeout(()=>{if(!document.querySelector('dialog[open]'))dedupeFlow(true)},800)}}
 
 </script>
 </body>
