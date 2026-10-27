@@ -5075,7 +5075,8 @@ async function googleSignIn(hint){
 async function gfetch(url,opts={}){
   const t=gToken();if(!t)throw authErr();
   let r;
-  try{r=await fetch(url,{...opts,cache:'no-store',headers:{...(opts.headers||{}),Authorization:'Bearer '+t}})}catch{throw new Error('連不上 Google 雲端硬碟，請確認網路')}
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
+  try{r=await fetch(url,{...opts,signal:ac.signal,cache:'no-store',headers:{...(opts.headers||{}),Authorization:'Bearer '+t}})}catch{throw new Error('連不上 Google 雲端硬碟，請確認網路')}finally{clearTimeout(to)}
   if(r.status===401){ls.set('g-token','');throw authErr()}
   if(r.status===403){let m='';try{m=(await r.json()).error?.message||''}catch{};if(/insufficient|scope/i.test(m)){ls.set('g-token','');throw authErr()}throw new Error(/quota|limit/i.test(m)?'Google 雲端硬碟暫時拒絕存取（使用量達上限），稍後再試':'Google 雲端硬碟拒絕存取：'+m)}
   if(r.status===404&&opts.allow404)return null;
@@ -5138,6 +5139,7 @@ function updateLoginBanner(){
 }
 function scheduleSync(delay=3500){
   if(demoMode||!syncCfg())return;
+  if(syncState.status==='auth'&&syncCfg().type==='google'&&gToken())syncState.status='pending';
   if(syncState.status==='auth'){if(!syncState.warned){syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線')}return}
   if(syncCfg().type==='google'&&!gToken()){setSyncStatus('auth');syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線');return}
   if(syncState.status!=='busy')setSyncStatus('pending');
@@ -5146,10 +5148,11 @@ function scheduleSync(delay=3500){
 async function runSync({manual=false,replace=false}={}){
   if(demoMode)return false;
   const cfg=syncCfg();if(!cfg){setSyncStatus('off');return false}
+  if(syncState.busy&&Date.now()-(syncState.busyAt||0)>150000)syncState.busy=false; /* 上一次卡住太久就放掉，不要讓之後都不同步 */
   if(syncState.busy){syncState.again=true;return false}
   if(!navigator.onLine){setSyncStatus('pending','目前離線，連上網路後會自動同步');return false}
   if(cfg.type==='google'&&!gToken()){setSyncStatus('auth');return false}
-  syncState.busy=true;setSyncStatus('busy');
+  syncState.busy=true;syncState.busyAt=Date.now();setSyncStatus('busy');
   try{
     let tries=0;const be=backendFor(cfg);
     while(true){try{await syncOnce(be,{replace});break}catch(e){if(e.conflict&&tries++<2)continue;throw e}}
@@ -5177,6 +5180,7 @@ async function syncOnce(be,{replace=false}={}){
   const localMap=new Map(local.map(b=>[String(b.id),b]));
   const remoteMap=new Map((remote.books||[]).map(b=>[String(b.id),b]));
   for(const b of local){if(/^data:image/.test(b.cover||'')){const h=await sha(b.cover);if(b.coverRef!==h){b.coverRef=h;b._refChanged=true}}else if(b.coverRef){delete b.coverRef;b._refChanged=true}}
+  let localChanged=0;
   /* 兩台裝置各自存了同一本書（ID 不同）：認出來，只留一本，不要變成兩本 */
   for(const [id,L] of [...localMap]){
     if(remoteMap.has(id))continue;const k=dupKey(L);if(!k)continue;
@@ -5185,7 +5189,7 @@ async function syncOnce(be,{replace=false}={}){
     if((L.updatedAt||0)>(R.updatedAt||0)){const nb={...L,id:R.id};localMap.set(String(R.id),nb);await putBook(nb)}
   }
   const ids=new Set([...localMap.keys(),...remoteMap.keys()]);
-  const outBooks=[];let localChanged=0;const toUpload=[];const toDownload=[];
+  const outBooks=[];const toUpload=[];const toDownload=[];
   for(const id of ids){
     const L=localMap.get(id),R=remoteMap.get(id);
     const lt=L?.updatedAt||0, rt=R?.updatedAt||0, dt=del[id]||0;
