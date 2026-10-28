@@ -5205,7 +5205,7 @@ async function syncOnce(be,{replace=false}={}){
       outBooks.push(R);
       const same=L&&JSON.stringify(stripLocal(toRemote(L)))===JSON.stringify(stripLocal(R));
       if(!same){
-        const nb={...(L||{}),...R};delete nb.coverRef;
+        const nb={...R};delete nb.coverRef; /* 以雲端為準：雲端刪掉的欄位（例如書堆的 status／due）本機也要跟著刪 */
         if(R.coverRef){if(L&&L.coverRef===R.coverRef&&L.cover){nb.cover=L.cover;nb.coverRef=R.coverRef}else toDownload.push(nb)}
         else{nb.cover=R.coverUrl||'';delete nb.coverOriginal}
         if(L&&L.coverOriginal&&nb.coverRef===L.coverRef)nb.coverOriginal=L.coverOriginal;else delete nb.coverOriginal;
