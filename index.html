@@ -1415,6 +1415,7 @@ html,body{overscroll-behavior-y:contain}
     <button type="button" id="mDemo">逛逛示範書櫃<span>先看看書房能做什麼</span></button>
     <button type="button" id="mInstall" hidden>安裝到主畫面<span>像 App 一樣開啟</span></button>
     <button type="button" id="mSync">保存與同步<span>Google 帳號</span></button>
+    <button type="button" id="mDedupe">清理重複的書<span>合併同名的書</span></button>
     <button type="button" id="mExport">匯出備份<span>JSON／Excel</span></button>
     <button type="button" id="mImport">匯入資料<span>JSON／Excel／Notion</span></button>
     <hr>
@@ -5075,7 +5076,8 @@ async function googleSignIn(hint){
 async function gfetch(url,opts={}){
   const t=gToken();if(!t)throw authErr();
   let r;
-  try{r=await fetch(url,{...opts,cache:'no-store',headers:{...(opts.headers||{}),Authorization:'Bearer '+t}})}catch{throw new Error('連不上 Google 雲端硬碟，請確認網路')}
+  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),60000);
+  try{r=await fetch(url,{...opts,signal:ac.signal,cache:'no-store',headers:{...(opts.headers||{}),Authorization:'Bearer '+t}})}catch{throw new Error('連不上 Google 雲端硬碟，請確認網路')}finally{clearTimeout(to)}
   if(r.status===401){ls.set('g-token','');throw authErr()}
   if(r.status===403){let m='';try{m=(await r.json()).error?.message||''}catch{};if(/insufficient|scope/i.test(m)){ls.set('g-token','');throw authErr()}throw new Error(/quota|limit/i.test(m)?'Google 雲端硬碟暫時拒絕存取（使用量達上限），稍後再試':'Google 雲端硬碟拒絕存取：'+m)}
   if(r.status===404&&opts.allow404)return null;
@@ -5138,6 +5140,7 @@ function updateLoginBanner(){
 }
 function scheduleSync(delay=3500){
   if(demoMode||!syncCfg())return;
+  if(syncState.status==='auth'&&syncCfg().type==='google'&&gToken())syncState.status='pending';
   if(syncState.status==='auth'){if(!syncState.warned){syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線')}return}
   if(syncCfg().type==='google'&&!gToken()){setSyncStatus('auth');syncState.warned=true;toast('Google 登入約 1 小時會過期（免費的純網頁 App 沒有伺服器可續期）。這次修改還沒上傳，請點右上角雲端圖示重新連線');return}
   if(syncState.status!=='busy')setSyncStatus('pending');
@@ -5146,14 +5149,15 @@ function scheduleSync(delay=3500){
 async function runSync({manual=false,replace=false}={}){
   if(demoMode)return false;
   const cfg=syncCfg();if(!cfg){setSyncStatus('off');return false}
+  if(syncState.busy&&Date.now()-(syncState.busyAt||0)>150000)syncState.busy=false; /* 上一次卡住太久就放掉，不要讓之後都不同步 */
   if(syncState.busy){syncState.again=true;return false}
   if(!navigator.onLine){setSyncStatus('pending','目前離線，連上網路後會自動同步');return false}
   if(cfg.type==='google'&&!gToken()){setSyncStatus('auth');return false}
-  syncState.busy=true;setSyncStatus('busy');
+  syncState.busy=true;syncState.busyAt=Date.now();setSyncStatus('busy');
   try{
     let tries=0;const be=backendFor(cfg);
     while(true){try{await syncOnce(be,{replace});break}catch(e){if(e.conflict&&tries++<2)continue;throw e}}
-    ls.set('sync-last',String(Date.now()));setSyncStatus('ok');
+    ls.set('sync-last',String(Date.now()));setSyncStatus('ok');maybeOfferDedupe();
     if(manual)toast('已同步');
     return true;
   }catch(e){
@@ -5177,6 +5181,7 @@ async function syncOnce(be,{replace=false}={}){
   const localMap=new Map(local.map(b=>[String(b.id),b]));
   const remoteMap=new Map((remote.books||[]).map(b=>[String(b.id),b]));
   for(const b of local){if(/^data:image/.test(b.cover||'')){const h=await sha(b.cover);if(b.coverRef!==h){b.coverRef=h;b._refChanged=true}}else if(b.coverRef){delete b.coverRef;b._refChanged=true}}
+  let localChanged=0;
   /* 兩台裝置各自存了同一本書（ID 不同）：認出來，只留一本，不要變成兩本 */
   for(const [id,L] of [...localMap]){
     if(remoteMap.has(id))continue;const k=dupKey(L);if(!k)continue;
@@ -5185,7 +5190,7 @@ async function syncOnce(be,{replace=false}={}){
     if((L.updatedAt||0)>(R.updatedAt||0)){const nb={...L,id:R.id};localMap.set(String(R.id),nb);await putBook(nb)}
   }
   const ids=new Set([...localMap.keys(),...remoteMap.keys()]);
-  const outBooks=[];let localChanged=0;const toUpload=[];const toDownload=[];
+  const outBooks=[];const toUpload=[];const toDownload=[];
   for(const id of ids){
     const L=localMap.get(id),R=remoteMap.get(id);
     const lt=L?.updatedAt||0, rt=R?.updatedAt||0, dt=del[id]||0;
@@ -5200,7 +5205,7 @@ async function syncOnce(be,{replace=false}={}){
       outBooks.push(R);
       const same=L&&JSON.stringify(stripLocal(toRemote(L)))===JSON.stringify(stripLocal(R));
       if(!same){
-        const nb={...(L||{}),...R};delete nb.coverRef;
+        const nb={...R};delete nb.coverRef; /* 以雲端為準：雲端刪掉的欄位（例如書堆的 status／due）本機也要跟著刪 */
         if(R.coverRef){if(L&&L.coverRef===R.coverRef&&L.cover){nb.cover=L.cover;nb.coverRef=R.coverRef}else toDownload.push(nb)}
         else{nb.cover=R.coverUrl||'';delete nb.coverOriginal}
         if(L&&L.coverOriginal&&nb.coverRef===L.coverRef)nb.coverOriginal=L.coverOriginal;else delete nb.coverOriginal;
@@ -5374,6 +5379,30 @@ window.addEventListener('online',()=>{scheduleSync(500);setTimeout(silentRenew,8
 setInterval(()=>{if(document.visibilityState==='visible'&&syncCfg()&&!demoMode)scheduleSync(200)},4*60*1000);
 window.addEventListener('focus',()=>{if(syncCfg()&&Date.now()-(Number(ls.get('sync-last'))||0)>30000)scheduleSync(300)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(silentRenew,600);if(document.visibilityState==='visible'&&syncCfg()){const last=Number(ls.get('sync-last'))||0;if(Date.now()-last>60000)scheduleSync(300)}});
+
+/* ---------------- 清理重複的書：同名、同狀態的只留一本（內容較完整、較新的那本） ---------------- */
+function dupGroups(){
+  const m=new Map();
+  for(const b of [...books,...pile]){const k=dupKey(b);if(!k)continue;(m.get(k)||m.set(k,[]).get(k)).push(b)}
+  return [...m.values()].filter(g=>g.length>1);
+}
+function richScore(b){let n=0;for(const k of Object.keys(b)){const v=b[k];if(v==null||v===''||(Array.isArray(v)&&!v.length))continue;n++}try{n+=quotesOf(b).length*3}catch{}return n}
+async function dedupeFlow(auto){
+  const gs=dupGroups();
+  if(!gs.length){if(!auto)toast('沒有發現重複的書');return}
+  const names=gs.slice(0,8).map(g=>`・${g[0].title}（${g.length} 本）`).join('\n');
+  const extra=gs.reduce((a,g)=>a+g.length-1,0);
+  const ok=await ask({title:'發現重複的書',body:`有 ${gs.length} 組同名的書，合併後會少 ${extra} 本：\n${names}\n\n每組只留內容最完整、最新的那一本，其他的會刪除（書摘不會合併，請留意）。`,buttons:[{label:'先不要',value:false},{label:'合併',value:true,cls:'primary'}]});
+  if(!ok)return;
+  for(const g of gs){
+    const keep=[...g].sort((a,b)=>richScore(b)-richScore(a)||(b.updatedAt||0)-(a.updatedAt||0))[0];
+    for(const b of g)if(b!==keep)await removeBook(b.id);
+  }
+  await reload();render(false);toast('已合併重複的書');
+}
+$('mDedupe').onclick=()=>{closeMenu();dedupeFlow(false)};
+let dupAsked=false;
+function maybeOfferDedupe(){if(dupAsked||demoMode)return;if(dupGroups().length){dupAsked=true;setTimeout(()=>{if(!document.querySelector('dialog[open]'))dedupeFlow(true)},800)}}
 
 </script>
 </body>
