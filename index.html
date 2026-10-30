@@ -5220,7 +5220,14 @@ async function syncOnce(be,{replace=false}={}){
     const ref=remoteMap.get(String(nb.id)).coverRef;
     const d=await be.readCover(ref);if(d){nb.cover=d;nb.coverRef=ref}else nb.cover=nb.cover||'';
   }
-  for(const nb of localMap.values())if(nb._pending){delete nb._pending;await putBook(nb);localChanged++}
+  /* 同步進行中，你可能又改了別本書（例如換封面）：寫回前重新看一次，已經比雲端新的就不要用舊資料蓋掉 */
+  const fresh=new Map((await getAll()).map(x=>[String(x.id),x]));
+  for(const nb of localMap.values())if(nb._pending){
+    delete nb._pending;
+    const cur=fresh.get(String(nb.id));
+    if(cur&&(cur.updatedAt||0)>Math.max(nb.updatedAt||0,(local.find(x=>String(x.id)===String(nb.id))||{}).updatedAt||0))continue;
+    await putBook(nb);localChanged++;
+  }
   n=0;
   for(const b of toUpload){
     if(remoteCovers.has(b.coverRef))continue;
