@@ -1392,6 +1392,10 @@ html,body{overscroll-behavior-y:contain}
 .lk-res .lk-none{padding:6px 2px;opacity:.75;font-size:.9em}
 </style>
 <style>.lk-row .btn{white-space:nowrap;flex:none;text-decoration:none}</style>
+<style>
+/* 系列「上／下」標籤：縮小並移到封面左下角，不再蓋住書名 */
+.sbadge{left:5px!important;top:auto!important;bottom:6px!important;min-width:16px;height:16px;line-height:16px;padding:0 4px;border-radius:8px!important;font-size:10px;opacity:.92;box-shadow:0 1px 2px #0006,0 0 0 1px #fff9}
+</style>
 
 </head>
 <body>
@@ -1579,7 +1583,7 @@ html,body{overscroll-behavior-y:contain}
       </div>
       <button type="button" class="more-toggle" id="moreToggle" aria-expanded="false" aria-controls="editorMore"><span class="mt-ic">＋</span><span id="moreLabel">作者、標籤、珍藏、讀完的感覺、筆記</span><small>選填</small></button>
       <div class="adv" id="editorMore" hidden>
-      <div class="field lk-field"><div class="lk-row"><input id="lkQ" placeholder="空白就用上面的書名查" autocomplete="off" enterkeyhint="search"><button type="button" class="btn sm primary" id="lkBtn">自動查</button><a class="btn sm" id="lkBooks" href="https://search.books.com.tw/" target="_blank" rel="noopener">到博客來查 ↗</a></div><div class="lk-res" id="lkRes" hidden></div></div>
+      <div class="field lk-field"><div class="lk-row"><a class="btn sm" id="lkBooks" href="https://search.books.com.tw/" target="_blank" rel="noopener">到博客來查作者、譯者 ↗</a></div></div>
       <div class="row2">
         <div class="field">
           <label for="bookAuthor">作者</label>
@@ -3953,54 +3957,11 @@ function openSeriesList(){
 }
 $('mSeries').onclick=()=>{closeMenu();openSeriesList()};
 
-/* ---------------- 用書名（或 ISBN）查作者、譯者：Google Books 公開資料，免金鑰 ---------------- */
+/* 到博客來查作者、譯者：用書名開搜尋頁（沒有公開接口可以自動帶入） */
 (function(){
-  const btn=$('lkBtn'),res=$('lkRes'),q=$('lkQ');if(!btn)return;
-  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  function split(authors){
-    const au=[],tr=[];
-    for(const raw of authors||[])for(const p of String(raw).split(/[;；、\/]|\s{2,}/)){
-      const t=p.trim();if(!t)continue;
-      if(/(譯者?|翻譯|translator)\s*[:：]?/i.test(t)){const n=t.replace(/(譯者?|翻譯|translators?)\s*[:：]?/ig,'').replace(/\s*(著|作)$/,'').trim();if(n)tr.push(n)}
-      else au.push(t.replace(/\s*(著|作者?|編著|編)$/,'').trim())
-    }
-    return {author:[...new Set(au)].join('、'),translator:[...new Set(tr)].join('、')};
-  }
-  async function search(){
-    let term=(q.value||$('bookTitle').value||'').trim();
-    if(!term){res.hidden=false;res.innerHTML='<div class="lk-none">先在上面填書名，或在這裡輸入書名。</div>';return}
-    const isbn=term.replace(/[\s-]/g,'');
-    const query=/^\d{9}[\dXx]$|^\d{13}$/.test(isbn)?'isbn:'+isbn:'intitle:'+cleanSearchTitle(term);
-    res.hidden=false;res.innerHTML='<div class="lk-none">查詢中…</div>';btn.disabled=true;
-    try{
-      const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),12000);
-      const r=await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=10&printType=books&q='+encodeURIComponent(query),{signal:ctl.signal});clearTimeout(to);
-      if(!r.ok)throw new Error(r.status);
-      const items=((await r.json()).items||[]).map(it=>it.volumeInfo||{}).filter(v=>v.title);
-      const seen=new Set(),list=[];
-      for(const v of items){const sp=split(v.authors);const k=(v.title+'|'+sp.author+'|'+(v.publisher||''));if(seen.has(k))continue;seen.add(k);list.push({v,sp})}
-      if(!list.length){res.innerHTML='<div class="lk-none">找不到這本書。可以換個寫法再試，例如去掉副標，或按旁邊的「到博客來查」自己看。</div>';return}
-      res.innerHTML='';
-      for(const {v,sp} of list){
-        const b=document.createElement('button');b.type='button';b.className='lk-it';
-        const img=(v.imageLinks?.smallThumbnail||v.imageLinks?.thumbnail||'').replace(/^http:/,'https:');
-        b.innerHTML=(img?`<img src="${esc(img)}" alt="" loading="lazy">`:'<img alt="">')+`<span><div class="lk-t">${esc(v.title+(v.subtitle?'：'+v.subtitle:''))}</div><div class="lk-m">${esc(sp.author||'（沒有作者資料）')}${sp.translator?' ／ 譯：'+esc(sp.translator):''}<br>${esc([v.publisher,(v.publishedDate||'').slice(0,4)].filter(Boolean).join('・'))}</div></span>`;
-        b.onclick=()=>{
-          if(sp.author)$('bookAuthor').value=sp.author;
-          if(sp.translator)$('bookTranslator').value=sp.translator;
-          res.hidden=true;res.innerHTML='';
-          toast(sp.author?(sp.translator?'已帶入作者和譯者':'已帶入作者，這本查不到譯者，可以自己補'):'這筆沒有作者資料，請試試別筆');
-        };
-        res.appendChild(b);
-      }
-    }catch(e){res.innerHTML='<div class="lk-none">現在查不到（網路不通，或查詢服務暫時沒回應），稍後再試。</div>'}
-    finally{btn.disabled=false}
-  }
-  const bk=$('lkBooks');
-  const setBk=()=>{const t=cleanSearchTitle((q.value||$('bookTitle').value||'').trim());bk.href=t?`https://search.books.com.tw/search/query/key/${encodeURIComponent(t)}/cat/all`:'https://www.books.com.tw/'};
-  bk.addEventListener('pointerdown',setBk);bk.addEventListener('focus',setBk);bk.addEventListener('click',setBk);setBk();
-  btn.onclick=search;
-  q.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search()}});
+  const bk=$('lkBooks');if(!bk)return;
+  const setBk=()=>{const t=cleanSearchTitle(($('bookTitle').value||'').trim());bk.href=t?`https://search.books.com.tw/search/query/key/${encodeURIComponent(t)}/cat/all`:'https://www.books.com.tw/'};
+  ['pointerdown','focus','click'].forEach(ev=>bk.addEventListener(ev,setBk));setBk();
 })();
 
 /* ================= 字體 ================= */
