@@ -1527,6 +1527,38 @@ html,body{overscroll-behavior-y:contain}
 .slide .rcols1 .bk .pg{margin:2px 0 2px -3px}
 .slide .bk.has-cv .sp{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 30%,rgba(0,0,0,.3)),linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12) 9%,rgba(0,0,0,.1) 91%,rgba(0,0,0,.5)),var(--cv) center/cover no-repeat,var(--sc,#6b3a3a)}
 </style>
+<style>
+/* v108: 堆疊的書背 = 書架書背橫放 */
+.slide .rcols1 .bk{filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));gap:0}
+.slide .bk .pg{display:none}
+.slide .bk .sp,.slide .bk.has-cv .sp{border-radius:4px 3px 3px 4px;padding:0 9%;justify-content:center;color:#f7edd6;background:
+  linear-gradient(90deg,rgba(255,255,255,.22) 0,transparent 3px,transparent calc(100% - 4px),rgba(0,0,0,.28) 100%),
+  linear-gradient(180deg,rgba(255,255,255,.18) 0,rgba(255,255,255,.1) 14%,rgba(255,255,255,0) 34%,rgba(0,0,0,.08) 70%,rgba(0,0,0,.34) 100%),
+  repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),var(--sc,#6b3a3a)}
+.slide .bk.has-cv .sp{background:
+  linear-gradient(90deg,rgba(255,255,255,.22) 0,transparent 3px,transparent calc(100% - 4px),rgba(0,0,0,.28) 100%),
+  linear-gradient(180deg,rgba(255,255,255,.2) 0,rgba(255,255,255,.1) 14%,rgba(255,255,255,0) 34%,rgba(0,0,0,.08) 70%,rgba(0,0,0,.34) 100%),
+  var(--cv) center/cover no-repeat,var(--sc,#6b3a3a)}
+.slide .bk .sp:before,.slide .bk .sp:after{display:block!important;content:"";position:absolute;top:0;bottom:0;width:auto;pointer-events:none;border:0;opacity:.8}
+.slide .bk.st0 .sp:before{left:7%;width:5px;border-left:1px solid #e8c981!important;border-right:1px solid #e8c981!important}
+.slide .bk.st0 .sp:after{right:7%;left:auto;width:5px;border-left:1px solid #e8c981!important;border-right:1px solid #e8c981!important}
+.slide .bk.st1 .sp:before{left:8%;width:1px;background:#e8c981;box-shadow:4px 0 0 #e8c981}
+.slide .bk.st1 .sp:after{right:8%;left:auto;width:1px;background:#e8c981;box-shadow:-4px 0 0 #e8c981}
+.slide .bk.st2 .sp:before{left:0;width:7%;background:rgba(0,0,0,.2)}
+.slide .bk.st2 .sp:after{right:0;left:auto;width:7%;background:rgba(0,0,0,.2)}
+.slide .bk .sp span{position:relative;z-index:1;color:#f7edd6;font-weight:700;letter-spacing:.08em;text-shadow:0 1px 1px rgba(0,0,0,.55),0 0 4px rgba(0,0,0,.35)}
+.slide .bk .sb{position:absolute;left:11%;bottom:-1px;font-style:normal;font-size:9px;line-height:1;padding:2px 4px;border-radius:3px 3px 0 0;background:#f4ead2;color:#5a3d22;z-index:2}
+.slide .bk .rib{right:14%;bottom:auto;top:calc(100% - 1px)}
+</style>
+<style>
+.slide .bk.has-cv .sp{background:
+  linear-gradient(90deg,rgba(255,255,255,.22) 0,transparent 3px,transparent calc(100% - 4px),rgba(0,0,0,.28) 100%),
+  linear-gradient(180deg,rgba(255,255,255,.2) 0,rgba(255,255,255,.08) 14%,rgba(0,0,0,.1) 34%,rgba(0,0,0,.2) 70%,rgba(0,0,0,.4) 100%),
+  linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),
+  var(--cv) center/cover no-repeat,var(--sc,#6b3a3a)}
+.slide .bk.has-cv .sp span{text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 5px rgba(0,0,0,.7)}
+.slide .bk .sb{bottom:0;left:10%;font-size:8px;padding:1px 4px 2px}
+</style>
 
 </head>
 <body>
@@ -5664,7 +5696,7 @@ function reviewInject(y,D,out){
         list.forEach(b=>{try{spineAvg(b)}catch(_){}});
         const budget=Math.min(470,Math.floor(innerHeight*.58)),bh=Math.max(6,Math.min(34,Math.floor(budget/n)));
         const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,w=Math.min(innerWidth-70,200+(hs%7)*12),st=hs%3;
-          return `<div class="bk st${st}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div><div class="pg"></div>${b.favorite&&bh>=15?'<em class="rib"></em>':''}</div>`});
+          return `<div class="bk st${st}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>${b.series&&String(b.seriesNo||'').trim()&&bh>=15?`<i class="sb">${esc(String(b.seriesNo).trim())}</i>`:''}${b.favorite?'<em class="rib"></em>':''}</div>`});
         res.push(`<div class="k">疊起來有多高</div><div class="rcols1" style="height:${Math.min(budget,n*(bh+1))+6}px">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
