@@ -1428,6 +1428,10 @@ html,body{overscroll-behavior-y:contain}
 }
 @keyframes sheetRise{from{transform:translateY(100%)}to{transform:none}}
 </style>
+<style>
+#bookView::backdrop{transition:background-color .6s ease,backdrop-filter .6s ease}
+#bookView.dim::backdrop{background:rgba(12,9,6,.84);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+</style>
 
 </head>
 <body>
@@ -2264,10 +2268,10 @@ function openBook(id,ctx,opts={}){
 /* 抽出書的畫面：書櫃變暗、封面浮到前面，按「翻開」才像真的書一樣攤開 */
 function renderPreface(){
   const b=byId(viewCtx[viewIdx]);if(!b)return;
-  const stage=$('bookView').querySelector('.stage');
+  const stage=$('bookView').querySelector('.stage');$('bookView').classList.add('dim');
   stage.innerHTML=`<div class="pre" id="pre">
     <button type="button" class="x close" id="preClose" aria-label="放回書櫃">×</button>
-    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b).replace(' loading="lazy"','')}${ribbon(b)}</div>
+    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b).replace(' loading="lazy" decoding="async"',' decoding="sync"')}${ribbon(b)}</div>
     <h2 class="pre-t">${esc(b.title)}</h2>
     ${b.author?`<p class="pre-a">${esc(b.author)}</p>`:''}
     <button type="button" class="btn primary pre-go" id="preOpen">翻開這本書</button>
@@ -2281,7 +2285,7 @@ function renderPreface(){
 function unfoldBook(){
   try{albSound('open')}catch(_){}
   if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}
-  renderSpread();
+  renderSpread();setTimeout(()=>$('bookView').classList.remove('dim'),700);
   const sp=$('spread');if(!sp)return;
   sp.classList.add('opening');setTimeout(()=>sp.classList.remove('opening'),1100);
 }
@@ -2299,7 +2303,7 @@ function renderSpread(){
   stage.innerHTML=`<button type="button" class="turn prev" id="bvPrev" aria-label="上一本" ${viewIdx<=0?'disabled':''}>‹</button>
   <div class="spread" id="spread">
     <button type="button" class="x close" id="bvClose" aria-label="闔上">×</button>
-    <div class="page-l" id="bvLeft"><div class="cover" id="bvCover">${coverInner(b)}${ribbon(b)}</div></div>
+    <div class="page-l" id="bvLeft"><div class="cover" id="bvCover">${coverInner(b).replace(' loading="lazy" decoding="async"',' decoding="sync"')}${ribbon(b)}</div></div>
     <div class="page-r">
       ${recallMode?`<p class="recall">${esc(recallLine(b))}</p>`:''}
       <div class="when"><b>${esc(b.year)}</b>　${esc(monthLabel(b.month))}讀完</div>
@@ -2349,6 +2353,7 @@ function renderSpread(){
   sp.addEventListener('touchend',e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=null;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6)turn(dx<0?1:-1)});
 }
 function turn(d){const n=viewIdx+d;if(n<0||n>=viewCtx.length)return;viewIdx=n;renderSpread()}
+$('bookView').addEventListener('close',()=>$('bookView').classList.remove('dim'));
 $('bookView').addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))return;if(e.key==='ArrowLeft')turn(-1);if(e.key==='ArrowRight')turn(1)});
 function stripRuntime(b){const {...x}=b;return x}
 
