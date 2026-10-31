@@ -1559,6 +1559,20 @@ html,body{overscroll-behavior-y:contain}
 .slide .bk.has-cv .sp span{text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 5px rgba(0,0,0,.7)}
 .slide .bk .sb{bottom:0;left:10%;font-size:8px;padding:1px 4px 2px}
 </style>
+<style>
+/* v109 厚薄不一、左右交錯 */
+.slide .bk .pg{display:block;width:17%;margin:2px 0 2px -3px;border-radius:0 3px 3px 0;background:repeating-linear-gradient(180deg,#f6e9c8 0 1.4px,#d8c394 1.4px 2.8px);box-shadow:inset 7px 0 8px -4px rgba(0,0,0,.5),inset -2px 0 3px rgba(120,90,40,.35),1px 0 0 rgba(0,0,0,.2)}
+.slide .bk .sp,.slide .bk.has-cv .sp{border-radius:5px 2px 2px 5px}
+.slide .bk.fl{flex-direction:row-reverse}
+.slide .bk.fl .pg{margin:2px -3px 2px 0;border-radius:3px 0 0 3px;box-shadow:inset -7px 0 8px -4px rgba(0,0,0,.5),inset 2px 0 3px rgba(120,90,40,.35),-1px 0 0 rgba(0,0,0,.2)}
+.slide .bk.fl .sp,.slide .bk.fl.has-cv .sp{border-radius:2px 5px 5px 2px}
+.slide .bk .sb{bottom:0}
+.slide .bk.fl .sb{left:auto;right:10%}
+.slide .rcols1{position:relative;gap:0}
+.slide .rcols1:before{content:"";position:absolute;right:max(2%,calc(50% - 200px + 4px));top:0;bottom:6px;width:6px;border:1px solid rgba(233,201,124,.7);border-left:0;opacity:.8}
+.slide .rcols1:after{content:attr(data-cm) " cm";position:absolute;right:calc(max(2%,calc(50% - 200px + 4px)) - 4px);top:50%;transform:translate(0,-50%);padding:2px 8px;border:1px solid rgba(233,201,124,.7);border-radius:999px;background:rgba(15,15,25,.85);color:#f1dfae;font-size:12px;white-space:nowrap}
+@media (max-width:520px){.slide .rcols1:before,.slide .rcols1:after{display:none}}
+</style>
 
 </head>
 <body>
@@ -5694,10 +5708,13 @@ function reviewInject(y,D,out){
         const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
         list.forEach(b=>{try{spineAvg(b)}catch(_){}});
-        const budget=Math.min(470,Math.floor(innerHeight*.58)),bh=Math.max(6,Math.min(34,Math.floor(budget/n)));
-        const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,w=Math.min(innerWidth-70,200+(hs%7)*12),st=hs%3;
-          return `<div class="bk st${st}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>${b.series&&String(b.seriesNo||'').trim()&&bh>=15?`<i class="sb">${esc(String(b.seriesNo).trim())}</i>`:''}${b.favorite?'<em class="rib"></em>':''}</div>`});
-        res.push(`<div class="k">疊起來有多高</div><div class="rcols1" style="height:${Math.min(budget,n*(bh+1))+6}px">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        const budget=Math.min(470,Math.floor(innerHeight*.58));
+        const wg=list.map((b,k)=>.6+(hue(b.title+k)%8)*.14),sw=wg.reduce((x,y)=>x+y,0),unit=Math.min(40/1.6,(budget-n)/sw);
+        const hts=wg.map(g=>Math.max(6,Math.round(g*unit)));
+        const books=list.map((b,k)=>{const hs=hue(b.title+k),bh=hts[k],j=((hs%13)-6)*1.8,rot=(((hs>>3)%9)-4)*.1,w=Math.min(innerWidth-110,190+(hs%7)*14),st=hs%3,fl=((hs>>4)%4===0)?' fl':'';
+          return `<div class="bk st${st}${fl}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div><div class="pg"></div>${b.series&&String(b.seriesNo||'').trim()&&bh>=15?`<i class="sb">${esc(String(b.seriesNo).trim())}</i>`:''}${b.favorite&&bh>=13?'<em class="rib"></em>':''}</div>`});
+        const tot=hts.reduce((x,y)=>x+y,0)+n;
+        res.push(`<div class="k">疊起來有多高</div><div class="rcols1" data-cm="${cm}" style="height:${tot+6}px">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
