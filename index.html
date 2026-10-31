@@ -1493,6 +1493,24 @@ html,body{overscroll-behavior-y:contain}
 .review .rvmute{position:absolute;top:calc(34px + env(safe-area-inset-top,0px));left:calc(12px + 112px);z-index:4;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(241,233,216,.3);color:#f1e9d8;font-size:13px;background:rgba(13,17,18,.4)}
 .review .rvmute[data-m="1"]{opacity:.6}
 </style>
+<style>
+/* 書疊：厚厚的精裝書，左側書背燙金花飾，右側是書頁，喜歡的書垂著書籤帶 */
+.slide .rcols{display:flex;gap:var(--gap,10px);justify-content:center;align-items:flex-end;width:100%;max-width:520px}
+.slide .rcol{flex:1;max-width:190px;display:flex;flex-direction:column-reverse;gap:3px}
+.slide .bk{position:relative;display:flex;height:var(--bh);width:100%;opacity:0;transform:translateY(-300px);translate:var(--j,0) 0;rotate:var(--r,0deg);animation:stackDrop .65s cubic-bezier(.3,.9,.4,1) forwards;filter:drop-shadow(0 3px 3px rgba(0,0,0,.45))}
+.slide .bk .sp{position:relative;flex:1;min-width:0;display:flex;align-items:center;justify-content:space-around;gap:4%;padding:0 5% 0 6%;border-radius:6px 2px 2px 6px;color:#e9c97c;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 28%,rgba(0,0,0,.3)),linear-gradient(90deg,rgba(0,0,0,.45),rgba(255,255,255,.14) 10%,rgba(255,255,255,0) 40%,rgba(0,0,0,.2) 92%,rgba(0,0,0,.4)),var(--sc,#6b3a3a);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 0 rgba(0,0,0,.35)}
+.slide .bk .sp:before,.slide .bk .sp:after{content:"";position:absolute;top:14%;bottom:14%;width:3px;border-left:1px solid rgba(233,201,124,.75);border-right:1px solid rgba(233,201,124,.75)}
+.slide .bk .sp:before{left:4%}.slide .bk .sp:after{right:3%}
+.slide .bk .mo{display:block;height:46%;min-width:0;flex:0 1 auto;opacity:.92}
+.slide .bk .mo svg{height:100%;width:auto;max-width:100%;display:block;fill:none;stroke:currentColor;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.slide .bk .mo svg .f{fill:currentColor;stroke:none}
+.slide .bk .mir{transform:scaleX(-1)}
+.slide .bk .sp span{font-family:var(--f-display);font-size:clamp(9px,2.6vw,12px);color:#f1dfae;text-shadow:0 1px 0 rgba(0,0,0,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;letter-spacing:.06em}
+.slide .bk .pg{width:17%;margin:3px 0 3px -3px;border-radius:0 3px 3px 0;background:repeating-linear-gradient(180deg,#f6e9c8 0 1.4px,#d8c394 1.4px 2.8px);box-shadow:inset 7px 0 8px -4px rgba(0,0,0,.5),inset -2px 0 3px rgba(120,90,40,.35),1px 0 0 rgba(0,0,0,.2)}
+.slide .bk .rib{position:absolute;right:20%;bottom:-9px;width:6px;height:13px;background:#c4544e;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);z-index:2}
+@media (prefers-reduced-motion:reduce){.slide .bk{opacity:1;transform:none;animation:none}}
+</style>
+<style>.slide .bk.nr .mir{display:none}.slide .bk.nr .mo{height:40%}.slide .bk.nr .sp{justify-content:flex-start;gap:7%}</style>
 
 </head>
 <body>
@@ -5628,7 +5646,16 @@ function reviewInject(y,D,out){
         const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
         list.forEach(b=>{try{spineAvg(b)}catch(_){}});
-        res.push(`<div class="k">疊起來有多高</div><div class="rstack">${list.map((b,k)=>{const hs=hue(b.title+k),w=170+(hs%9)*11,hh=Math.round(h*(.82+(hs%7)*.06)),j=((hs%13)-6)*1.4,rot=(((hs>>3)%9)-4)*.14;return `<div class="rs" style="${spineCss(b)};--h:${hh}px;--w:${w}px;--j:${j}px;--r:${rot}deg;animation-delay:${(k*(1500/n)).toFixed(0)}ms"><i></i>${hh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>`}).join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        const cols=n<=8?1:n<=16?2:n<=27?3:n<=40?4:5,gap=10,avail=Math.min(innerWidth-32,520)-gap*(cols-1),colW=Math.min(190,avail/cols),bh=Math.max(15,Math.min(56,Math.round(colW*.3))),per=Math.ceil(n/cols);
+        const MOT=[
+          '<svg viewBox="0 0 40 16"><path d="M2 8H38M10 8q3-6 7-5M10 8q3 6 7 5M20 8q3-6 7-5M20 8q3 6 7 5M29 8q3-5 6-4M29 8q3 5 6 4"/></svg>',
+          '<svg viewBox="0 0 30 16"><path class="f" d="M10 2.5a5.5 5.5 0 1 0 0 11a4.4 4.4 0 1 1 0-11z"/><path class="f" d="M21 3.5l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/></svg>',
+          '<svg viewBox="0 0 24 16"><circle class="f" cx="12" cy="8" r="1.8"/><ellipse cx="12" cy="3.4" rx="1.8" ry="2.6"/><ellipse cx="12" cy="12.6" rx="1.8" ry="2.6"/><ellipse cx="7.4" cy="8" rx="2.6" ry="1.8"/><ellipse cx="16.6" cy="8" rx="2.6" ry="1.8"/></svg>',
+          '<svg viewBox="0 0 34 16"><path d="M2 14L12 4l6 6 5-4 9 8z"/><path class="f" d="M27 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>'];
+        const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,m=MOT[hs%MOT.length];
+          return `<div class="bk${colW<150?' nr':''}" style="${spineCss(b)};--bh:${bh}px;--j:${j}px;--r:${rot}deg;animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp"><i class="mo">${m}</i>${colW>=105&&bh>=24?`<span>${esc(spineTitle(b.title))}</span>`:''}<i class="mo mir">${m}</i></div><div class="pg"></div>${b.favorite?'<em class="rib"></em>':''}</div>`});
+        let colsHtml='';for(let c=0;c<cols;c++)colsHtml+=`<div class="rcol">${books.slice(c*per,(c+1)*per).join('')}</div>`;
+        res.push(`<div class="k">疊起來有多高</div><div class="rcols" style="--gap:${gap}px">${colsHtml}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
@@ -5668,7 +5695,7 @@ function rvCtx(){
     rvA=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();albAC=rvA;
     if(rvA.state!=='running')rvA.resume();
     if(!rvBus||rvBus.ctx!==rvA){
-      const ac=rvA,master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
+      const ac=rvA,master=ac.createGain();master.gain.value=.42;master.connect(ac.destination);
       const conv=ac.createConvolver(),len=Math.floor(ac.sampleRate*1.8),buf=ac.createBuffer(2,len,ac.sampleRate);
       for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,2.6)}
       conv.buffer=buf;const wet=ac.createGain();wet.gain.value=.32;conv.connect(wet);wet.connect(master);
@@ -5715,7 +5742,7 @@ function rvLoStep(){
 }
 function rvLofiStart(){
   if(rvLo||!rvA||albMuted)return;
-  const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.62,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
+  const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.5,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
   const len=Math.floor(ac.sampleRate*2),nb=ac.createBuffer(1,len,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<len;i++)nd[i]=Math.random()*2-1;
   rvLo={out,noise:nb,step:0,next:ac.currentTime+.15,timer:setInterval(rvLoStep,150)};
 }
@@ -5738,7 +5765,7 @@ function rvSounds(box){
   const huge=box.querySelector('.huge[data-count]');
   if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(Math.max(to,3),14);for(let i=0;i<k;i++)rvSay(i*dur/k,t=>rvMarimba(rvNoteF(i%10),t,.16));rvSay(dur+60,t=>rvFanfare(t))}
   const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/14));cw.forEach((e,i)=>{if(i%st===0)rvSay(dly(e),t=>{rvMarimba(rvNoteF(Math.floor(Math.random()*9)+3),t,.1);rvPaper(t,.05)})})}
-  const rs=box.querySelectorAll('.rs');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay(dly(e)+420,t=>{rvThud(t,i/rs.length);if(i%2===0)rvPaper(t,.06)})});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,t=>rvMarimba(rvNoteF(i),t,.1))}rvSay(1900,t=>rvBell(783.99,t,.12))}
+  const rs=box.querySelectorAll('.bk');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay(dly(e)+420,t=>{rvThud(t,i/rs.length);if(i%2===0)rvPaper(t,.06)})});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,t=>rvMarimba(rvNoteF(i),t,.1))}rvSay(1900,t=>rvBell(783.99,t,.12))}
   const bars=box.querySelectorAll('.rbars div');if(bars.length){bars.forEach((e,i)=>{rvSay(dly(e)+260,t=>rvMarimba(rvNoteF(i,196),t,.11+(e.classList.contains('top')?.1:0)))});rvSay(1100,t=>rvBell(1046.5,t,.14))}
   const on=box.querySelectorAll('.rstreak .on');on.forEach((e,i)=>rvSay(dly(e)+240,t=>{rvMarimba(rvNoteF(i+2),t,.15);if(i===on.length-1)rvBell(rvNoteF(i+7),t+.12,.12)}));
   const gr=box.querySelector('.gring');if(gr){rvSay(200,t=>{const ac=rvA,o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.setValueAtTime(330,t);o.frequency.exponentialRampToValueAtTime(990,t+1.3);e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.07,t+.4);e.gain.linearRampToValueAtTime(0,t+1.5);o.connect(e);e.connect(rvBus.dry);o.start(t);o.stop(t+1.6)});rvSay(1550,t=>rvBell(880,t,.16));}
