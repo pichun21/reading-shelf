@@ -1438,6 +1438,10 @@ html,body{overscroll-behavior-y:contain}
 #bookView .spread.opening .page-l .cover{animation:none!important}
 .pre-cover.fly:after{display:none}
 </style>
+<style>
+/* 手機：浮起的封面要在畫面正中間（詳細頁才貼在下緣） */
+@media (max-width:720px){#bookView:has(.pre){margin:auto;height:fit-content;max-height:100dvh}}
+</style>
 
 </head>
 <body>
@@ -2277,10 +2281,10 @@ function renderPreface(){
   const stage=$('bookView').querySelector('.stage');$('bookView').classList.add('dim');
   stage.innerHTML=`<div class="pre" id="pre">
     <button type="button" class="x close" id="preClose" aria-label="放回書櫃">×</button>
-    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b).replace(' loading="lazy" decoding="async"',' decoding="sync"')}${ribbon(b)}</div>
+    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="查看《${esc(b.title)}》">${coverInner(b).replace(' loading="lazy" decoding="async"',' decoding="sync"')}${ribbon(b)}</div>
     <h2 class="pre-t">${esc(b.title)}</h2>
     ${b.author?`<p class="pre-a">${esc(b.author)}</p>`:''}
-    <button type="button" class="btn primary pre-go" id="preOpen">翻開這本書</button>
+    <button type="button" class="btn primary pre-go" id="preOpen">查看這本書</button>
   </div>`;
   $('preClose').onclick=()=>$('bookView').close();
   $('preOpen').onclick=$('preCover').onclick=unfoldBook;
@@ -2305,19 +2309,6 @@ function unfoldBook(){
   sp.classList.add('opening');setTimeout(()=>d.classList.remove('dim'),900); /* opening 不移除：移除會讓預設的彈出動畫再播一次 */
   if(clone&&tgt){
     const t=tgt.getBoundingClientRect();
-    if(window.matchMedia('(max-width:720px)').matches){
-      /* 手機：封面像書皮一樣沿左邊掀開，露出後面的頁面 */
-      clone.style.transformOrigin='0 50%';
-      sp.animate([{opacity:0},{opacity:1}],{duration:260,easing:'ease-out',fill:'backwards'});
-      tgt.animate([{opacity:0},{opacity:1}],{duration:380,delay:340,easing:'ease-out',fill:'backwards'});
-      const a=clone.animate([
-        {transform:'perspective(1000px) rotateY(0deg)',filter:'brightness(1)',opacity:1},
-        {transform:'perspective(1000px) rotateY(-82deg)',filter:'brightness(.62)',opacity:1,offset:.78},
-        {transform:'perspective(1000px) rotateY(-100deg)',filter:'brightness(.5)',opacity:0}
-      ],{duration:720,easing:'cubic-bezier(.45,.05,.25,1)',fill:'forwards'});
-      const done=()=>clone.remove();a.onfinish=done;a.oncancel=done;setTimeout(done,1000);
-      return;
-    }
     tgt.style.visibility='hidden';
     const sx=t.width/r0.width,sy=t.height/r0.height;
     sp.animate([{opacity:0},{opacity:1}],{duration:420,easing:'ease-out',fill:'backwards'});
