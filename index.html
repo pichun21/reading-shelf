@@ -1482,6 +1482,17 @@ html,body{overscroll-behavior-y:contain}
 @keyframes stamp{0%{opacity:0;transform:scale(2.2) rotate(-18deg)}60%{opacity:1;transform:scale(.94) rotate(3deg)}100%{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.rv-dust{display:none}.slide .cw,.slide .rs,.slide .rrow .cover,.slide .rbd{opacity:1;transform:none;animation:none}}
 </style>
+<style>
+/* 書堆：像真的精裝書背（書布色、燙金線、書名），每本稍微歪一點 */
+.slide .rstack{align-items:center}
+.slide .rs{position:relative;border-radius:3px 2px 2px 3px;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,0) 30%,rgba(0,0,0,.28)),linear-gradient(90deg,rgba(0,0,0,.4),rgba(255,255,255,.1) 14%,rgba(255,255,255,0) 45%,rgba(0,0,0,.18) 88%,rgba(0,0,0,.4)),var(--sc,#6b3a3a);box-shadow:0 2px 0 rgba(0,0,0,.45),0 6px 10px -4px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.22);translate:var(--j,0) 0;rotate:var(--r,0deg)}
+.slide .rs i{position:absolute;top:0;bottom:0;left:7%;width:calc(86% );pointer-events:none;}
+.slide .rs i:before,.slide .rs i:after{content:"";position:absolute;top:0;bottom:0;width:2px;background:#d9b46a;opacity:.7}
+.slide .rs i:before{left:5px}.slide .rs i:after{right:5px}
+.slide .rs span{position:relative;color:#f4e3b8;text-shadow:0 1px 0 rgba(0,0,0,.45);font-size:11px;max-width:70%}
+.review .rvmute{position:absolute;top:calc(34px + env(safe-area-inset-top,0px));left:calc(12px + 112px);z-index:4;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(241,233,216,.3);color:#f1e9d8;font-size:13px;background:rgba(13,17,18,.4)}
+.review .rvmute[data-m="1"]{opacity:.6}
+</style>
 
 </head>
 <body>
@@ -4301,7 +4312,7 @@ function albUnlock(){
   }catch(_){}
 }
 document.addEventListener('pointerdown',albUnlock,{passive:true});document.addEventListener('touchend',albUnlock,{passive:true});document.addEventListener('click',albUnlock,{passive:true});
-function albSound(kind){
+function albSound(kind,arg){
   if(albMuted)return;
   try{
     albAC=albAC||tkAC||new (window.AudioContext||window.webkitAudioContext)();const ac=albAC;if(ac.state!=='running'){try{ac.resume()}catch(_){}}
@@ -4332,6 +4343,15 @@ function albSound(kind){
     }else if(kind==='pick'){                             /* 抽中：落定的一聲＋輕輕的鈴 */
       thump(t0,120,52,.3,.5);play(noise(.28,p=>Math.sin(p*Math.PI)*.8),t0,'bandpass',500,1800,.8,.3);
       tone(t0+.06,1046.5,.8,.12);tone(t0+.17,1318.5,.9,.11);tone(t0+.3,1568,1.1,.09);
+    }else if(kind==='thud'){                             /* 書落在書堆上：悶悶的一聲，越疊越高音越高 */
+      const k=Math.min(1,Math.max(0,Number(arg)||0));thump(t0,120+k*70,60+k*25,.12,.34);play(noise(.05,p=>Math.pow(1-p,2)),t0,'lowpass',700+k*900,0,.7,.28);
+    }else if(kind==='note'){                             /* 月份一格一格亮起：五聲音階往上 */
+      const sc=[0,2,4,7,9,12,14,16,19,21,24,26],f=523.25*Math.pow(2,sc[Math.min(sc.length-1,Math.max(0,Number(arg)||0))]/12);tone(t0,f,.6,.14);tone(t0+.01,f*2,.4,.04);
+    }else if(kind==='count'){                            /* 數字跳動：細小的滴答，越來越高 */
+      const k=Math.min(1,Math.max(0,Number(arg)||0));tone(t0,880+k*880,.08,.07);play(noise(.02,p=>1-p),t0,'highpass',4000,0,.8,.1);
+    }else if(kind==='cheer'){                            /* 紙花炸開：氣流一聲＋明亮的和弦 */
+      play(noise(.35,p=>Math.pow(1-p,1.4)*.9),t0,'bandpass',3000,900,.6,.4);thump(t0,160,70,.16,.3);
+      tone(t0+.02,1046.5,1,.13);tone(t0+.09,1318.5,1.1,.12);tone(t0+.16,1568,1.2,.11);tone(t0+.24,2093,1.4,.09);
     }else if(kind==='knock'){                            /* 點到還沒解鎖的格子：輕敲 */
       thump(t0,240,150,.07,.4);play(noise(.03,p=>1-p),t0,'bandpass',1200,0,1,.25);
     }
@@ -5607,7 +5627,8 @@ function reviewInject(y,D,out){
       if(n>=2){
         const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
-        res.push(`<div class="k">疊起來有多高</div><div class="rstack">${list.map((b,k)=>{const w=150+((k*53)%7)*10;return `<div class="rs" style="--h:${h}px;--w:${w}px;--c:${hue(b.title)};animation-delay:${(k*(1500/n)).toFixed(0)}ms">${h>=16?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>`}).join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        list.forEach(b=>{try{spineAvg(b)}catch(_){}});
+        res.push(`<div class="k">疊起來有多高</div><div class="rstack">${list.map((b,k)=>{const hs=hue(b.title+k),w=170+(hs%9)*11,hh=Math.round(h*(.82+(hs%7)*.06)),j=((hs%13)-6)*1.4,rot=(((hs>>3)%9)-4)*.14;return `<div class="rs" style="${spineCss(b)};--h:${hh}px;--w:${w}px;--j:${j}px;--r:${rot}deg;animation-delay:${(k*(1500/n)).toFixed(0)}ms"><i></i>${hh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>`}).join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
@@ -5640,8 +5661,27 @@ function reviewInject(y,D,out){
 }
 /* 每張投影片出現後：數字跳動、紙花、背景微光 */
 let rvFxRaf=0;
+let rvSnd=[];
+function rvSay(ms,kind,arg){rvSnd.push(setTimeout(()=>{if($('reviewBox').open)try{albSound(kind,arg)}catch(_){}},ms))}
+function rvUnlock(){try{albAC=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();if(albAC.state!=='running')albAC.resume()}catch(_){}}
+['reviewBtn','reviewTab','rvNext','rvPrev'].forEach(id=>{const e=$(id);if(e)e.addEventListener('click',rvUnlock,true)});
+function rvSounds(box){
+  rvSnd.forEach(clearTimeout);rvSnd=[];
+  const huge=box.querySelector('.huge[data-count]');
+  if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(to,14);for(let i=0;i<k;i++)rvSay(i*dur/k,'count',i/k);rvSay(dur,'chime');}
+  const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/12));cw.forEach((e,i)=>{if(i%st===0)rvSay(parseFloat(e.style.animationDelay)||0,'tick')})}
+  const rs=box.querySelectorAll('.rs');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay((parseFloat(e.style.animationDelay)||0)+420,'thud',i/rs.length)});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,'count',i/8)}}
+  const on=box.querySelectorAll('.rstreak .on');on.forEach((e,i)=>rvSay((parseFloat(e.style.animationDelay)||0)+200,'note',i));
+  if(box.querySelector('.rauthor')){rvSay(250,'chime');box.querySelectorAll('.rrow .cover').forEach((e,i)=>rvSay((parseFloat(e.style.animationDelay)||0)+150,'tick'))}
+  box.querySelectorAll('.rbd').forEach(e=>rvSay((parseFloat(e.style.animationDelay)||0)+180,'stamp'));
+  if(box.querySelector('.gring[data-fx]')){}
+  if(box.querySelector('.ring .val')||box.querySelector('.gring')){rvSay(400,'tick');rvSay(1500,'chime')}
+}
 function rvAfter(){
   const box=$('rvSlide'),rev=$('review');
+  rvSounds(box);
+  if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','音效開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音效 關':'音效 開';if(!albMuted)albSound('tick')};rev.appendChild(m)}
+  const mb=$('rvMute');if(mb){mb.dataset.m=albMuted?'1':'0';mb.textContent=albMuted?'音效 關':'音效 開'}
   if(rev&&!rev.querySelector('.rv-dust')){
     const d=document.createElement('div');d.className='rv-dust';d.setAttribute('aria-hidden','true');
     d.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${(i*37)%100}%;--s:${(2+(i*7)%4)}px;--t:${14+(i*5)%16}s;--d:${-(i*3)%20}s;--x:${((i*13)%40)-20}px"></i>`).join('');
@@ -5672,9 +5712,10 @@ function rvConfetti(){
     if(el<2800&&$('reviewBox').open)rvFxRaf=requestAnimationFrame(loop);else g.clearRect(0,0,W,H);
   };
   rvFxRaf=requestAnimationFrame(loop);
+  try{albSound('cheer')}catch(_){}
   if(navigator.vibrate)try{navigator.vibrate([18,40,18])}catch(_){}
 }
-$('reviewBox').addEventListener('close',()=>{cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
+$('reviewBox').addEventListener('close',()=>{rvSnd.forEach(clearTimeout);rvSnd=[];cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
 
 </script>
 </body>
