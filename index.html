@@ -1511,6 +1511,17 @@ html,body{overscroll-behavior-y:contain}
 @media (prefers-reduced-motion:reduce){.slide .bk{opacity:1;transform:none;animation:none}}
 </style>
 <style>.slide .bk.nr .mir{display:none}.slide .bk.nr .mo{height:40%}.slide .bk.nr .sp{justify-content:flex-start;gap:7%}</style>
+<style>
+/* 書堆（單疊）：用書櫃上看過的書背——同樣的配色、有封面的書用封面切片 */
+.slide .rcols1{display:flex;flex-direction:column-reverse;align-items:center;width:100%;height:min(320px,42vh);justify-content:flex-start;gap:1px}
+.slide .rcols1 .bk{width:var(--bw,220px);max-width:92%;height:var(--bh);flex:none}
+.slide .bk .sp{justify-content:center;padding:0 4% 0 5%}
+.slide .bk .sp:before,.slide .bk .sp:after{display:none}
+.slide .bk.has-cv .sp{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 30%,rgba(0,0,0,.34)),linear-gradient(90deg,rgba(0,0,0,.5),rgba(255,255,255,.1) 10%,rgba(255,255,255,0) 40%,rgba(0,0,0,.22) 92%,rgba(0,0,0,.45)),var(--cv) center/cover no-repeat,var(--sc,#6b3a3a)}
+.slide .bk.has-cv .sp span{text-shadow:0 1px 3px rgba(0,0,0,.85),0 0 6px rgba(0,0,0,.6);color:#fff3d2}
+.slide .bk:not(.has-cv) .sp:before,.slide .bk:not(.has-cv) .sp:after{display:block;top:18%;bottom:18%}
+.slide .bk.st1 .sp:before,.slide .bk.st1 .sp:after{border-right:0;width:1px}
+</style>
 
 </head>
 <body>
@@ -5646,16 +5657,10 @@ function reviewInject(y,D,out){
         const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
         list.forEach(b=>{try{spineAvg(b)}catch(_){}});
-        const cols=n<=8?1:n<=16?2:n<=27?3:n<=40?4:5,gap=10,avail=Math.min(innerWidth-32,520)-gap*(cols-1),colW=Math.min(190,avail/cols),bh=Math.max(15,Math.min(56,Math.round(colW*.3))),per=Math.ceil(n/cols);
-        const MOT=[
-          '<svg viewBox="0 0 40 16"><path d="M2 8H38M10 8q3-6 7-5M10 8q3 6 7 5M20 8q3-6 7-5M20 8q3 6 7 5M29 8q3-5 6-4M29 8q3 5 6 4"/></svg>',
-          '<svg viewBox="0 0 30 16"><path class="f" d="M10 2.5a5.5 5.5 0 1 0 0 11a4.4 4.4 0 1 1 0-11z"/><path class="f" d="M21 3.5l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/></svg>',
-          '<svg viewBox="0 0 24 16"><circle class="f" cx="12" cy="8" r="1.8"/><ellipse cx="12" cy="3.4" rx="1.8" ry="2.6"/><ellipse cx="12" cy="12.6" rx="1.8" ry="2.6"/><ellipse cx="7.4" cy="8" rx="2.6" ry="1.8"/><ellipse cx="16.6" cy="8" rx="2.6" ry="1.8"/></svg>',
-          '<svg viewBox="0 0 34 16"><path d="M2 14L12 4l6 6 5-4 9 8z"/><path class="f" d="M27 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>'];
-        const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,m=MOT[hs%MOT.length];
-          return `<div class="bk${colW<150?' nr':''}" style="${spineCss(b)};--bh:${bh}px;--j:${j}px;--r:${rot}deg;animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp"><i class="mo">${m}</i>${colW>=105&&bh>=24?`<span>${esc(spineTitle(b.title))}</span>`:''}<i class="mo mir">${m}</i></div><div class="pg"></div>${b.favorite?'<em class="rib"></em>':''}</div>`});
-        let colsHtml='';for(let c=0;c<cols;c++)colsHtml+=`<div class="rcol">${books.slice(c*per,(c+1)*per).join('')}</div>`;
-        res.push(`<div class="k">疊起來有多高</div><div class="rcols" style="--gap:${gap}px">${colsHtml}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        const bh=Math.max(5,Math.min(34,Math.floor(300/n)));
+        const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,w=Math.min(innerWidth-70,200+(hs%7)*12),st=hs%3;
+          return `<div class="bk st${st}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div><div class="pg"></div>${b.favorite&&bh>=15?'<em class="rib"></em>':''}</div>`});
+        res.push(`<div class="k">疊起來有多高</div><div class="rcols1">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
@@ -5695,7 +5700,7 @@ function rvCtx(){
     rvA=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();albAC=rvA;
     if(rvA.state!=='running')rvA.resume();
     if(!rvBus||rvBus.ctx!==rvA){
-      const ac=rvA,master=ac.createGain();master.gain.value=.42;master.connect(ac.destination);
+      const ac=rvA,master=ac.createGain();master.gain.value=.5;master.connect(ac.destination);
       const conv=ac.createConvolver(),len=Math.floor(ac.sampleRate*1.8),buf=ac.createBuffer(2,len,ac.sampleRate);
       for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,2.6)}
       conv.buffer=buf;const wet=ac.createGain();wet.gain.value=.32;conv.connect(wet);wet.connect(master);
@@ -5742,7 +5747,7 @@ function rvLoStep(){
 }
 function rvLofiStart(){
   if(rvLo||!rvA||albMuted)return;
-  const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.5,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
+  const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.8,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
   const len=Math.floor(ac.sampleRate*2),nb=ac.createBuffer(1,len,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<len;i++)nd[i]=Math.random()*2-1;
   rvLo={out,noise:nb,step:0,next:ac.currentTime+.15,timer:setInterval(rvLoStep,150)};
 }
@@ -5757,32 +5762,13 @@ function rvUnlock(){rvCtx()}
 function rvFanfare(at){[0,4,7,12,16].forEach((s,i)=>{rvBell(523.25*Math.pow(2,s/12),at+i*.075,.12,1.9)});rvAir(at,'bandpass',3200,900,.4,.2,.6);rvThud(at,.2,.22)}
 function rvSounds(box){
   rvSnd.forEach(clearTimeout);rvSnd=[];
-  const dly=e=>parseFloat(e.style.animationDelay)||0;
-  const ch=RV_CH[rvChordI%RV_CH.length];rvChordI++;
-  rvSay(0,t=>{rvAir(t,'bandpass',500,2600,.4,.06);rvLofiStart()});
-  /* 鋪底之上，疏疏落落的幾顆音 */
-  
-  const huge=box.querySelector('.huge[data-count]');
-  if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(Math.max(to,3),14);for(let i=0;i<k;i++)rvSay(i*dur/k,t=>rvMarimba(rvNoteF(i%10),t,.16));rvSay(dur+60,t=>rvFanfare(t))}
-  const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/14));cw.forEach((e,i)=>{if(i%st===0)rvSay(dly(e),t=>{rvMarimba(rvNoteF(Math.floor(Math.random()*9)+3),t,.1);rvPaper(t,.05)})})}
-  const rs=box.querySelectorAll('.bk');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay(dly(e)+420,t=>{rvThud(t,i/rs.length);if(i%2===0)rvPaper(t,.06)})});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,t=>rvMarimba(rvNoteF(i),t,.1))}rvSay(1900,t=>rvBell(783.99,t,.12))}
-  const bars=box.querySelectorAll('.rbars div');if(bars.length){bars.forEach((e,i)=>{rvSay(dly(e)+260,t=>rvMarimba(rvNoteF(i,196),t,.11+(e.classList.contains('top')?.1:0)))});rvSay(1100,t=>rvBell(1046.5,t,.14))}
-  const on=box.querySelectorAll('.rstreak .on');on.forEach((e,i)=>rvSay(dly(e)+240,t=>{rvMarimba(rvNoteF(i+2),t,.15);if(i===on.length-1)rvBell(rvNoteF(i+7),t+.12,.12)}));
-  const gr=box.querySelector('.gring');if(gr){rvSay(200,t=>{const ac=rvA,o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.setValueAtTime(330,t);o.frequency.exponentialRampToValueAtTime(990,t+1.3);e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.07,t+.4);e.gain.linearRampToValueAtTime(0,t+1.5);o.connect(e);e.connect(rvBus.dry);o.start(t);o.stop(t+1.6)});rvSay(1550,t=>rvBell(880,t,.16));}
-  if(box.querySelector('.pair')){rvSay(350,t=>rvBell(659.25,t,.13));rvSay(900,t=>rvBell(783.99,t,.13))}
-  const fan=box.querySelectorAll('.fan .cover');fan.forEach((e,i)=>rvSay(dly(e)+120,t=>{rvMarimba(rvNoteF(i+1),t,.13);rvPaper(t,.07)}));
-  if(box.querySelector('.rq')){rvSay(250,t=>{rvPaper(t,.12);rvBell(659.25,t+.1,.12)});rvSay(900,t=>rvBell(987.77,t,.08))}
-  const frs=box.querySelectorAll('.feels .fr i');frs.forEach((e,i)=>rvSay(dly(e)+180,t=>rvMarimba(rvNoteF(i+2),t,.14)));
-  if(box.querySelector('.tags')){[0,2,4,5,7].forEach((s,i)=>rvSay(150+i*120,t=>rvMarimba(rvNoteF(s),t,.12)))}
-  if(box.querySelector('.rauthor')){rvSay(250,t=>rvBell(783.99,t,.15));box.querySelectorAll('.rrow .cover').forEach((e,i)=>rvSay(dly(e)+150,t=>{rvMarimba(rvNoteF(i+4),t,.12);rvPaper(t,.06)}))}
-  const bd=box.querySelectorAll('.rbd');if(bd.length){bd.forEach((e,i)=>rvSay(dly(e)+170,t=>{rvThud(t,.1,.2);rvPaper(t,.1);rvBell(rvNoteF(i+5),t+.04,.13,1.2)}));rvSay(dly(bd[bd.length-1])+520,t=>rvFanfare(t))}
-  if(box.querySelector('[data-act="close"]')&&!huge){rvSay(300,t=>{[12,7,4,0].forEach((s,i)=>rvBell(523.25*Math.pow(2,s/12),t+i*.22,.12,2.4))})}
+  rvSay(0,()=>rvLofiStart()); /* 只留背景音樂，不再有各頁的音效 */
 }
 function rvAfter(){
   const box=$('rvSlide'),rev=$('review');
   rvSounds(box);
-  if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','音效開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音效 關':'音效 開';if(albMuted)rvPadStop();else{rvSounds($('rvSlide'))}};rev.appendChild(m)}
-  const mb=$('rvMute');if(mb){mb.dataset.m=albMuted?'1':'0';mb.textContent=albMuted?'音效 關':'音效 開'}
+  if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','背景音樂開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音樂 關':'音樂 開';if(albMuted)rvPadStop();else{rvSounds($('rvSlide'))}};rev.appendChild(m)}
+  const mb=$('rvMute');if(mb){mb.dataset.m=albMuted?'1':'0';mb.textContent=albMuted?'音樂 關':'音樂 開'}
   if(rev&&!rev.querySelector('.rv-dust')){
     const d=document.createElement('div');d.className='rv-dust';d.setAttribute('aria-hidden','true');
     d.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${(i*37)%100}%;--s:${(2+(i*7)%4)}px;--t:${14+(i*5)%16}s;--d:${-(i*3)%20}s;--x:${((i*13)%40)-20}px"></i>`).join('');
@@ -5813,7 +5799,6 @@ function rvConfetti(){
     if(el<2800&&$('reviewBox').open)rvFxRaf=requestAnimationFrame(loop);else g.clearRect(0,0,W,H);
   };
   rvFxRaf=requestAnimationFrame(loop);
-  if(!albMuted&&rvCtx())try{const t=rvA.currentTime+.01;rvAir(t,'bandpass',3500,800,.45,.22,.6);rvThud(t,.3,.2)}catch(_){}
   if(navigator.vibrate)try{navigator.vibrate([18,40,18])}catch(_){}
 }
 $('reviewBox').addEventListener('close',()=>{rvSnd.forEach(clearTimeout);rvSnd=[];rvPadStop();cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
