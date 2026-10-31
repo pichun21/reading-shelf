@@ -5688,13 +5688,42 @@ function rvThud(at,k=.5,g=.34){const ac=rvA,o=ac.createOscillator(),e=ac.createG
   const s=ac.createBufferSource();s.buffer=rvNoise(.07,p=>Math.pow(1-p,2));const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=500+k*800+Math.random()*300;const e2=ac.createGain();e2.gain.value=.25;s.connect(f);f.connect(e2);e2.connect(rvBus.dry);s.start(at)}
 function rvPaper(at,g=.12){rvAir(at,'bandpass',2200+Math.random()*1800,900,.14,g,.7)}
 const RV_CH=[[0,4,7,11],[-3,0,4,7],[-7,-3,0,4],[-5,-1,2,7]]; /* Cmaj7 → Am7 → Fmaj7 → G6 */
-function rvPadStop(){if(!rvPad||!rvA)return;const {g,os}=rvPad,t=rvA.currentTime;try{g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+1.4);os.forEach(o=>o.stop(t+1.5))}catch(_){}rvPad=null}
-function rvPadStart(ch){
-  if(!rvA||albMuted)return;rvPadStop();const ac=rvA,t=ac.currentTime,g=ac.createGain(),f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=900;f.Q.value=.5;
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+1.6);g.connect(f);f.connect(rvBus.dry);
-  const os=[];ch.forEach(s=>{[-6,6].forEach(dt=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=130.81*Math.pow(2,s/12);o.detune.value=dt;o.connect(g);o.start(t);os.push(o)})});
-  rvPad={g,os};
+/* ---- Lo-fi 襯底：慢節奏鼓點（帶搖擺）、電鋼琴爵士和弦、低音、黑膠雜音 ---- */
+const RV_LO={bpm:76,swing:.12};
+const RV_PROG=[{c:[53,57,60,64],b:38},{c:[53,57,59,64],b:43},{c:[55,59,62,64],b:36},{c:[55,59,60,64],b:45}]; /* Dm9 → G13 → Cmaj9 → Am9 */
+let rvLo=null;
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function rvLoRhodes(m,at,g,dur){const ac=rvA,f=mf(m),o=ac.createOscillator(),o2=ac.createOscillator(),e=ac.createGain(),mg=ac.createGain();o.type='sine';o.frequency.value=f;o2.type='sine';o2.frequency.value=f*2.003;mg.gain.setValueAtTime(.34,at);mg.gain.exponentialRampToValueAtTime(.02,at+dur*.6);o2.connect(mg);mg.connect(e);o.connect(e);e.gain.setValueAtTime(0,at);e.gain.linearRampToValueAtTime(g,at+.012);e.gain.exponentialRampToValueAtTime(g*.45,at+.3);e.gain.exponentialRampToValueAtTime(.0005,at+dur);e.connect(rvLo.out);o.start(at);o2.start(at);o.stop(at+dur+.05);o2.stop(at+dur+.05)}
+function rvLoBass(m,at,g,dur){const ac=rvA,f=mf(m),o=ac.createOscillator(),o2=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.value=f;o2.type='triangle';o2.frequency.value=f*2;const x=ac.createGain();x.gain.value=.18;o2.connect(x);x.connect(e);o.connect(e);e.gain.setValueAtTime(0,at);e.gain.linearRampToValueAtTime(g,at+.015);e.gain.exponentialRampToValueAtTime(.001,at+dur);e.connect(rvLo.out);o.start(at);o2.start(at);o.stop(at+dur+.05);o2.stop(at+dur+.05)}
+function rvLoKick(at,g=.5){const ac=rvA,o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.setValueAtTime(130,at);o.frequency.exponentialRampToValueAtTime(42,at+.14);e.gain.setValueAtTime(g,at);e.gain.exponentialRampToValueAtTime(.001,at+.3);o.connect(e);e.connect(rvLo.out);o.start(at);o.stop(at+.32)}
+function rvLoSnare(at,g=.3){const ac=rvA,s=ac.createBufferSource();s.buffer=rvLo.noise;const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=1700;f.Q.value=.7;const e=ac.createGain();e.gain.setValueAtTime(g,at);e.gain.exponentialRampToValueAtTime(.001,at+.18);s.connect(f);f.connect(e);e.connect(rvLo.out);s.start(at,Math.random()*1.5,.2);
+  const o=ac.createOscillator(),e2=ac.createGain();o.type='triangle';o.frequency.setValueAtTime(190,at);o.frequency.exponentialRampToValueAtTime(130,at+.1);e2.gain.setValueAtTime(g*.5,at);e2.gain.exponentialRampToValueAtTime(.001,at+.12);o.connect(e2);e2.connect(rvLo.out);o.start(at);o.stop(at+.14)}
+function rvLoHat(at,g=.08,open=false){const ac=rvA,s=ac.createBufferSource();s.buffer=rvLo.noise;const f=ac.createBiquadFilter();f.type='highpass';f.frequency.value=7000;const e=ac.createGain(),d=open?.22:.04;e.gain.setValueAtTime(g,at);e.gain.exponentialRampToValueAtTime(.001,at+d);s.connect(f);f.connect(e);e.connect(rvLo.out);s.start(at,Math.random()*1.5,d+.02)}
+function rvLoStep(){
+  const L=rvLo,ac=rvA,beat=60/RV_LO.bpm,sd=beat/4;
+  while(L.next<ac.currentTime+.7){
+    const s=L.step%16,bar=Math.floor(L.step/16),P=RV_PROG[bar%RV_PROG.length];
+    const sw=(s%4===2)?RV_LO.swing*beat:0,t=L.next+sw,hum=()=>(Math.random()-.5)*.012;
+    if(s===0){P.c.forEach((m,i)=>rvLoRhodes(m,t+i*.022,.075,2.9));rvLoBass(P.b,t,.4,1.1)}
+    if(s===10){P.c.forEach((m,i)=>rvLoRhodes(m,t+i*.018+hum(),.05,1.1));rvLoBass(P.b,t,.26,.6)}
+    if(s===0||s===10||(s===7&&bar%4===3))rvLoKick(t+hum(),s===0?.5:.38);
+    if(s===4||s===12)rvLoSnare(t+hum(),.26);
+    if(s%2===0)rvLoHat(t+hum(),.04+Math.random()*.05,s===14&&bar%2===1);
+    if(Math.random()<.2&&s%2===0)rvLoHat(t+sd*.5,.025);
+    L.next+=sd;L.step++;
+  }
 }
+function rvLofiStart(){
+  if(rvLo||!rvA||albMuted)return;
+  const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.62,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
+  const len=Math.floor(ac.sampleRate*2),nb=ac.createBuffer(1,len,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<len;i++)nd[i]=Math.random()*2-1;
+  rvLo={out,noise:nb,step:0,next:ac.currentTime+.15,timer:setInterval(rvLoStep,150)};
+}
+function rvLofiStop(){
+  if(!rvLo)return;const L=rvLo;rvLo=null;clearInterval(L.timer);
+  try{const t=rvA.currentTime;L.out.gain.cancelScheduledValues(t);L.out.gain.setValueAtTime(L.out.gain.value,t);L.out.gain.linearRampToValueAtTime(0,t+.8);}catch(_){}
+}
+function rvPadStop(){rvLofiStop()}
 function rvSay(ms,fn){rvSnd.push(setTimeout(()=>{if($('reviewBox').open&&!albMuted&&rvCtx())try{fn(rvA.currentTime+.02)}catch(_){}},ms))}
 function rvUnlock(){rvCtx()}
 ['reviewBtn','reviewTab','rvNext','rvPrev'].forEach(id=>{const e=$(id);if(e)e.addEventListener('click',rvUnlock,true)});
@@ -5703,9 +5732,9 @@ function rvSounds(box){
   rvSnd.forEach(clearTimeout);rvSnd=[];
   const dly=e=>parseFloat(e.style.animationDelay)||0;
   const ch=RV_CH[rvChordI%RV_CH.length];rvChordI++;
-  rvSay(0,t=>{rvAir(t,'bandpass',500,2600,.4,.07);rvPadStart(ch)});
+  rvSay(0,t=>{rvAir(t,'bandpass',500,2600,.4,.06);rvLofiStart()});
   /* 鋪底之上，疏疏落落的幾顆音 */
-  for(let i=0;i<4;i++)rvSay(900+i*1500+Math.random()*500,t=>rvMarimba(rvNoteF(Math.floor(Math.random()*8)+2),t,.07));
+  
   const huge=box.querySelector('.huge[data-count]');
   if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(Math.max(to,3),14);for(let i=0;i<k;i++)rvSay(i*dur/k,t=>rvMarimba(rvNoteF(i%10),t,.16));rvSay(dur+60,t=>rvFanfare(t))}
   const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/14));cw.forEach((e,i)=>{if(i%st===0)rvSay(dly(e),t=>{rvMarimba(rvNoteF(Math.floor(Math.random()*9)+3),t,.1);rvPaper(t,.05)})})}
