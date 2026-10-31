@@ -1421,6 +1421,7 @@ html,body{overscroll-behavior-y:contain}
 @keyframes bkCover{from{transform:perspective(900px) rotateY(-14deg)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){.pre,.pre-cover{animation:none}}
 </style>
+<style>.pre-cover img{width:100%;height:100%;object-fit:cover;display:block;transform-origin:center;user-select:none;-webkit-user-drag:none}.pre-cover .gen{width:100%;height:100%}</style>
 
 </head>
 <body>
@@ -2260,7 +2261,7 @@ function renderPreface(){
   const stage=$('bookView').querySelector('.stage');
   stage.innerHTML=`<div class="pre" id="pre">
     <button type="button" class="x close" id="preClose" aria-label="放回書櫃">×</button>
-    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b)}${ribbon(b)}</div>
+    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b).replace(' loading="lazy"','')}${ribbon(b)}</div>
     <h2 class="pre-t">${esc(b.title)}</h2>
     ${b.author?`<p class="pre-a">${esc(b.author)}</p>`:''}
     <button type="button" class="btn primary pre-go" id="preOpen">翻開這本書</button>
