@@ -1442,6 +1442,46 @@ html,body{overscroll-behavior-y:contain}
 /* 手機：浮起的封面要在畫面正中間（詳細頁才貼在下緣） */
 @media (max-width:720px){#bookView:has(.pre){margin:auto;height:fit-content;max-height:100dvh}}
 </style>
+<style>
+/* 年度回顧加強版 */
+.rv-dust{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.rv-dust i{position:absolute;bottom:-10px;width:var(--s);height:var(--s);border-radius:50%;background:rgba(241,233,216,.55);opacity:0;animation:dust var(--t) linear var(--d) infinite}
+@keyframes dust{0%{transform:translate(0,0);opacity:0}10%{opacity:.7}80%{opacity:.35}100%{transform:translate(var(--x),-105vh);opacity:0}}
+#rvFx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.slide .huge[data-count]{text-shadow:0 0 60px rgba(134,192,182,.35);animation:hugePop .9s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes hugePop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.slide .rtitle{margin-top:6px;padding:6px 18px;border:1px solid var(--rv);border-radius:999px;color:var(--rv);letter-spacing:.2em;font-size:15px;opacity:0;animation:rise .7s cubic-bezier(.2,.8,.2,1) 1.2s both}
+.slide .rnum{font-family:var(--f-num);font-style:italic;color:var(--rv);font-size:1.25em}
+/* 封面牆 */
+.slide .cwall{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px;width:100%;max-width:560px}
+.slide .cw{aspect-ratio:2/3;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:0 8px 16px rgba(0,0,0,.5);opacity:0;transform:scale(.4) translateY(20px);animation:cwIn .55s cubic-bezier(.2,.9,.3,1.15) forwards}
+.slide .cw img{width:100%;height:100%;object-fit:cover;display:block}
+.slide .cw .gen{width:100%;height:100%}
+@keyframes cwIn{to{opacity:1;transform:none}}
+/* 書疊 */
+.slide .rstack{display:flex;flex-direction:column-reverse;align-items:center;width:100%;height:min(320px,42vh);justify-content:flex-start;overflow:hidden}
+.slide .rs{flex:none;height:var(--h);width:var(--w);max-width:90%;margin-top:1px;border-radius:2px;background:linear-gradient(180deg,hsl(var(--c) 38% 38%),hsl(var(--c) 38% 28%));box-shadow:0 2px 0 rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;overflow:hidden;opacity:0;transform:translateY(-120vh);animation:stackDrop .65s cubic-bezier(.3,.9,.4,1) forwards}
+.slide .rs span{font-family:var(--f-display);font-size:11px;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px;letter-spacing:.06em}
+@keyframes stackDrop{0%{opacity:1;transform:translateY(-300px)}70%{opacity:1;transform:translateY(4px)}100%{opacity:1;transform:none}}
+/* 連續月份 */
+.slide .rstreak{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;width:100%;max-width:380px}
+.slide .rstreak div{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid rgba(241,233,216,.25);color:rgba(241,233,216,.5);font-family:var(--f-num);font-style:italic;font-size:20px}
+.slide .rstreak div.has{border-color:rgba(241,233,216,.5);color:rgba(241,233,216,.85)}
+.slide .rstreak div.on{border-color:var(--rv);animation:streakOn .6s cubic-bezier(.2,.9,.3,1.3) both}
+@keyframes streakOn{0%{background:transparent;transform:scale(.7);color:rgba(241,233,216,.5)}100%{background:var(--rv);color:#0d1112;transform:none;box-shadow:0 0 24px rgba(134,192,182,.5)}}
+/* 作者 */
+.slide .rauthor{font-family:var(--f-display);font-size:clamp(34px,9vw,60px);line-height:1.2;color:var(--rv);letter-spacing:.08em;animation:hugePop .9s cubic-bezier(.2,.9,.3,1.2) both}
+.slide .rrow{display:flex;gap:10px;justify-content:center;width:100%}
+.slide .rrow .cover{width:min(84px,16vw);aspect-ratio:2/3;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:0 10px 22px rgba(0,0,0,.55);opacity:0;animation:cwIn .6s cubic-bezier(.2,.9,.3,1.15) forwards}
+.slide .rrow img{width:100%;height:100%;object-fit:cover;display:block}
+/* 徽章 */
+.slide .rbadges{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px;width:100%;max-width:460px}
+.slide .rbd{aspect-ratio:1;border-radius:50%;border:2px solid var(--rv);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px;text-align:center;background:radial-gradient(circle at 35% 30%,rgba(134,192,182,.28),rgba(134,192,182,.05));box-shadow:0 0 0 4px rgba(134,192,182,.1),0 10px 24px rgba(0,0,0,.4);opacity:0;transform:scale(2.2) rotate(-18deg);animation:stamp .55s cubic-bezier(.2,1.1,.3,1) forwards}
+.slide .rbd b{font-family:var(--f-display);font-size:clamp(14px,3.6vw,17px);color:#f1e9d8;line-height:1.25}
+.slide .rbd small{font-size:11px;color:rgba(241,233,216,.7);line-height:1.3}
+@keyframes stamp{0%{opacity:0;transform:scale(2.2) rotate(-18deg)}60%{opacity:1;transform:scale(.94) rotate(3deg)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rv-dust{display:none}.slide .cw,.slide .rs,.slide .rrow .cover,.slide .rbd{opacity:1;transform:none;animation:none}}
+</style>
 
 </head>
 <body>
@@ -2498,7 +2538,7 @@ function reviewData(y){
 function buildReview(y){
   const D=reviewData(y);
   if(!D)return [`<div class="k">${y} 年度閱讀回顧</div><h2>這一年的書架還空著</h2><p>讀完一本，就放上來吧。</p><button type="button" class="btn" data-act="close">回到書房</button>`];
-  return D.map(d=>{
+  const out=D.map(d=>{
     if(d.type==='count')return `<div class="k">${esc(d.k)}</div><div class="huge">${d.n}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`;
     if(d.type==='goal')return `<div class="k">${esc(d.k)}</div><div class="gring">${ringSvg(d.n/d.g,240,16)}<b>${d.pct}%<small>目標 ${d.g} 本</small></b></div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p>`;
     if(d.type==='quote')return `<div class="k">${esc(d.k)}</div><blockquote class="rq">${esc(d.text)}</blockquote><div class="rqsrc">${esc(d.src)}</div>${d.p?`<p>${esc(d.p)}</p>`:''}`;
@@ -2509,6 +2549,7 @@ function buildReview(y){
     if(d.type==='tags'){const tm=d.tags[0][1];return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><div class="tags">${d.tags.map(([t,v])=>`<span style="--w:${(v/tm).toFixed(2)}">${esc(t)} ${v}</span>`).join('')}</div>`}
     return `<div class="k">${esc(d.k)}</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="btn" data-act="video">存成影片</button><button type="button" class="btn" data-act="close">回到書房</button><button type="button" class="btn" data-act="add">放一本新書</button></div>`;
   });
+  return typeof reviewInject==='function'?reviewInject(y,D,out):out;
 }
 function openReview(){
   rvSlides=buildReview(currentYear);rvIdx=0;
@@ -2522,6 +2563,7 @@ function showSlide(){
   $('rvProgress').querySelectorAll('i').forEach((el,i)=>{el.className=i<rvIdx?'done':'';el.style.setProperty('--dur',RV_DUR+'ms')});
   const cur=$('rvProgress').children[rvIdx];void cur.offsetWidth;
   if(rvIdx<rvSlides.length-1){cur.className='run';rvTimer=setTimeout(()=>rvGo(1),RV_DUR)}else cur.className='done';
+  if(typeof rvAfter==='function')rvAfter();
   $('rvSlide').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{if(b.dataset.act==='video'){openReviewVideo();return}$('reviewBox').close();if(b.dataset.act==='add')openEditor()});
 }
 function rvGo(d){const n=rvIdx+d;if(n<0)return;if(n>=rvSlides.length){$('reviewBox').close();return}rvIdx=n;showSlide()}
@@ -5525,6 +5567,114 @@ async function dedupeFlow(auto){
 $('mDedupe').onclick=()=>{closeMenu();dedupeFlow(false)};
 let dupAsked=false;
 function maybeOfferDedupe(){if(dupAsked||demoMode)return;if(dupGroups().length){dupAsked=true;setTimeout(()=>{if(!document.querySelector('dialog[open]'))dedupeFlow(true)},800)}}
+
+/* ================= 年度回顧：加強版（動態、成就感） ================= */
+function rvTitle(n){
+  if(n>=100)return '書海傳說';if(n>=50)return '書海領航員';if(n>=24)return '閱讀達人';
+  if(n>=12)return '每月一本的書友';if(n>=6)return '穩定的讀者';if(n>=2)return '啟程的讀者';return '翻開第一頁';
+}
+function rvPlural(a){return a.length}
+function reviewInject(y,D,out){
+  const list=yearBooks(y).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||sortInMonth(a,b));
+  const n=list.length;
+  const c=Array(13).fill(0);list.forEach(b=>{const m=monthNum(b.month);if(m>=1&&m<=12)c[m]++});
+  /* 連續有讀完書的月份 */
+  let run=0,bestRun=0,runEnd=0;for(let m=1;m<=12;m++){if(c[m]){run++;if(run>bestRun){bestRun=run;runEnd=m}}else run=0}
+  const runStart=runEnd-bestRun+1;
+  /* 最常讀的作者 */
+  const ac={};list.forEach(b=>String(b.author||'').split(/[、,，/]/).map(s=>s.trim()).filter(Boolean).forEach(a=>{(ac[a]=ac[a]||[]).push(b)}));
+  const topA=Object.entries(ac).sort((a,b)=>b[1].length-a[1].length)[0];
+  const favs=list.filter(b=>b.favorite);
+  const qn=list.reduce((a,b)=>a+quotesOf(b).length,0);
+  const sc={};list.forEach(b=>{if(b.series)(sc[b.series]=sc[b.series]||[]).push(b)});
+  const topS=Object.entries(sc).sort((a,b)=>b[1].length-a[1].length)[0];
+  const gi=goalInfo(y);
+  const prev=yearBooks(y-1).length;
+  const bestM=c.indexOf(Math.max(...c.slice(1)),1);
+  const res=[];
+  D.forEach((d,i)=>{
+    let html=out[i];
+    if(d.type==='count'){
+      html=`<div class="k">${esc(d.k)}</div><div class="huge" data-count="${d.n}" data-fx="confetti">0</div><h2>${esc(d.h)}</h2><p>${esc(d.p)}</p><div class="rtitle">${esc(rvTitle(d.n))}</div>`;
+    }
+    if(d.type==='goal'&&gi&&gi.done)html=html.replace('class="gring"','class="gring" data-fx="confetti"');
+    res.push(html);
+    if(d.type==='count'){
+      if(n>=3){
+        const cs=list.slice(0,48),cols=cs.length<=6?3:cs.length<=12?4:cs.length<=24?6:8;
+        res.push(`<div class="k">這一年的書</div><div class="cwall" style="--cols:${cols}">${cs.map((b,k)=>`<div class="cw" style="animation-delay:${(k*(1400/cs.length)).toFixed(0)}ms">${coverInner(b)}</div>`).join('')}</div><p>${n>48?`一共 ${n} 本，這裡先放上前 48 本。`:'每一本，都在這裡了。'}</p>`);
+      }
+      if(n>=2){
+        const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
+        const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
+        res.push(`<div class="k">疊起來有多高</div><div class="rstack">${list.map((b,k)=>{const w=150+((k*53)%7)*10;return `<div class="rs" style="--h:${h}px;--w:${w}px;--c:${hue(b.title)};animation-delay:${(k*(1500/n)).toFixed(0)}ms">${h>=16?`<span>${esc(spineTitle(b.title))}</span>`:''}</div>`}).join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+      }
+    }
+    if(d.type==='bars'&&bestRun>=3){
+      res.push(`<div class="k">一路讀下來</div><div class="rstreak">${Array.from({length:12},(_,k)=>{const m=k+1,on=m>=runStart&&m<=runEnd;return `<div class="${on?'on':c[m]?'has':''}" style="animation-delay:${on?(m-runStart)*140+300:0}ms"><b>${m}</b></div>`}).join('')}</div><h2>連續 ${bestRun} 個月，都有書陪著你</h2><p>從 ${runStart} 月到 ${runEnd} 月，沒有一個月空過。</p>`);
+    }
+    if(d.type==='fan'||(d.type==='pair'&&!D.some(x=>x.type==='fan'))){
+      if(topA&&topA[1].length>=2){
+        res.push(`<div class="k">最常陪著你的作者</div><div class="rauthor">${esc(topA[0])}</div><div class="rrow">${topA[1].slice(0,5).map((b,k)=>`<div class="cover" style="animation-delay:${k*110+300}ms">${coverInner(b)}</div>`).join('')}</div><h2>這一年，你讀了 ${topA[1].length} 本他的書</h2>`);
+      }
+    }
+  });
+  /* 徽章：在結尾之前 */
+  const badges=[];
+  if(gi&&gi.done)badges.push(['目標達成',`${gi.g} 本，說到做到`]);
+  if(prev&&n>prev)badges.push(['超越去年',`比 ${y-1} 年多 ${n-prev} 本`]);
+  if(bestRun>=6)badges.push(['持之以恆',`連續 ${bestRun} 個月`]);
+  if(c[bestM]>=4)badges.push(['單月衝刺',`${bestM} 月讀了 ${c[bestM]} 本`]);
+  if(c.slice(1).every(v=>v>0))badges.push(['十二個月',`每個月都有書`]);
+  if(topS&&topS[1].length>=3)badges.push(['系列讀者',`《${topS[0]}》${topS[1].length} 本`]);
+  if(topA&&topA[1].length>=3)badges.push(['忠實書迷',`${topA[0]}　${topA[1].length} 本`]);
+  if(qn>=5)badges.push(['句子收藏家',`抄下 ${qn} 句`]);
+  if(favs.length>=3)badges.push(['珍藏家',`${favs.length} 本放進珍藏`]);
+  if(n>=12)badges.push(['每月一本',`${n} 本`]);
+  if(!badges.length)badges.push([`${y} 年閱讀紀錄`,`${n} 本，每一本都算數`]);
+  const shown=badges.slice(0,6);
+  const bHtml=`<div class="k">解鎖的成就</div><div class="rbadges">${shown.map(([t,s],k)=>`<div class="rbd" style="animation-delay:${400+k*260}ms"><b>${esc(t)}</b><small>${esc(s)}</small></div>`).join('')}</div><h2>這一年，你解鎖了 ${shown.length} 枚徽章</h2><p>${esc(rvTitle(n))}，辛苦了。</p>`;
+  const endIdx=res.length-1;
+  res.splice(endIdx,0,bHtml.replace('class="rbadges"','class="rbadges" data-fx="confetti"'));
+  return res;
+}
+/* 每張投影片出現後：數字跳動、紙花、背景微光 */
+let rvFxRaf=0;
+function rvAfter(){
+  const box=$('rvSlide'),rev=$('review');
+  if(rev&&!rev.querySelector('.rv-dust')){
+    const d=document.createElement('div');d.className='rv-dust';d.setAttribute('aria-hidden','true');
+    d.innerHTML=Array.from({length:22},(_,i)=>`<i style="left:${(i*37)%100}%;--s:${(2+(i*7)%4)}px;--t:${14+(i*5)%16}s;--d:${-(i*3)%20}s;--x:${((i*13)%40)-20}px"></i>`).join('');
+    rev.insertBefore(d,rev.firstChild);
+  }
+  if(reduceMotion()){box.querySelectorAll('[data-count]').forEach(e=>e.textContent=e.dataset.count);return}
+  box.querySelectorAll('[data-count]').forEach(el=>{
+    const to=Number(el.dataset.count)||0,t0=performance.now(),dur=Math.min(1600,500+to*40);
+    const step=t=>{const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(to*e);if(p<1&&el.isConnected)requestAnimationFrame(step);else el.textContent=to};
+    el.textContent='0';requestAnimationFrame(step);
+  });
+  const fx=box.querySelector('[data-fx="confetti"]');
+  if(fx){const delay=fx.classList.contains('huge')?1000:fx.classList.contains('rbadges')?1400:900;const idx=rvIdx;setTimeout(()=>{if(rvIdx===idx&&$('reviewBox').open)rvConfetti()},delay)}
+}
+function rvConfetti(){
+  if(reduceMotion())return;
+  cancelAnimationFrame(rvFxRaf);
+  let cv=$('rvFx');
+  if(!cv){cv=document.createElement('canvas');cv.id='rvFx';cv.setAttribute('aria-hidden','true');$('review').appendChild(cv)}
+  const dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth||innerWidth,H=cv.clientHeight||innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);
+  const cols=['#86c0b6','#e8c27a','#f1e9d8','#d98c7a','#a9c27a'];
+  const P=Array.from({length:130},(_,i)=>{const a=-Math.PI/2+(Math.random()-.5)*1.5,v=7+Math.random()*9;return {x:W/2+(Math.random()-.5)*60,y:H*.55,vx:Math.cos(a)*v*(.6+Math.random()),vy:Math.sin(a)*v,r:3+Math.random()*4,rot:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%cols.length],w:1+Math.random()*1.2}});
+  const t0=performance.now();
+  const loop=t=>{
+    const el=t-t0;g.clearRect(0,0,W,H);
+    P.forEach(p=>{p.vy+=.22;p.vx*=.992;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;g.save();g.globalAlpha=Math.max(0,1-el/2800);g.translate(p.x,p.y);g.rotate(p.rot);g.fillStyle=p.c;g.fillRect(-p.r,-p.r*.5*p.w,p.r*2,p.r*p.w);g.restore()});
+    if(el<2800&&$('reviewBox').open)rvFxRaf=requestAnimationFrame(loop);else g.clearRect(0,0,W,H);
+  };
+  rvFxRaf=requestAnimationFrame(loop);
+  if(navigator.vibrate)try{navigator.vibrate([18,40,18])}catch(_){}
+}
+$('reviewBox').addEventListener('close',()=>{cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
 
 </script>
 </body>
