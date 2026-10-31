@@ -1432,6 +1432,12 @@ html,body{overscroll-behavior-y:contain}
 #bookView::backdrop{transition:background-color .6s ease,backdrop-filter .6s ease}
 #bookView.dim::backdrop{background:rgba(12,9,6,.84);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 </style>
+<style>
+/* 打開時整頁不再另外彈起／滑入：封面自己飛過去，頁面只是淡入，避免看起來「重新彈跳」 */
+#bookView .spread.opening{animation:none!important}
+#bookView .spread.opening .page-l .cover{animation:none!important}
+.pre-cover.fly:after{display:none}
+</style>
 
 </head>
 <body>
@@ -2285,9 +2291,27 @@ function renderPreface(){
 function unfoldBook(){
   try{albSound('open')}catch(_){}
   if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}
-  renderSpread();setTimeout(()=>$('bookView').classList.remove('dim'),700);
-  const sp=$('spread');if(!sp)return;
-  sp.classList.add('opening');setTimeout(()=>sp.classList.remove('opening'),1100);
+  const d=$('bookView'),pc=$('preCover');
+  const r0=pc?pc.getBoundingClientRect():null;
+  /* 浮起的封面直接「飛」到攤開後左頁的位置，不重新彈出 */
+  let clone=null;
+  if(pc&&r0&&r0.width&&d.animate){
+    clone=pc.cloneNode(true);clone.removeAttribute('id');clone.className='pre-cover fly';
+    clone.style.cssText=`position:fixed;left:${r0.left}px;top:${r0.top}px;width:${r0.width}px;height:${r0.height}px;margin:0;z-index:20;transform-origin:0 0;animation:none;transform:none;pointer-events:none`;
+    d.appendChild(clone);
+  }
+  renderSpread();
+  const sp=$('spread'),tgt=$('bvCover');if(!sp)return;
+  sp.classList.add('opening');setTimeout(()=>d.classList.remove('dim'),900); /* opening 不移除：移除會讓預設的彈出動畫再播一次 */
+  if(clone&&tgt){
+    const t=tgt.getBoundingClientRect();
+    tgt.style.visibility='hidden';
+    const sx=t.width/r0.width,sy=t.height/r0.height;
+    sp.animate([{opacity:0},{opacity:1}],{duration:420,easing:'ease-out',fill:'backwards'});
+    const a=clone.animate([{transform:'none'},{transform:`translate(${t.left-r0.left}px,${t.top-r0.top}px) scale(${sx},${sy})`}],{duration:560,easing:'cubic-bezier(.3,.8,.2,1)',fill:'forwards'});
+    const done=()=>{tgt.style.visibility='';clone.remove()};
+    a.onfinish=done;a.oncancel=done;setTimeout(done,900);
+  }
 }
 function recallLine(b){
   const m=monthNum(b.month)||1, diff=(NOW.getFullYear()-Number(b.year))*12+(NOW.getMonth()+1-m);
