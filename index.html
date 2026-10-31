@@ -5661,26 +5661,71 @@ function reviewInject(y,D,out){
 }
 /* 每張投影片出現後：數字跳動、紙花、背景微光 */
 let rvFxRaf=0;
-let rvSnd=[];
-function rvSay(ms,kind,arg){rvSnd.push(setTimeout(()=>{if($('reviewBox').open)try{albSound(kind,arg)}catch(_){}},ms))}
-function rvUnlock(){try{albAC=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();if(albAC.state!=='running')albAC.resume()}catch(_){}}
+/* ---- 回顧的聲音：馬林巴、鈴、鋪底和弦、紙張與落書聲，加一點殘響 ---- */
+let rvSnd=[],rvA=null,rvBus=null,rvPad=null,rvChordI=0;
+function rvCtx(){
+  try{
+    rvA=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();albAC=rvA;
+    if(rvA.state!=='running')rvA.resume();
+    if(!rvBus||rvBus.ctx!==rvA){
+      const ac=rvA,master=ac.createGain();master.gain.value=.9;master.connect(ac.destination);
+      const conv=ac.createConvolver(),len=Math.floor(ac.sampleRate*1.8),buf=ac.createBuffer(2,len,ac.sampleRate);
+      for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,2.6)}
+      conv.buffer=buf;const wet=ac.createGain();wet.gain.value=.32;conv.connect(wet);wet.connect(master);
+      const dry=ac.createGain();dry.connect(master);dry.connect(conv);
+      rvBus={ctx:ac,dry,master};
+    }
+    return rvA;
+  }catch(_){return null}
+}
+const RV_PENTA=[0,2,4,7,9];
+function rvNoteF(i,base=261.63){const o=Math.floor(i/5),s=RV_PENTA[((i%5)+5)%5];return base*Math.pow(2,(o*12+s)/12)}
+function rvMarimba(f,at,g=.2){const ac=rvA,o=ac.createOscillator(),o2=ac.createOscillator(),e=ac.createGain();o.type='sine';o2.type='sine';o.frequency.value=f;o2.frequency.value=f*4;const e2=ac.createGain();e2.gain.value=.28;o2.connect(e2);e2.connect(e);o.connect(e);e.gain.setValueAtTime(0,at);e.gain.linearRampToValueAtTime(g,at+.006);e.gain.exponentialRampToValueAtTime(.0008,at+.55);e.connect(rvBus.dry);o.start(at);o2.start(at);o.stop(at+.6);o2.stop(at+.6)}
+function rvBell(f,at,g=.14,dec=1.8){const ac=rvA,e=ac.createGain();e.gain.setValueAtTime(0,at);e.gain.linearRampToValueAtTime(g,at+.01);e.gain.exponentialRampToValueAtTime(.0006,at+dec);e.connect(rvBus.dry);[[1,1],[2.76,.35],[5.4,.12]].forEach(([m,a])=>{const o=ac.createOscillator(),x=ac.createGain();o.type='sine';o.frequency.value=f*m;x.gain.value=a;o.connect(x);x.connect(e);o.start(at);o.stop(at+dec)})}
+function rvNoise(sec,fn){const ac=rvA,len=Math.ceil(ac.sampleRate*sec),b=ac.createBuffer(1,len,ac.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*fn(i/len);return b}
+function rvAir(at,type,f0,f1,sec,g,q=.8){const ac=rvA,s=ac.createBufferSource();s.buffer=rvNoise(sec,p=>Math.sin(p*Math.PI));const f=ac.createBiquadFilter();f.type=type;f.Q.value=q;f.frequency.setValueAtTime(f0,at);f.frequency.exponentialRampToValueAtTime(f1,at+sec);const e=ac.createGain();e.gain.value=g;s.connect(f);f.connect(e);e.connect(rvBus.dry);s.start(at)}
+function rvThud(at,k=.5,g=.34){const ac=rvA,o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.setValueAtTime(115+k*80+Math.random()*12,at);o.frequency.exponentialRampToValueAtTime(52+k*20,at+.13);e.gain.setValueAtTime(g,at);e.gain.exponentialRampToValueAtTime(.001,at+.2);o.connect(e);e.connect(rvBus.dry);o.start(at);o.stop(at+.22);
+  const s=ac.createBufferSource();s.buffer=rvNoise(.07,p=>Math.pow(1-p,2));const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=500+k*800+Math.random()*300;const e2=ac.createGain();e2.gain.value=.25;s.connect(f);f.connect(e2);e2.connect(rvBus.dry);s.start(at)}
+function rvPaper(at,g=.12){rvAir(at,'bandpass',2200+Math.random()*1800,900,.14,g,.7)}
+const RV_CH=[[0,4,7,11],[-3,0,4,7],[-7,-3,0,4],[-5,-1,2,7]]; /* Cmaj7 → Am7 → Fmaj7 → G6 */
+function rvPadStop(){if(!rvPad||!rvA)return;const {g,os}=rvPad,t=rvA.currentTime;try{g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+1.4);os.forEach(o=>o.stop(t+1.5))}catch(_){}rvPad=null}
+function rvPadStart(ch){
+  if(!rvA||albMuted)return;rvPadStop();const ac=rvA,t=ac.currentTime,g=ac.createGain(),f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=900;f.Q.value=.5;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+1.6);g.connect(f);f.connect(rvBus.dry);
+  const os=[];ch.forEach(s=>{[-6,6].forEach(dt=>{const o=ac.createOscillator();o.type='sawtooth';o.frequency.value=130.81*Math.pow(2,s/12);o.detune.value=dt;o.connect(g);o.start(t);os.push(o)})});
+  rvPad={g,os};
+}
+function rvSay(ms,fn){rvSnd.push(setTimeout(()=>{if($('reviewBox').open&&!albMuted&&rvCtx())try{fn(rvA.currentTime+.02)}catch(_){}},ms))}
+function rvUnlock(){rvCtx()}
 ['reviewBtn','reviewTab','rvNext','rvPrev'].forEach(id=>{const e=$(id);if(e)e.addEventListener('click',rvUnlock,true)});
+function rvFanfare(at){[0,4,7,12,16].forEach((s,i)=>{rvBell(523.25*Math.pow(2,s/12),at+i*.075,.12,1.9)});rvAir(at,'bandpass',3200,900,.4,.2,.6);rvThud(at,.2,.22)}
 function rvSounds(box){
   rvSnd.forEach(clearTimeout);rvSnd=[];
+  const dly=e=>parseFloat(e.style.animationDelay)||0;
+  const ch=RV_CH[rvChordI%RV_CH.length];rvChordI++;
+  rvSay(0,t=>{rvAir(t,'bandpass',500,2600,.4,.07);rvPadStart(ch)});
+  /* 鋪底之上，疏疏落落的幾顆音 */
+  for(let i=0;i<4;i++)rvSay(900+i*1500+Math.random()*500,t=>rvMarimba(rvNoteF(Math.floor(Math.random()*8)+2),t,.07));
   const huge=box.querySelector('.huge[data-count]');
-  if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(to,14);for(let i=0;i<k;i++)rvSay(i*dur/k,'count',i/k);rvSay(dur,'chime');}
-  const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/12));cw.forEach((e,i)=>{if(i%st===0)rvSay(parseFloat(e.style.animationDelay)||0,'tick')})}
-  const rs=box.querySelectorAll('.rs');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay((parseFloat(e.style.animationDelay)||0)+420,'thud',i/rs.length)});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,'count',i/8)}}
-  const on=box.querySelectorAll('.rstreak .on');on.forEach((e,i)=>rvSay((parseFloat(e.style.animationDelay)||0)+200,'note',i));
-  if(box.querySelector('.rauthor')){rvSay(250,'chime');box.querySelectorAll('.rrow .cover').forEach((e,i)=>rvSay((parseFloat(e.style.animationDelay)||0)+150,'tick'))}
-  box.querySelectorAll('.rbd').forEach(e=>rvSay((parseFloat(e.style.animationDelay)||0)+180,'stamp'));
-  if(box.querySelector('.gring[data-fx]')){}
-  if(box.querySelector('.ring .val')||box.querySelector('.gring')){rvSay(400,'tick');rvSay(1500,'chime')}
+  if(huge){const to=Number(huge.dataset.count)||0,dur=Math.min(1600,500+to*40),k=Math.min(Math.max(to,3),14);for(let i=0;i<k;i++)rvSay(i*dur/k,t=>rvMarimba(rvNoteF(i%10),t,.16));rvSay(dur+60,t=>rvFanfare(t))}
+  const cw=box.querySelectorAll('.cw');if(cw.length){const st=Math.max(1,Math.ceil(cw.length/14));cw.forEach((e,i)=>{if(i%st===0)rvSay(dly(e),t=>{rvMarimba(rvNoteF(Math.floor(Math.random()*9)+3),t,.1);rvPaper(t,.05)})})}
+  const rs=box.querySelectorAll('.rs');if(rs.length){const st=Math.max(1,Math.ceil(rs.length/16));rs.forEach((e,i)=>{if(i%st===0)rvSay(dly(e)+420,t=>{rvThud(t,i/rs.length);if(i%2===0)rvPaper(t,.06)})});const num=box.querySelector('.rnum[data-count]');if(num){const to=Number(num.dataset.count)||0,dur=Math.min(1600,500+to*40);for(let i=0;i<8;i++)rvSay(i*dur/8,t=>rvMarimba(rvNoteF(i),t,.1))}rvSay(1900,t=>rvBell(783.99,t,.12))}
+  const bars=box.querySelectorAll('.rbars div');if(bars.length){bars.forEach((e,i)=>{rvSay(dly(e)+260,t=>rvMarimba(rvNoteF(i,196),t,.11+(e.classList.contains('top')?.1:0)))});rvSay(1100,t=>rvBell(1046.5,t,.14))}
+  const on=box.querySelectorAll('.rstreak .on');on.forEach((e,i)=>rvSay(dly(e)+240,t=>{rvMarimba(rvNoteF(i+2),t,.15);if(i===on.length-1)rvBell(rvNoteF(i+7),t+.12,.12)}));
+  const gr=box.querySelector('.gring');if(gr){rvSay(200,t=>{const ac=rvA,o=ac.createOscillator(),e=ac.createGain();o.type='sine';o.frequency.setValueAtTime(330,t);o.frequency.exponentialRampToValueAtTime(990,t+1.3);e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.07,t+.4);e.gain.linearRampToValueAtTime(0,t+1.5);o.connect(e);e.connect(rvBus.dry);o.start(t);o.stop(t+1.6)});rvSay(1550,t=>rvBell(880,t,.16));}
+  if(box.querySelector('.pair')){rvSay(350,t=>rvBell(659.25,t,.13));rvSay(900,t=>rvBell(783.99,t,.13))}
+  const fan=box.querySelectorAll('.fan .cover');fan.forEach((e,i)=>rvSay(dly(e)+120,t=>{rvMarimba(rvNoteF(i+1),t,.13);rvPaper(t,.07)}));
+  if(box.querySelector('.rq')){rvSay(250,t=>{rvPaper(t,.12);rvBell(659.25,t+.1,.12)});rvSay(900,t=>rvBell(987.77,t,.08))}
+  const frs=box.querySelectorAll('.feels .fr i');frs.forEach((e,i)=>rvSay(dly(e)+180,t=>rvMarimba(rvNoteF(i+2),t,.14)));
+  if(box.querySelector('.tags')){[0,2,4,5,7].forEach((s,i)=>rvSay(150+i*120,t=>rvMarimba(rvNoteF(s),t,.12)))}
+  if(box.querySelector('.rauthor')){rvSay(250,t=>rvBell(783.99,t,.15));box.querySelectorAll('.rrow .cover').forEach((e,i)=>rvSay(dly(e)+150,t=>{rvMarimba(rvNoteF(i+4),t,.12);rvPaper(t,.06)}))}
+  const bd=box.querySelectorAll('.rbd');if(bd.length){bd.forEach((e,i)=>rvSay(dly(e)+170,t=>{rvThud(t,.1,.2);rvPaper(t,.1);rvBell(rvNoteF(i+5),t+.04,.13,1.2)}));rvSay(dly(bd[bd.length-1])+520,t=>rvFanfare(t))}
+  if(box.querySelector('[data-act="close"]')&&!huge){rvSay(300,t=>{[12,7,4,0].forEach((s,i)=>rvBell(523.25*Math.pow(2,s/12),t+i*.22,.12,2.4))})}
 }
 function rvAfter(){
   const box=$('rvSlide'),rev=$('review');
   rvSounds(box);
-  if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','音效開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音效 關':'音效 開';if(!albMuted)albSound('tick')};rev.appendChild(m)}
+  if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','音效開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音效 關':'音效 開';if(albMuted)rvPadStop();else{rvSounds($('rvSlide'))}};rev.appendChild(m)}
   const mb=$('rvMute');if(mb){mb.dataset.m=albMuted?'1':'0';mb.textContent=albMuted?'音效 關':'音效 開'}
   if(rev&&!rev.querySelector('.rv-dust')){
     const d=document.createElement('div');d.className='rv-dust';d.setAttribute('aria-hidden','true');
@@ -5712,10 +5757,10 @@ function rvConfetti(){
     if(el<2800&&$('reviewBox').open)rvFxRaf=requestAnimationFrame(loop);else g.clearRect(0,0,W,H);
   };
   rvFxRaf=requestAnimationFrame(loop);
-  try{albSound('cheer')}catch(_){}
+  if(!albMuted&&rvCtx())try{const t=rvA.currentTime+.01;rvAir(t,'bandpass',3500,800,.45,.22,.6);rvThud(t,.3,.2)}catch(_){}
   if(navigator.vibrate)try{navigator.vibrate([18,40,18])}catch(_){}
 }
-$('reviewBox').addEventListener('close',()=>{rvSnd.forEach(clearTimeout);rvSnd=[];cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
+$('reviewBox').addEventListener('close',()=>{rvSnd.forEach(clearTimeout);rvSnd=[];rvPadStop();cancelAnimationFrame(rvFxRaf);const cv=$('rvFx');if(cv)cv.getContext('2d').clearRect(0,0,cv.width,cv.height)});
 
 </script>
 </body>
