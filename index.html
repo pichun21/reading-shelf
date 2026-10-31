@@ -1522,6 +1522,11 @@ html,body{overscroll-behavior-y:contain}
 .slide .bk:not(.has-cv) .sp:before,.slide .bk:not(.has-cv) .sp:after{display:block;top:18%;bottom:18%}
 .slide .bk.st1 .sp:before,.slide .bk.st1 .sp:after{border-right:0;width:1px}
 </style>
+<style>
+.slide .rcols1{height:auto;min-height:40px}
+.slide .rcols1 .bk .pg{margin:2px 0 2px -3px}
+.slide .bk.has-cv .sp{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 30%,rgba(0,0,0,.3)),linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.12) 9%,rgba(0,0,0,.1) 91%,rgba(0,0,0,.5)),var(--cv) center/cover no-repeat,var(--sc,#6b3a3a)}
+</style>
 
 </head>
 <body>
@@ -5657,10 +5662,10 @@ function reviewInject(y,D,out){
         const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
         list.forEach(b=>{try{spineAvg(b)}catch(_){}});
-        const bh=Math.max(5,Math.min(34,Math.floor(300/n)));
+        const budget=Math.min(470,Math.floor(innerHeight*.58)),bh=Math.max(6,Math.min(34,Math.floor(budget/n)));
         const books=list.map((b,k)=>{const hs=hue(b.title+k),j=((hs%9)-4)*1.2,rot=(((hs>>3)%9)-4)*.12,w=Math.min(innerWidth-70,200+(hs%7)*12),st=hs%3;
           return `<div class="bk st${st}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=15?`<span>${esc(spineTitle(b.title))}</span>`:''}</div><div class="pg"></div>${b.favorite&&bh>=15?'<em class="rib"></em>':''}</div>`});
-        res.push(`<div class="k">疊起來有多高</div><div class="rcols1">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        res.push(`<div class="k">疊起來有多高</div><div class="rcols1" style="height:${Math.min(budget,n*(bh+1))+6}px">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
