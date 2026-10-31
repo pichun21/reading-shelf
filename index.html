@@ -2305,6 +2305,19 @@ function unfoldBook(){
   sp.classList.add('opening');setTimeout(()=>d.classList.remove('dim'),900); /* opening 不移除：移除會讓預設的彈出動畫再播一次 */
   if(clone&&tgt){
     const t=tgt.getBoundingClientRect();
+    if(window.matchMedia('(max-width:720px)').matches){
+      /* 手機：封面像書皮一樣沿左邊掀開，露出後面的頁面 */
+      clone.style.transformOrigin='0 50%';
+      sp.animate([{opacity:0},{opacity:1}],{duration:260,easing:'ease-out',fill:'backwards'});
+      tgt.animate([{opacity:0},{opacity:1}],{duration:380,delay:340,easing:'ease-out',fill:'backwards'});
+      const a=clone.animate([
+        {transform:'perspective(1000px) rotateY(0deg)',filter:'brightness(1)',opacity:1},
+        {transform:'perspective(1000px) rotateY(-82deg)',filter:'brightness(.62)',opacity:1,offset:.78},
+        {transform:'perspective(1000px) rotateY(-100deg)',filter:'brightness(.5)',opacity:0}
+      ],{duration:720,easing:'cubic-bezier(.45,.05,.25,1)',fill:'forwards'});
+      const done=()=>clone.remove();a.onfinish=done;a.oncancel=done;setTimeout(done,1000);
+      return;
+    }
     tgt.style.visibility='hidden';
     const sx=t.width/r0.width,sy=t.height/r0.height;
     sp.animate([{opacity:0},{opacity:1}],{duration:420,easing:'ease-out',fill:'backwards'});
