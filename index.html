@@ -1396,6 +1396,31 @@ html,body{overscroll-behavior-y:contain}
 /* 系列「上／下」標籤：縮小並移到封面左下角，不再蓋住書名 */
 .sbadge{left:5px!important;top:auto!important;bottom:6px!important;min-width:16px;height:16px;line-height:16px;padding:0 4px;border-radius:8px!important;font-size:10px;opacity:.92;box-shadow:0 1px 2px #0006,0 0 0 1px #fff9}
 </style>
+<style>
+/* 抽出書：書櫃變暗、封面浮起，再攤開成兩頁 */
+#bookView:has(.pre)::backdrop{background:rgba(12,9,6,.84);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#bookView .stage{perspective:1600px}
+.pre{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:12px 20px 20px;width:min(440px,calc(100vw - 32px));text-align:center;color:#f6eddc;animation:preIn .55s cubic-bezier(.2,.8,.2,1) both}
+.pre .close{top:-6px;right:0;color:#f6eddc;background:rgba(255,255,255,.08)}
+.pre .close:hover{background:rgba(255,255,255,.18);color:#fff}
+.pre-cover{position:relative;width:min(230px,56vw);aspect-ratio:2/3;border-radius:3px 9px 9px 3px;overflow:hidden;cursor:pointer;background:var(--paper-2);box-shadow:0 34px 60px -12px rgba(0,0,0,.75),0 0 70px rgba(255,214,150,.16);transform:rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg));transition:transform .18s ease-out;animation:preFloat 4.5s ease-in-out .6s infinite}
+.pre-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.26),transparent 42%);pointer-events:none}
+.pre-cover .ribbon{bottom:auto;top:-2px;right:14px;height:36px;animation:none}
+.pre-t{font-family:var(--f-display);font-size:clamp(22px,5vw,30px);line-height:1.35;margin:10px 0 0;letter-spacing:.05em;text-wrap:balance;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+.pre-a{margin:0;color:#d9c9ac;font-size:14px;letter-spacing:.08em}
+.pre-go{margin-top:8px;min-width:150px;height:44px}
+@keyframes preIn{from{opacity:0;transform:translateY(46px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes preFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media (min-width:713px){
+  #bookView .spread.opening{animation:bkShift 1s cubic-bezier(.3,.7,.2,1) both}
+  #bookView .spread.opening .page-r{transform-origin:left center;animation:bkUnfold .95s cubic-bezier(.3,.7,.2,1) both}
+  #bookView .spread.opening .page-l .cover{animation:bkCover .95s cubic-bezier(.3,.7,.2,1) both}
+}
+@keyframes bkShift{from{transform:translateX(calc(50% - 150px))}to{transform:none}}
+@keyframes bkUnfold{0%{transform:perspective(1400px) rotateY(-110deg);opacity:0;filter:brightness(.55)}35%{opacity:1}100%{transform:none;opacity:1;filter:none}}
+@keyframes bkCover{from{transform:perspective(900px) rotateY(-14deg)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.pre,.pre-cover{animation:none}}
+</style>
 
 </head>
 <body>
@@ -2221,11 +2246,37 @@ $('nextY').onclick=()=>{const y=yearsList(),i=y.indexOf(currentYear);if(i<y.leng
 let viewCtx=[], viewIdx=0, recallMode=false;
 function pullAndOpen(el,id,ctx){
   if(reduceMotion()||!el.classList.contains('book')){openBook(id,ctx);return}
-  el.classList.add('pulled');setTimeout(()=>{el.classList.remove('pulled');openBook(id,ctx)},180);
+  el.classList.add('pulled');setTimeout(()=>{el.classList.remove('pulled');openBook(id,ctx,{intro:true})},180);
 }
 function openBook(id,ctx,opts={}){
   viewCtx=(ctx&&ctx.length?ctx:[id]).filter(x=>byId(x));viewIdx=Math.max(0,viewCtx.indexOf(id));recallMode=!!opts.recall;
-  renderSpread();const d=$('bookView');if(!d.open)d.showModal();
+  const d=$('bookView');
+  if(opts.intro&&!d.open&&!reduceMotion()){renderPreface();d.showModal();setTimeout(()=>$('preOpen')?.focus({preventScroll:true}),60);return}
+  renderSpread();if(!d.open)d.showModal();
+}
+/* 抽出書的畫面：書櫃變暗、封面浮到前面，按「翻開」才像真的書一樣攤開 */
+function renderPreface(){
+  const b=byId(viewCtx[viewIdx]);if(!b)return;
+  const stage=$('bookView').querySelector('.stage');
+  stage.innerHTML=`<div class="pre" id="pre">
+    <button type="button" class="x close" id="preClose" aria-label="放回書櫃">×</button>
+    <div class="pre-cover" id="preCover" role="button" tabindex="-1" aria-label="翻開《${esc(b.title)}》">${coverInner(b)}${ribbon(b)}</div>
+    <h2 class="pre-t">${esc(b.title)}</h2>
+    ${b.author?`<p class="pre-a">${esc(b.author)}</p>`:''}
+    <button type="button" class="btn primary pre-go" id="preOpen">翻開這本書</button>
+  </div>`;
+  $('preClose').onclick=()=>$('bookView').close();
+  $('preOpen').onclick=$('preCover').onclick=unfoldBook;
+  const c=$('preCover');
+  c.onpointermove=e=>{if(e.pointerType!=='mouse')return;const r=c.getBoundingClientRect();const px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;c.style.setProperty('--ry',(px*22).toFixed(1)+'deg');c.style.setProperty('--rx',(-py*16).toFixed(1)+'deg')};
+  c.onpointerleave=()=>{c.style.setProperty('--ry','0deg');c.style.setProperty('--rx','0deg')};
+}
+function unfoldBook(){
+  try{albSound('open')}catch(_){}
+  if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}
+  renderSpread();
+  const sp=$('spread');if(!sp)return;
+  sp.classList.add('opening');setTimeout(()=>sp.classList.remove('opening'),1100);
 }
 function recallLine(b){
   const m=monthNum(b.month)||1, diff=(NOW.getFullYear()-Number(b.year))*12+(NOW.getMonth()+1-m);
