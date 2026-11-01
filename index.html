@@ -1643,6 +1643,9 @@ html,body{overscroll-behavior-y:contain}
 .dnav.l{left:8px}.dnav.r{right:8px}.dnav:hover{background:rgba(60,34,16,.9)}
 .dbk{position:relative;flex:none;width:var(--w);height:var(--h);display:block;padding:0;border:0;background:none;cursor:pointer;transform-origin:bottom center;transform:rotate(var(--lean));transition:transform .34s cubic-bezier(.2,.9,.25,1.15),filter .25s,margin .3s;outline:none}
 .dsp{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;box-sizing:border-box;padding:16px 0 10px;border-radius:2px 3px 3px 2px;background:linear-gradient(90deg,rgba(0,0,0,.2),rgba(255,255,255,.1) 30%,rgba(0,0,0,.05) 70%,rgba(0,0,0,.22)),var(--bg,#7a5a40);color:var(--fg,#fbf4e6);box-shadow:inset 1px 0 0 rgba(255,255,255,.22),inset -1px 0 0 rgba(0,0,0,.3),2px 0 3px rgba(0,0,0,.4);overflow:hidden;gap:8px}
+.dsp.has-cv{background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.05) 30%,rgba(0,0,0,.38)),linear-gradient(90deg,rgba(0,0,0,.5),rgba(255,255,255,.08) 12%,rgba(0,0,0,.06) 60%,rgba(0,0,0,.5)),var(--cv) center/cover no-repeat,var(--bg,#7a5a40)}
+.dsp.has-cv .dt,.dsp.has-cv .da,.dsp.has-cv .dn{text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 7px rgba(0,0,0,.7);opacity:1}
+.dsp.has-cv .dt{background:linear-gradient(90deg,transparent,rgba(0,0,0,.34) 20%,rgba(0,0,0,.34) 80%,transparent);padding:4px 3px;border-radius:2px}
 .dsp .dt{writing-mode:vertical-rl;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.08em;line-height:1.15;flex:1 1 auto;min-height:0;overflow:hidden;text-overflow:ellipsis;font-synthesis:none}
 .dsp .da{writing-mode:vertical-rl;font-size:10.5px;letter-spacing:.1em;opacity:.78;flex:none;max-height:70px;overflow:hidden}
 .dsp .dn{font-size:9.5px;letter-spacing:.04em;opacity:.55;flex:none;font-variant-numeric:tabular-nums}
@@ -6151,7 +6154,7 @@ function dsColor(b){
     const lum=(.299*r+.587*g+.114*bl)/255;
     const v={bg:`rgb(${r|0},${g|0},${bl|0})`,fg:lum>.62?'#2a1f16':'#fbf4e6',lum};
     dsCol.set(b.id,v);
-    document.querySelectorAll(`.dbk[data-id="${CSS.escape(b.id)}"] .dsp`).forEach(e=>{e.style.setProperty('--bg',v.bg);e.style.setProperty('--fg',v.fg)});
+    document.querySelectorAll(`.dbk[data-id="${CSS.escape(b.id)}"] .dsp`).forEach(e=>{e.style.setProperty('--bg',v.bg);if(!e.classList.contains('has-cv'))e.style.setProperty('--fg',v.fg)});
   }catch(_){dsCol.delete(b.id)}};
   im.onerror=()=>{};im.src=b.cover;
 }
@@ -6165,7 +6168,7 @@ function dsSpine(b,i){
   const c=dsCol.get(b.id),[hh,ss,ll]=spineHue(b);
   const bg=c?c.bg:`hsl(${hh} ${ss}% ${ll+8}%)`,fg=c?c.fg:'#fbf4e6';
   const num=String(i+1).padStart(2,'0');
-  return `<button type="button" class="dbk" data-id="${esc(b.id)}" data-i="${i}" style="--w:${w}px;--h:${ht}px;--lean:${lean}deg" aria-label="《${esc(b.title)}》"><span class="dsp" style="--bg:${bg};--fg:${fg}"><span class="dt">${esc(t)}</span>${au?`<span class="da">${esc(au)}</span>`:''}<span class="dn">${num}</span></span></button>`;
+  return `<button type="button" class="dbk" data-id="${esc(b.id)}" data-i="${i}" style="--w:${w}px;--h:${ht}px;--lean:${lean}deg" aria-label="《${esc(b.title)}》"><span class="dsp${b.cover?' has-cv':''}" style="--bg:${bg};--fg:${b.cover?'#fff6e0':fg}${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''}"><span class="dt">${esc(t)}</span>${au?`<span class="da">${esc(au)}</span>`:''}<span class="dn">${num}</span></span></button>`;
 }
 function renderDisplay(st){
   const list=dsList();stageCtx=list.map(b=>b.id);
