@@ -4975,7 +4975,7 @@ $('tkNudgeX').onclick=()=>{$('tkNudge').hidden=true};
 const VW=1080, VH=1920, VFPS=30;
 const VC={bg:'#0d1112',ink:'#f1e9d8',soft:'rgba(241,233,216,.72)',mute:'rgba(241,233,216,.5)',faint:'rgba(241,233,216,.22)',acc:'#86c0b6'};
 const VF={d:'"LXGW WenKai TC","Noto Serif TC","PingFang TC",serif',b:'"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif',n:'"Cormorant Garamond",Georgia,serif'};
-const V_SLIDE=3.8, V_LAST=4.6, V_IN=.7, V_OUT=.4;
+const V_SLIDE=3.8, V_LAST=4.6, V_IN=.7, V_OUT=.5, V_X=.5;   /* V_X：前後兩幕重疊的轉場秒數 */
 const vClamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const vEase=t=>1-Math.pow(1-vClamp(t),3);
 
@@ -5047,13 +5047,28 @@ function vCover(ctx,b,img,x,y,w,h){
   ctx.restore();
 }
 
-/* 在「共讀幾本」之後加入書塔（與網頁回顧同一份書塔配置與時間軸） */
+/* 影片補上網頁回顧才有的頁面（封面牆、書塔、連續月份、最常讀的作者、徽章），順序與網頁一致 */
 function vWithTower(data){
-  const list=towerList(currentYear);if(!list.length)return data;
-  const n=list.length,cm=Math.round(n*TW_PAGE_CM),tl=towerTimeline(n);
+  const F=rvFacts(currentYear),list=F.list,n=F.n;if(!n)return data;
+  const cm=Math.round(n*TW_PAGE_CM),tl=towerTimeline(n);
   const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
-  const d={type:'tower',k:'疊起來有多高',books:list,n,cm,p:`共 ${n} 本書（每本以 ${TW_PAGE_CM} 公分計算）\n${cmp}。`,dur:tl.total};
-  const i=data.findIndex(x=>x.type==='count'),out=data.slice();out.splice(i>=0?i+1:Math.min(1,out.length),0,d);return out;
+  const out=[];
+  data.forEach(d=>{
+    if(d.type==='end'){out.push({type:'badges',k:'解鎖的成就',badges:F.badges,h:`這一年，你解鎖了 ${F.badges.length} 枚徽章`,p:`${rvTitle(n)}，辛苦了。`})}
+    out.push(d);
+    if(d.type==='count'){
+      if(n>=3)out.push({type:'cwall',k:'這一年的書',books:list.slice(0,48),p:n>48?`一共 ${n} 本，這裡先放上前 48 本。`:'每一本，都在這裡了。'});
+      out.push({type:'tower',k:'疊起來有多高',books:list,n,cm,p:`共 ${n} 本書（每本以 ${TW_PAGE_CM} 公分計算）\n${cmp}。`,dur:tl.total});
+    }
+    if(d.type==='bars'&&F.run.bestRun>=3)out.push({type:'streak',k:'一路讀下來',c:F.c,run:F.run,h:`連續 ${F.run.bestRun} 個月，都有書陪著你`,p:`從 ${F.run.runStart} 月到 ${F.run.runEnd} 月，沒有一個月空過。`});
+    if(d.type==='fan'&&F.topA&&F.topA[1].length>=2)out.push({type:'author',k:'最常陪著你的作者',name:F.topA[0],books:F.topA[1].slice(0,5),h:`這一年，你讀了 ${F.topA[1].length} 本他的書`});
+  });
+  /* 沒有 fan 頁、但有 pair 頁時，作者頁跟在 pair 後面（與網頁相同） */
+  if(!out.some(x=>x.type==='author')&&!data.some(x=>x.type==='fan')&&F.topA&&F.topA[1].length>=2){
+    const i=out.findIndex(x=>x.type==='pair');
+    if(i>=0)out.splice(i+1,0,{type:'author',k:'最常陪著你的作者',name:F.topA[0],books:F.topA[1].slice(0,5),h:`這一年，你讀了 ${F.topA[1].length} 本他的書`});
+  }
+  return out;
 }
 
 /* 每張投影片拆成一疊「區塊」，由上往下排、依序淡入 */
@@ -5064,7 +5079,46 @@ function vSlideItems(ctx,d,imgs){
   const hItem=(t,size=74)=>textItem(t,size,'d',VC.ink,960,1.4);
   const pItem=t=>textItem(t,38,'b',VC.soft,820,1.65);
   it.push({...kItem(d.k),gap:34});
-  if(d.type==='tower'){
+  if(d.type==='cwall'){
+    const bs=d.books,cols=bs.length<=6?3:bs.length<=12?4:bs.length<=24?6:8,gp=bs.length>24?10:16;
+    const tw=Math.min(210,(920-gp*(cols-1))/cols),th=tw*1.5,rows=Math.ceil(bs.length/cols),H=rows*th+(rows-1)*gp;
+    it.push({h:H,gap:36,draw:(y,lt)=>{
+      const x0=(VW-(cols*tw+(cols-1)*gp))/2;
+      bs.forEach((b,i)=>{const p=vEase((lt-.1-i*(1.3/bs.length))/.5);if(p<=0)return;const x=x0+(i%cols)*(tw+gp),yy=y+Math.floor(i/cols)*(th+gp);
+        ctx.save();ctx.globalAlpha*=p;ctx.translate(x+tw/2,yy+th/2);ctx.scale(.9+.1*p,.9+.1*p);vCover(ctx,b,imgs.get(b.id),-tw/2,-th/2,tw,th);ctx.restore()});
+    }});
+    it.push(pItem(d.p));
+  }else if(d.type==='streak'){
+    const SZ=128,GP=22,cols=6,x0=(VW-(cols*SZ+(cols-1)*GP))/2,{runStart,runEnd}=d.run;
+    it.push({h:2*SZ+GP,gap:56,draw:(y,lt)=>{
+      for(let m=1;m<=12;m++){const k=m-1,on=m>=runStart&&m<=runEnd,has=d.c[m]>0,p=vEase((lt-.1-(on?(m-runStart)*.14:k*.03))/.5);
+        const x=x0+(k%cols)*(SZ+GP),yy=y+Math.floor(k/cols)*(SZ+GP);
+        ctx.save();ctx.globalAlpha*=Math.max(.0,p);
+        ctx.fillStyle=on?VC.acc:has?'rgba(241,233,216,.18)':'rgba(241,233,216,.07)';vRound(ctx,x,yy,SZ,SZ,26);ctx.fill();
+        ctx.font=`italic 500 64px ${VF.n}`;ctx.fillStyle=on?'#0d1112':has?VC.soft:VC.mute;ctx.fillText(String(m),x+SZ/2,yy+SZ/2+22);ctx.restore()}
+    }});
+    it.push({...hItem(d.h),gap:30});it.push(pItem(d.p));
+  }else if(d.type==='author'){
+    const bs=d.books,cw=bs.length>4?160:190,ch=cw*1.5,gp=18;
+    ctx.font=`700 110px ${VF.d}`;const nameLines=vWrap(ctx,d.name,900).slice(0,2);
+    it.push({h:nameLines.length*130,gap:56,draw:(y)=>{ctx.font=`700 110px ${VF.d}`;ctx.fillStyle=VC.acc;nameLines.forEach((l,i)=>ctx.fillText(l,VW/2,y+i*130+100))}});
+    it.push({h:ch,gap:56,draw:(y,lt)=>{
+      const tot=bs.length*cw+(bs.length-1)*gp,x0=(VW-tot)/2;
+      bs.forEach((b,i)=>{const p=vEase((lt-.1-i*.11)/.6);if(p<=0)return;ctx.save();ctx.globalAlpha*=p;ctx.translate(0,(1-p)*40);vCover(ctx,b,imgs.get(b.id),x0+i*(cw+gp),y,cw,ch);ctx.restore()});
+    }});
+    it.push(hItem(d.h,64));
+  }else if(d.type==='badges'){
+    const bd=d.badges,RH=128,CW=760;
+    it.push({h:bd.length*RH,gap:56,draw:(y,lt)=>{
+      bd.forEach(([t,sub],i)=>{const p=vEase((lt-.2-i*.26)/.6);if(p<=0)return;const yy=y+i*RH,x=(VW-CW)/2;
+        ctx.save();ctx.globalAlpha*=p;ctx.translate((1-p)*60,0);
+        ctx.fillStyle='rgba(241,233,216,.07)';vRound(ctx,x,yy+8,CW,RH-18,24);ctx.fill();
+        ctx.strokeStyle='rgba(134,192,182,.5)';ctx.lineWidth=2;vRound(ctx,x,yy+8,CW,RH-18,24);ctx.stroke();
+        ctx.textAlign='left';ctx.font=`700 46px ${VF.d}`;ctx.fillStyle=VC.acc;ctx.fillText(t,x+40,yy+56);
+        ctx.font=`400 30px ${VF.b}`;ctx.fillStyle=VC.soft;ctx.fillText(sub,x+40,yy+98);ctx.restore();ctx.textAlign='center'});
+    }});
+    it.push({...hItem(d.h,64),gap:24});it.push(pItem(d.p));
+  }else if(d.type==='tower'){
     const lay=towerLayout(d.books,d.prep||d.books.map(()=>({img:null}))),tl=lay.tl,Ht=1040;
     it.push({h:Ht+20,gap:22,draw:(y,lt)=>towerDraw(ctx,lay,lt,60,y,VW-120,Ht,VF.d)});
     it.push({h:110,gap:16,draw:(y,lt)=>{
@@ -5179,19 +5233,23 @@ function vLayout(ctx,data,imgs){
   let t=0;
   return data.map((d,i)=>{const dur=i===data.length-1?V_LAST:d.type==='tower'?d.dur:V_SLIDE;const items=vSlideItems(ctx,d,imgs);
     const H=items.reduce((a,b,j)=>a+b.h+(j<items.length-1?(b.gap??40):0),0);
-    const s={d,items,H,t0:t,dur};t+=dur;return s});
+    const s={d,items,H,t0:t,dur};t+=dur-(i<data.length-1?V_X:0);return s});
 }
+const vTotal=slides=>{const l=slides[slides.length-1];return l.t0+l.dur};
 function vDraw(ctx,assets,slides,t){
   ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.textAlign='center';ctx.textBaseline='alphabetic';
   ctx.fillStyle=VC.bg;ctx.fillRect(0,0,VW,VH);
   const g=ctx.createRadialGradient(VW/2,VH*.42,0,VW/2,VH*.42,VH*.6);g.addColorStop(0,'rgba(134,192,182,.10)');g.addColorStop(1,'rgba(134,192,182,0)');ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
-  const si=Math.max(0,slides.findIndex(s=>t<s.t0+s.dur));const s=si<0?slides[slides.length-1]:slides[si];
-  const lt=t-s.t0,last=s===slides[slides.length-1];
-  const out=last?1:1-vEase((lt-(s.dur-V_OUT))/V_OUT);
-  const CT=330,CB=VH-170;let y=CT+(CB-CT-s.H)/2;
-  s.items.forEach((it,j)=>{const p=vEase((lt-j*.12)/V_IN);
-    ctx.save();ctx.globalAlpha=p*out;ctx.translate(0,(1-p)*40);it.draw(y,lt-j*.12);ctx.restore();
-    y+=it.h+(it.gap??40)});
+  const last=slides[slides.length-1];
+  let act=slides.filter(s=>t>=s.t0&&t<s.t0+s.dur);if(!act.length)act=[t<slides[0].t0?slides[0]:last];
+  act.forEach(s=>{
+    const lt=t-s.t0,isLast=s===last;
+    const out=isLast?1:1-vEase((lt-(s.dur-V_OUT))/V_OUT);
+    const CT=330,CB=VH-170;let y=CT+(CB-CT-s.H)/2;
+    s.items.forEach((it,j)=>{const p=vEase((lt-j*.12)/V_IN);
+      ctx.save();ctx.globalAlpha=p*out;ctx.translate(0,(1-p)*40-(1-out)*26);it.draw(y,lt-j*.12);ctx.restore();
+      y+=it.h+(it.gap??40)});
+  });
   ctx.globalAlpha=1;vChrome(ctx,assets,slides,t);
 }
 
@@ -5205,14 +5263,14 @@ async function vAssets(data){
   data.forEach(d=>{if(d.a)bs.set(d.a.id,d.a);if(d.z)bs.set(d.z.id,d.z);(d.books||[]).forEach(b=>bs.set(b.id,b))});
   await Promise.all([...bs.values()].map(async b=>{if(b.cover)imgs.set(b.id,await vLoadImg(b.cover))}));
   /* 先把會用到的字載入，畫布才不會用到備用字型 */
-  const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags})))+'0123456789頁間日子·PagesBetweenDaysshelf.needtodeco.com';
+  const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags,b:d.badges,nm:d.name,pp:d.p})))+'0123456789頁間日子·PagesBetweenDaysshelf.needtodeco.com';
   try{await Promise.race([Promise.all([`700 80px ${VF.d}`,`400 40px ${VF.b}`,`500 40px ${VF.b}`,`italic 500 200px ${VF.n}`].map(f=>document.fonts.load(f,txt))),new Promise(r=>setTimeout(r,6000))])}catch(e){}
   for(const d of data)if(d.type==='tower')d.prep=await towerPrepare(d.books,b=>imgs.get(b.id)||null);
   return {icon,word,imgs};
 }
 
 /* ---------- MP4 封裝（H.264，單軌） ---------- */
-function vMux(width,height,fps,avcC,samples){
+function vMux(width,height,fps,avcC,samples,audio){
   const TS=90000,dur=TS/fps,N=samples.length;
   const u8=a=>new Uint8Array(a),u32=n=>u8([n>>>24&255,n>>>16&255,n>>>8&255,n&255]),u16=n=>u8([n>>8&255,n&255]);
   const str=s=>u8([...s].map(c=>c.charCodeAt(0)));
@@ -5221,7 +5279,7 @@ function vMux(width,height,fps,avcC,samples){
   const full=(type,v,f,...p)=>box(type,u8([v,f>>16&255,f>>8&255,f&255]),...p);
   const matrix=cat(u32(0x10000),u32(0),u32(0),u32(0),u32(0x10000),u32(0),u32(0),u32(0),u32(0x40000000));
   const totMs=Math.round(N*1000/fps),tot=N*dur;
-  const build=off=>{
+  const build=(off,aoff)=>{
     const stsd=full('stsd',0,0,u32(1),box('avc1',u8(6),u16(1),u8(16),u16(width),u16(height),u32(0x480000),u32(0x480000),u32(0),u16(1),u8(32),u16(0x18),u16(0xffff),box('avcC',avcC)));
     const stts=full('stts',0,0,u32(1),u32(N),u32(dur));
     const keys=samples.map((s,i)=>s.key?i+1:0).filter(Boolean);
@@ -5232,16 +5290,51 @@ function vMux(width,height,fps,avcC,samples){
     const minf=box('minf',full('vmhd',0,1,u16(0),u16(0),u16(0),u16(0)),box('dinf',full('dref',0,0,u32(1),full('url ',0,1))),box('stbl',stsd,stts,stss,stsc,stsz,stco));
     const mdia=box('mdia',full('mdhd',0,0,u32(0),u32(0),u32(TS),u32(tot),u16(0x55c4),u16(0)),full('hdlr',0,0,u32(0),str('vide'),u8(12),str('VideoHandler'),u8(1)),minf);
     const tkhd=full('tkhd',0,3,u32(0),u32(0),u32(1),u32(0),u32(totMs),u8(8),u16(0),u16(0),u16(0),u16(0),matrix,u32(width<<16),u32(height<<16));
-    const mvhd=full('mvhd',0,0,u32(0),u32(0),u32(1000),u32(totMs),u32(0x10000),u16(0x100),u8(10),matrix,u8(24),u32(2));
-    return box('moov',mvhd,box('trak',tkhd,mdia));
+    const mvhd=full('mvhd',0,0,u32(0),u32(0),u32(1000),u32(totMs),u32(0x10000),u16(0x100),u8(10),matrix,u8(24),u32(audio?3:2));
+    const traks=[box('trak',tkhd,mdia)];
+    if(audio){
+      const A=audio,AN=A.frames.length,sr=A.sampleRate,atot=AN*1024;
+      const es=(()=>{const asc=A.asc,dec=cat(u8([0x40,0x15,0,0,0]),u32(0),u32(0),u8([5,asc.length]),asc),esd=cat(u16(0),u8([0]),u8([4,dec.length]),dec,u8([6,1,2]));return full('esds',0,0,u8([3,esd.length]),esd)})();
+      const astsd=full('stsd',0,0,u32(1),box('mp4a',u8(6),u16(1),u32(0),u32(0),u16(A.channels),u16(16),u16(0),u16(0),u32(sr*65536),es));
+      const astbl=box('stbl',astsd,full('stts',0,0,u32(1),u32(AN),u32(1024)),full('stsc',0,0,u32(1),u32(1),u32(AN),u32(1)),full('stsz',0,0,u32(0),u32(AN),...A.frames.map(f=>u32(f.length))),full('stco',0,0,u32(1),u32(aoff)));
+      const aminf=box('minf',full('smhd',0,0,u16(0),u16(0)),box('dinf',full('dref',0,0,u32(1),full('url ',0,1))),astbl);
+      const amdia=box('mdia',full('mdhd',0,0,u32(0),u32(0),u32(sr),u32(atot),u16(0x55c4),u16(0)),full('hdlr',0,0,u32(0),str('soun'),u8(12),str('SoundHandler'),u8(1)),aminf);
+      const atkhd=full('tkhd',0,3,u32(0),u32(0),u32(2),u32(0),u32(Math.round(atot*1000/sr)),u8(8),u16(0),u16(0),u16(0x100),u16(0),matrix,u32(0),u32(0));
+      traks.push(box('trak',atkhd,amdia));
+    }
+    return box('moov',mvhd,...traks);
   };
   const ftyp=box('ftyp',str('isom'),u32(512),str('isom'),str('iso2'),str('avc1'),str('mp41'));
-  const moov0=build(0),off=ftyp.length+moov0.length+8;
-  const size=samples.reduce((a,s)=>a+s.data.length,0);
-  return new Blob([ftyp,build(off),u32(size+8),str('mdat'),...samples.map(s=>s.data)],{type:'video/mp4'});
+  const moov0=build(0,0),off=ftyp.length+moov0.length+8;
+  const size=samples.reduce((a,s)=>a+s.data.length,0),asize=audio?audio.frames.reduce((a,f)=>a+f.length,0):0;
+  return new Blob([ftyp,build(off,off+size),u32(size+asize+8),str('mdat'),...samples.map(s=>s.data),...(audio?audio.frames:[])],{type:'video/mp4'});
 }
 
-async function vEncodeWebCodecs(canvas,ctx,draw,frames,onProg){
+/* 把音樂編成 AAC（mp4 用）。瀏覽器不支援就回傳 null，影片照舊做成無聲 */
+async function vEncodeAudio(buf){
+  if(!buf||typeof AudioEncoder==='undefined'||typeof AudioData==='undefined')return null;
+  const sr=buf.sampleRate,ch=2,cfg={codec:'mp4a.40.2',sampleRate:sr,numberOfChannels:ch,bitrate:128000};
+  try{if(!(await AudioEncoder.isConfigSupported(cfg)).supported)return null}catch(e){return null}
+  const frames=[];let asc=null,err=null;
+  const enc=new AudioEncoder({output:(c,meta)=>{
+    if(meta&&meta.decoderConfig&&meta.decoderConfig.description&&!asc){const d=meta.decoderConfig.description;asc=new Uint8Array(d.buffer?d.buffer.slice(d.byteOffset,d.byteOffset+d.byteLength):d)}
+    const b=new Uint8Array(c.byteLength);c.copyTo(b);frames.push(b)},error:e=>{err=e}});
+  enc.configure(cfg);
+  const L=buf.getChannelData(0),R=buf.numberOfChannels>1?buf.getChannelData(1):L,N=buf.length,STEP=4096;
+  for(let i=0;i<N;i+=STEP){
+    if(err)throw err;
+    const n=Math.min(STEP,N-i),data=new Float32Array(n*2);data.set(L.subarray(i,i+n),0);data.set(R.subarray(i,i+n),n);
+    const ad=new AudioData({format:'f32-planar',sampleRate:sr,numberOfFrames:n,numberOfChannels:2,timestamp:Math.round(i*1e6/sr),data});
+    enc.encode(ad);ad.close();
+    while(enc.encodeQueueSize>8)await new Promise(r=>setTimeout(r,2));
+  }
+  await enc.flush();enc.close();
+  if(err||!frames.length)return null;
+  if(!asc){const idx=[96000,88200,64000,48000,44100,32000,24000,22050,16000,12000,11025,8000].indexOf(sr);if(idx<0)return null;asc=new Uint8Array([(2<<3)|(idx>>1),((idx&1)<<7)|(ch<<3)])}
+  return {frames,asc,sampleRate:sr,channels:ch};
+}
+
+async function vEncodeWebCodecs(canvas,ctx,draw,frames,onProg,audio){
   if(typeof VideoEncoder==='undefined'||typeof VideoFrame==='undefined')return null;
   let cfg=null;
   for(const codec of ['avc1.42e028','avc1.4d0028','avc1.640028','avc1.640033']){
@@ -5263,20 +5356,23 @@ async function vEncodeWebCodecs(canvas,ctx,draw,frames,onProg){
   await enc.flush();enc.close();
   if(err)throw err;
   if(!avcC||!samples.length)return null;
-  return vMux(VW,VH,VFPS,avcC,samples);
+  return vMux(VW,VH,VFPS,avcC,samples,audio);
 }
 
-async function vEncodeRecorder(canvas,draw,total,onProg){
+async function vEncodeRecorder(canvas,draw,total,onProg,musicBuf){
   if(typeof MediaRecorder==='undefined'||!canvas.captureStream)return null;
   const type=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm'].find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}});
   if(!type)return null;
-  const stream=canvas.captureStream(VFPS),rec=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:9_000_000}),parts=[];
+  const stream=canvas.captureStream(VFPS);
+  let aCtx=null,aSrc=null;
+  if(musicBuf){try{const AC=window.AudioContext||window.webkitAudioContext;aCtx=new AC();const dest=aCtx.createMediaStreamDestination();aSrc=aCtx.createBufferSource();aSrc.buffer=aCtx.createBuffer(2,musicBuf.length,musicBuf.sampleRate);for(let c=0;c<2;c++)aSrc.buffer.copyToChannel(musicBuf.getChannelData(Math.min(c,musicBuf.numberOfChannels-1)),c);aSrc.connect(dest);dest.stream.getAudioTracks().forEach(t=>stream.addTrack(t))}catch(e){aCtx=null;aSrc=null}}
+  const rec=new MediaRecorder(stream,{mimeType:type,videoBitsPerSecond:9_000_000}),parts=[];
   rec.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data)};
   const done=new Promise(r=>rec.onstop=r);
-  draw(0);rec.start(500);
+  draw(0);rec.start(500);if(aSrc)try{aSrc.start()}catch(e){}
   const t0=performance.now();
   await new Promise(res=>{const step=()=>{const t=(performance.now()-t0)/1000;try{draw(Math.min(t,total))}catch(e){return res()}onProg(t/total);if(t>=total+.15)return res();requestAnimationFrame(step)};requestAnimationFrame(step)});
-  rec.stop();await done;stream.getTracks().forEach(t=>t.stop());
+  rec.stop();await done;stream.getTracks().forEach(t=>t.stop());if(aCtx)try{aCtx.close()}catch(e){}
   return new Blob(parts,{type:type.split(';')[0]});
 }
 
@@ -5291,18 +5387,20 @@ async function openReviewVideo(){
   if(vUrl){URL.revokeObjectURL(vUrl);vUrl=null}
   player.hidden=true;player.removeAttribute('src');canvas.hidden=false;
   $('vActs').hidden=true;$('vProg').hidden=false;$('vFill').style.width='0%';$('vStatus').textContent='準備封面與字型…';
-  $('vNote').textContent='影片沒有聲音，發佈時可以在 IG 裡挑一首配樂。';
+  $('vNote').textContent='影片會附上輕柔的 Lo-fi 背景音樂（這個瀏覽器若不支援，就會是無聲影片）。';
   $('videoBox').showModal();
   try{
     const assets=await vAssets(data);if(job!==vJob)return;
-    const slides=vLayout(ctx,data,assets.imgs),total=slides.reduce((a,s)=>a+s.dur,0),frames=Math.ceil(total*VFPS);
+    const slides=vLayout(ctx,data,assets.imgs),total=vTotal(slides),frames=Math.ceil(total*VFPS);
     $('vSub').textContent=`9:16 直式影片，長度約 ${Math.round(total)} 秒，可以直接發到 IG 限時動態或 Reels。`;
     const draw=t=>{if(job!==vJob)throw new Error('cancel');vDraw(ctx,assets,slides,t)};
     const prog=p=>{if(job!==vJob)return;const v=Math.round(vClamp(p)*100);$('vFill').style.width=v+'%';$('vStatus').textContent=`正在製作影片… ${v}%`};
-    let blob=null;
-    try{blob=await vEncodeWebCodecs(canvas,ctx,draw,frames,prog)}catch(e){console.warn('webcodecs',e);blob=null}
+    let blob=null,music=null,aac=null;
+    try{$('vStatus').textContent='正在製作背景音樂…';music=await rvRenderMusic(total+.4);if(job!==vJob)return;aac=await vEncodeAudio(music)}catch(e){console.warn('music',e);music=null;aac=null}
     if(job!==vJob)return;
-    if(!blob){$('vStatus').textContent='正在錄製影片，請保持這個畫面開著…';blob=await vEncodeRecorder(canvas,draw,total,prog)}
+    try{blob=await vEncodeWebCodecs(canvas,ctx,draw,frames,prog,aac)}catch(e){console.warn('webcodecs',e);blob=null}
+    if(job!==vJob)return;
+    if(!blob){$('vStatus').textContent='正在錄製影片，請保持這個畫面開著…';blob=await vEncodeRecorder(canvas,draw,total,prog,music)}
     if(job!==vJob)return;
     if(!blob||!blob.size)throw new Error('這個瀏覽器不支援製作影片');
     const ext=blob.type.includes('mp4')?'mp4':'webm';
@@ -5991,6 +6089,32 @@ function rvTitle(n){
   if(n>=12)return '每月一本的書友';if(n>=6)return '穩定的讀者';if(n>=2)return '啟程的讀者';return '翻開第一頁';
 }
 function rvPlural(a){return a.length}
+/* 影片用：跟網頁回顧同一套統計（連續月份、最常讀的作者、徽章） */
+function rvFacts(y){
+  const list=towerList(y),n=list.length;
+  const c=Array(13).fill(0);list.forEach(b=>{const m=monthNum(b.month);if(m>=1&&m<=12)c[m]++});
+  let run=0,bestRun=0,runEnd=0;for(let m=1;m<=12;m++){if(c[m]){run++;if(run>bestRun){bestRun=run;runEnd=m}}else run=0}
+  const runStart=runEnd-bestRun+1;
+  const ac={};list.forEach(b=>String(b.author||'').split(/[、,，/]/).map(s=>s.trim()).filter(Boolean).forEach(a=>{(ac[a]=ac[a]||[]).push(b)}));
+  const topA=Object.entries(ac).sort((a,b)=>b[1].length-a[1].length)[0];
+  const favs=list.filter(b=>b.favorite),qn=list.reduce((a,b)=>a+quotesOf(b).length,0);
+  const sc={};list.forEach(b=>{if(b.series)(sc[b.series]=sc[b.series]||[]).push(b)});
+  const topS=Object.entries(sc).sort((a,b)=>b[1].length-a[1].length)[0];
+  const gi=goalInfo(y),prev=yearBooks(y-1).length,bestM=c.indexOf(Math.max(...c.slice(1)),1);
+  const badges=[];
+  if(gi&&gi.done)badges.push(['目標達成',`${gi.g} 本，說到做到`]);
+  if(prev&&n>prev)badges.push(['超越去年',`比 ${y-1} 年多 ${n-prev} 本`]);
+  if(bestRun>=6)badges.push(['持之以恆',`連續 ${bestRun} 個月`]);
+  if(c[bestM]>=4)badges.push(['單月衝刺',`${bestM} 月讀了 ${c[bestM]} 本`]);
+  if(c.slice(1).every(v=>v>0))badges.push(['十二個月',`每個月都有書`]);
+  if(topS&&topS[1].length>=3)badges.push(['系列讀者',`《${topS[0]}》${topS[1].length} 本`]);
+  if(topA&&topA[1].length>=3)badges.push(['忠實書迷',`${topA[0]}　${topA[1].length} 本`]);
+  if(qn>=5)badges.push(['句子收藏家',`抄下 ${qn} 句`]);
+  if(favs.length>=3)badges.push(['珍藏家',`${favs.length} 本放進珍藏`]);
+  if(n>=12)badges.push(['每月一本',`${n} 本`]);
+  if(!badges.length)badges.push([`${y} 年閱讀紀錄`,`${n} 本，每一本都算數`]);
+  return {list,n,c,run:{bestRun,runStart,runEnd},topA,badges:badges.slice(0,6)};
+}
 function reviewInject(y,D,out){
   const list=yearBooks(y).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||sortInMonth(a,b));
   const n=list.length;
@@ -6059,18 +6183,19 @@ function reviewInject(y,D,out){
 let rvFxRaf=0;
 /* ---- 回顧的聲音：馬林巴、鈴、鋪底和弦、紙張與落書聲，加一點殘響 ---- */
 let rvSnd=[],rvA=null,rvBus=null,rvPad=null,rvChordI=0;
+function rvMakeBus(ac){
+  const master=ac.createGain();master.gain.value=.5;master.connect(ac.destination);
+  const conv=ac.createConvolver(),len=Math.floor(ac.sampleRate*1.8),buf=ac.createBuffer(2,len,ac.sampleRate);
+  for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,2.6)}
+  conv.buffer=buf;const wet=ac.createGain();wet.gain.value=.32;conv.connect(wet);wet.connect(master);
+  const dry=ac.createGain();dry.connect(master);dry.connect(conv);
+  return {ctx:ac,dry,master};
+}
 function rvCtx(){
   try{
     rvA=albAC||(typeof tkAC!=='undefined'&&tkAC)||new (window.AudioContext||window.webkitAudioContext)();albAC=rvA;
     if(rvA.state!=='running')rvA.resume();
-    if(!rvBus||rvBus.ctx!==rvA){
-      const ac=rvA,master=ac.createGain();master.gain.value=.5;master.connect(ac.destination);
-      const conv=ac.createConvolver(),len=Math.floor(ac.sampleRate*1.8),buf=ac.createBuffer(2,len,ac.sampleRate);
-      for(let c=0;c<2;c++){const d=buf.getChannelData(c);for(let k=0;k<len;k++)d[k]=(Math.random()*2-1)*Math.pow(1-k/len,2.6)}
-      conv.buffer=buf;const wet=ac.createGain();wet.gain.value=.32;conv.connect(wet);wet.connect(master);
-      const dry=ac.createGain();dry.connect(master);dry.connect(conv);
-      rvBus={ctx:ac,dry,master};
-    }
+    if(!rvBus||rvBus.ctx!==rvA)rvBus=rvMakeBus(rvA);
     return rvA;
   }catch(_){return null}
 }
@@ -6109,17 +6234,34 @@ function rvLoStep(){
     L.next+=sd;L.step++;
   }
 }
-function rvLofiStart(){
-  if(rvLo||!rvA||albMuted)return;
+function rvLofiStart(offline){
+  if(rvLo||!rvA||(!offline&&albMuted))return;
   const ac=rvA,out=ac.createGain(),lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=3600;lp.Q.value=.4;out.gain.setValueAtTime(0,ac.currentTime);out.gain.linearRampToValueAtTime(.8,ac.currentTime+1.8);out.connect(lp);lp.connect(rvBus.dry);
   const len=Math.floor(ac.sampleRate*2),nb=ac.createBuffer(1,len,ac.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<len;i++)nd[i]=Math.random()*2-1;
-  rvLo={out,noise:nb,step:0,next:ac.currentTime+.15,timer:setInterval(rvLoStep,150)};
+  rvLo={out,noise:nb,step:0,next:ac.currentTime+.15,timer:offline?0:setInterval(rvLoStep,150)};
 }
 function rvLofiStop(){
   if(!rvLo)return;const L=rvLo;rvLo=null;clearInterval(L.timer);
   try{const t=rvA.currentTime;L.out.gain.cancelScheduledValues(t);L.out.gain.setValueAtTime(L.out.gain.value,t);L.out.gain.linearRampToValueAtTime(0,t+.8);}catch(_){}
 }
 function rvPadStop(){rvLofiStop()}
+/* 影片用：把同一套 Lo-fi 音樂離線渲染成一段音訊（不經過喇叭，不受靜音鈕影響） */
+async function rvRenderMusic(sec){
+  const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC)return null;
+  const sr=44100,off=new AC(2,Math.ceil(sr*sec),sr);
+  const sA=rvA,sB=rvBus,sL=rvLo;let fake=0;
+  try{
+    Object.defineProperty(off,'currentTime',{get:()=>fake,configurable:true});
+    rvA=off;rvBus=rvMakeBus(off);rvLo=null;
+    rvLofiStart(true);
+    const L=rvLo;
+    for(fake=0;fake<sec;fake+=.4)rvLoStep();
+    fake=0;
+    L.out.gain.cancelScheduledValues(0);L.out.gain.setValueAtTime(0,0);L.out.gain.linearRampToValueAtTime(.8,1.6);
+    L.out.gain.setValueAtTime(.8,Math.max(2,sec-3));L.out.gain.linearRampToValueAtTime(0,sec);
+    return await off.startRendering();
+  }finally{rvA=sA;rvBus=sB;rvLo=sL}
+}
 function rvSay(ms,fn){rvSnd.push(setTimeout(()=>{if($('reviewBox').open&&!albMuted&&rvCtx())try{fn(rvA.currentTime+.02)}catch(_){}},ms))}
 function rvUnlock(){rvCtx()}
 ['reviewBtn','reviewTab','rvNext','rvPrev'].forEach(id=>{const e=$(id);if(e)e.addEventListener('click',rvUnlock,true)});
