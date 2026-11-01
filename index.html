@@ -5293,10 +5293,10 @@ function vMux(width,height,fps,avcC,samples,audio){
     const mvhd=full('mvhd',0,0,u32(0),u32(0),u32(1000),u32(totMs),u32(0x10000),u16(0x100),u8(10),matrix,u8(24),u32(audio?3:2));
     const traks=[box('trak',tkhd,mdia)];
     if(audio){
-      const A=audio,AN=A.frames.length,sr=A.sampleRate,atot=AN*1024;
-      const es=(()=>{const asc=A.asc,dec=cat(u8([0x40,0x15,0,0,0]),u32(0),u32(0),u8([5,asc.length]),asc),esd=cat(u16(0),u8([0]),u8([4,dec.length]),dec,u8([6,1,2]));return full('esds',0,0,u8([3,esd.length]),esd)})();
-      const astsd=full('stsd',0,0,u32(1),box('mp4a',u8(6),u16(1),u32(0),u32(0),u16(A.channels),u16(16),u16(0),u16(0),u32(sr*65536),es));
-      const astbl=box('stbl',astsd,full('stts',0,0,u32(1),u32(AN),u32(1024)),full('stsc',0,0,u32(1),u32(1),u32(AN),u32(1)),full('stsz',0,0,u32(0),u32(AN),...A.frames.map(f=>u32(f.length))),full('stco',0,0,u32(1),u32(aoff)));
+      const A=audio,PCM=!!A.pcm,AN=PCM?A.total:A.frames.length,sr=A.sampleRate,atot=PCM?AN:AN*1024;
+      const es=PCM?new Uint8Array(0):(()=>{const asc=A.asc,dec=cat(u8([0x40,0x15,0,0,0]),u32(0),u32(0),u8([5,asc.length]),asc),esd=cat(u16(0),u8([0]),u8([4,dec.length]),dec,u8([6,1,2]));return full('esds',0,0,u8([3,esd.length]),esd)})();
+      const astsd=full('stsd',0,0,u32(1),box(PCM?'sowt':'mp4a',u8(6),u16(1),u32(0),u32(0),u16(A.channels),u16(16),u16(0),u16(0),u32(sr*65536),es));
+      const astbl=box('stbl',astsd,full('stts',0,0,u32(1),u32(AN),u32(PCM?1:1024)),full('stsc',0,0,u32(1),u32(1),u32(AN),u32(1)),PCM?full('stsz',0,0,u32(4),u32(AN)):full('stsz',0,0,u32(0),u32(AN),...A.frames.map(f=>u32(f.length))),full('stco',0,0,u32(1),u32(aoff)));
       const aminf=box('minf',full('smhd',0,0,u16(0),u16(0)),box('dinf',full('dref',0,0,u32(1),full('url ',0,1))),astbl);
       const amdia=box('mdia',full('mdhd',0,0,u32(0),u32(0),u32(sr),u32(atot),u16(0x55c4),u16(0)),full('hdlr',0,0,u32(0),str('soun'),u8(12),str('SoundHandler'),u8(1)),aminf);
       const atkhd=full('tkhd',0,3,u32(0),u32(0),u32(2),u32(0),u32(Math.round(atot*1000/sr)),u8(8),u16(0),u16(0),u16(0x100),u16(0),matrix,u32(0),u32(0));
@@ -5308,6 +5308,13 @@ function vMux(width,height,fps,avcC,samples,audio){
   const moov0=build(0,0),off=ftyp.length+moov0.length+8;
   const size=samples.reduce((a,s)=>a+s.data.length,0),asize=audio?audio.frames.reduce((a,f)=>a+f.length,0):0;
   return new Blob([ftyp,build(off,off+size),u32(size+asize+8),str('mdat'),...samples.map(s=>s.data),...(audio?audio.frames:[])],{type:'video/mp4'});
+}
+
+/* 備用：不壓縮的 16-bit PCM（檔案較大，但任何瀏覽器都做得到） */
+function vEncodePCM(buf){
+  if(!buf)return null;const N=buf.length,L=buf.getChannelData(0),R=buf.numberOfChannels>1?buf.getChannelData(1):L,o=new Uint8Array(N*4),dv=new DataView(o.buffer);
+  for(let i=0;i<N;i++){dv.setInt16(i*4,Math.max(-1,Math.min(1,L[i]))*32767,true);dv.setInt16(i*4+2,Math.max(-1,Math.min(1,R[i]))*32767,true)}
+  return {pcm:true,frames:[o],total:N,sampleRate:buf.sampleRate,channels:2};
 }
 
 /* 把音樂編成 AAC（mp4 用）。瀏覽器不支援就回傳 null，影片照舊做成無聲 */
@@ -5396,11 +5403,14 @@ async function openReviewVideo(){
     const draw=t=>{if(job!==vJob)throw new Error('cancel');vDraw(ctx,assets,slides,t)};
     const prog=p=>{if(job!==vJob)return;const v=Math.round(vClamp(p)*100);$('vFill').style.width=v+'%';$('vStatus').textContent=`正在製作影片… ${v}%`};
     let blob=null,music=null,aac=null;
-    try{$('vStatus').textContent='正在製作背景音樂…';music=await rvRenderMusic(total+.4);if(job!==vJob)return;aac=await vEncodeAudio(music)}catch(e){console.warn('music',e);music=null;aac=null}
+    let aKind='無聲（音樂製作失敗）';
+    try{$('vStatus').textContent='正在製作背景音樂…';music=await rvRenderMusic(total+.4);if(job!==vJob)return;
+      if(music){try{aac=await vEncodeAudio(music)}catch(e){console.warn('aac',e);aac=null}
+        if(aac)aKind='AAC 音樂';else{aac=vEncodePCM(music);aKind=aac?'未壓縮音樂（檔案較大）':aKind}}}catch(e){console.warn('music',e);music=null;aac=null}
     if(job!==vJob)return;
     try{blob=await vEncodeWebCodecs(canvas,ctx,draw,frames,prog,aac)}catch(e){console.warn('webcodecs',e);blob=null}
     if(job!==vJob)return;
-    if(!blob){$('vStatus').textContent='正在錄製影片，請保持這個畫面開著…';blob=await vEncodeRecorder(canvas,draw,total,prog,music)}
+    if(!blob){$('vStatus').textContent='正在錄製影片，請保持這個畫面開著…';blob=await vEncodeRecorder(canvas,draw,total,prog,music);if(blob)blob.__rec=1}
     if(job!==vJob)return;
     if(!blob||!blob.size)throw new Error('這個瀏覽器不支援製作影片');
     const ext=blob.type.includes('mp4')?'mp4':'webm';
@@ -5414,7 +5424,8 @@ async function openReviewVideo(){
     $('vShare').hidden=!canShare;
     $('vShare').onclick=async()=>{try{await navigator.share({files:[file],title:`${currentYear} 年度閱讀回顧`})}catch(e){if(e&&e.name!=='AbortError')toast('沒辦法開啟分享，請改用「下載影片」')}};
     if(ext==='webm')$('vNote').textContent='這個瀏覽器只能做出 WebM 格式，IG 可能無法上傳。建議用 iPhone、iPad 的 Safari 或電腦版 Chrome 再做一次。';
-    else if(canShare)$('vNote').textContent='按「分享或存到相簿」，選「儲存影片」就會存進照片；之後在 IG 選限時動態或 Reels 就能發佈。影片沒有聲音，可以在 IG 裡挑一首配樂。';
+    else if(canShare)$('vNote').textContent='按「分享或存到相簿」，選「儲存影片」就會存進照片；之後在 IG 選限時動態或 Reels 就能發佈。';
+    {const used=blob.__rec?(music?'錄製（含音樂）':'無聲'):aKind;$('vNote').textContent=($('vNote').textContent||'')+'　聲音：'+used+'。'}
   }catch(e){
     if(job!==vJob)return;
     console.error(e);$('vStatus').textContent='做不出影片：'+(e.message||e)+'。請換用最新版的 Safari 或 Chrome 再試一次。';
