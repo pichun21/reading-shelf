@@ -3705,7 +3705,7 @@ function openQuoteCard(bookId,quoteId){return openImageCard(bookId,{kind:'quote'
 async function openImageCard(bookId,opts={}){
   const b=byId(bookId);if(!b)return;
   const qs=quotesOf(b);let kind=opts.kind||'ticket';if(kind==='quote'&&!qs.length)kind='ticket';
-  qcState={...qcState,bookId,kind,quoteId:opts.quoteId||qs[0]?.id||null,assets:null,tkTheme:qcState.tkTheme||'paper',cardText:null};{const q0=qs.find(x=>x.id===qcState.quoteId)||qs[0];qcState.brk=q0&&/\n/.test(q0.text)?'manual':'auto';qcState.syncId=null}
+  qcState={...qcState,bookId,kind,quoteId:opts.quoteId||qs[0]?.id||null,assets:null,tkTheme:qcState.tkTheme||'paper',cardText:null};if(kind==='ticket')tkPickVariant();{const q0=qs.find(x=>x.id===qcState.quoteId)||qs[0];qcState.brk=q0&&/\n/.test(q0.text)?'manual':'auto';qcState.syncId=null}
   $('qcKinds').innerHTML=`<button type="button" data-k="ticket">讀完票根</button>`+(qs.length?`<button type="button" data-k="quote">金句卡</button>`:'');
   $('qcKinds').querySelectorAll('button').forEach(x=>x.onclick=()=>{qcState.kind=x.dataset.k;qcControls();drawQC()});
   qcControls();
@@ -3780,7 +3780,7 @@ $('tkGo').onclick=async()=>{
   tkSetPhase('run');tkSound('feed');
   await tkSleep(2700);if(my!==tkRun)return;
   /* 蓋章 */
-  const st=$('tkStamp'),sc=tkStampRotated(TK_THEMES[qcState.tkTheme]||TK_THEMES.paper,b,info,TK_SCALE*1.4);
+  const st=$('tkStamp'),sc=tkStampRotated(tkT(qcState.tkTheme),b,info,TK_SCALE*1.4);
   st.width=sc.width;st.height=sc.height;st.getContext('2d').drawImage(sc,0,0);
   Object.assign(st.style,{left:(g.sx-g.ss/2)/TK_W*100+'%',top:(g.sy-g.ss/2)/TK_H*100+'%',width:g.ss/TK_W*100+'%',height:g.ss/TK_H*100+'%'});
   st.hidden=false;st.classList.remove('hit');void st.offsetWidth;st.classList.add('hit');
@@ -3802,8 +3802,8 @@ function qcControls(){
      $('qcBrk').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.b===(qcState.brk||'auto')))}}
   const list=k==='ticket'?TK_THEME_LIST:QC_THEMES.filter(t=>t.k!=='cover'||qcState.assets?.tone||!qcState.assets);
   const cur=k==='ticket'?qcState.tkTheme:qcState.theme;
-  $('qcThemes').innerHTML=list.map(t=>`<button type="button" data-t="${t.k}" class="${t.k===cur?'on':''}">${t.l}</button>`).join('');
-  $('qcThemes').querySelectorAll('button').forEach(x=>x.onclick=()=>{if(qcState.kind==='ticket')qcState.tkTheme=x.dataset.t;else qcState.theme=x.dataset.t;qcControls();drawQC()});
+  $('qcThemes').innerHTML=list.map(t=>`<button type="button" data-t="${t.k}" class="${t.k===cur?'on':''}">${t.l}</button>`).join('')+(k==='ticket'?'<button type="button" data-t="__mix">換個風格</button>':'');
+  $('qcThemes').querySelectorAll('button').forEach(x=>x.onclick=()=>{if(x.dataset.t==='__mix'){tkPickVariant();drawQC();return}if(qcState.kind==='ticket')qcState.tkTheme=x.dataset.t;else qcState.theme=x.dataset.t;qcControls();drawQC()});
   const sl=k==='ticket'?TK_SIZES:QC_SIZES,sc=k==='ticket'?qcState.tkSize:qcState.size;
   $('qcSizes').innerHTML=sl.map(s=>`<button type="button" data-s="${s.k}" class="${s.k===sc?'on':''}">${s.l}</button>`).join('');
   $('qcSizes').querySelectorAll('button').forEach(x=>x.onclick=()=>{if(qcState.kind==='ticket'){qcState.tkSize=x.dataset.s;if(tkPhase){tkRun++;tkSetPhase(null)}}else qcState.size=x.dataset.s;qcControls();drawQC()});
@@ -3822,9 +3822,9 @@ function drawQC(){
 }
 /* 限時動態版：柔和底色＋置中的票根 */
 function drawTicketStory(ctx,b){
-  const W=1080,H=1920,T=TK_THEMES[qcState.tkTheme]||TK_THEMES.paper,night=qcState.tkTheme==='night';
+  const W=1080,H=1920,T=tkT(qcState.tkTheme),night=qcState.tkTheme==='night';
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
-  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,night?'#1a2123':'#ece9df');g.addColorStop(1,night?'#0b0f10':'#d9ded5');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,T.bg2);g.addColorStop(1,T.bg);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   const r=ctx.createRadialGradient(W*.5,H*.42,0,W*.5,H*.42,W*.9);r.addColorStop(0,night?'rgba(134,192,182,.12)':'rgba(255,255,255,.6)');r.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
   const tw=800,th=Math.round(tw*TK_H/TK_W),sc=tw/TK_W,off=document.createElement('canvas');off.width=tw;off.height=th;
   drawTicket(off.getContext('2d'),TK_W,TK_H,qcState.tkTheme,b,qcState.assets,ticketInfo(b),{bare:true,scale:sc});
@@ -4898,6 +4898,35 @@ const TK_THEMES={
   paper:{bg:'#e4e8e1',bg2:'#d6dbd2',tk:'#f8f5ec',tk2:'#efe9da',ink:'#1d2526',soft:'rgba(29,37,38,.64)',mute:'rgba(29,37,38,.42)',line:'#c9c1ad',acc:'#1f5a5e',brass:'#9a6f22',stamp:'#A94F48',word:'#1d2526'},
   night:{bg:'#0d1112',bg2:'#151b1c',tk:'#22282a',tk2:'#1b2022',ink:'#f1e9d8',soft:'rgba(241,233,216,.72)',mute:'rgba(241,233,216,.45)',line:'#3c4547',acc:'#86c0b6',brass:'#d8ad5c',stamp:'#D17B73',word:'#f1e9d8'}
 };
+
+/* ===== 票根的顏色與風格：每次印出來都會抽一組新的 ===== */
+function tkMkPal(h,sh,sat,L){
+  L=L||93;
+  const H=n=>((h+n)%360+360)%360;
+  return {
+    paper:{bg:`hsl(${h} ${Math.round(sat*.55)}% ${L-7}%)`,bg2:`hsl(${h} ${Math.round(sat*.5)}% ${L-14}%)`,tk:`hsl(${h} ${sat}% ${L}%)`,tk2:`hsl(${h} ${sat+4}% ${L-6}%)`,ink:`hsl(${h} 38% 13%)`,soft:`hsla(${h},38%,13%,.66)`,mute:`hsla(${h},38%,13%,.44)`,line:`hsl(${h} 30% 69%)`,acc:`hsl(${h} 52% 29%)`,brass:`hsl(${H(28)} 58% 36%)`,stamp:`hsl(${sh} 55% 42%)`,word:`hsl(${h} 38% 13%)`},
+    night:{bg:`hsl(${h} ${Math.min(40,sat*.6+10)}% 8%)`,bg2:`hsl(${h} ${Math.min(38,sat*.55+8)}% 11%)`,tk:`hsl(${h} ${Math.min(36,sat*.5+8)}% 17%)`,tk2:`hsl(${h} ${Math.min(38,sat*.55+8)}% 13%)`,ink:`hsl(${h} 30% 91%)`,soft:`hsla(${h},30%,91%,.72)`,mute:`hsla(${h},30%,91%,.45)`,line:`hsl(${h} 16% 29%)`,acc:`hsl(${h} 46% 68%)`,brass:`hsl(${H(28)} 58% 63%)`,stamp:`hsl(${sh} 58% 62%)`,word:`hsl(${h} 30% 91%)`}
+  };
+}
+/* 柔霧閱讀票券色票：票身用指定色，其餘由色相推算 */
+const TK_HEX=[['奶油白','F8F1E7'],['櫻花粉','F5DCE0'],['蜜桃粉','F3D6C9'],['杏仁奶','EADCCB'],['奶油黃','F6E8BD'],['鼠尾草綠','DCE8D7'],['薄荷綠','D3E9DF'],['霧青綠','C5DEDA'],['天空藍','D7E7F0'],['霧霾藍','CCDCE9'],['薰衣草紫','E1DDF0'],['丁香紫','D8D1E7'],['玫瑰奶茶','E9D1CF'],['燕麥米','E7E0D4'],['灰粉紫','DCCBD7'],['灰橄欖','D6DCCB'],['復古玫瑰','B98489'],['灰藍綠','8AAEAD'],['可可棕','A48A7E'],['午夜藍','697C90']];
+function tkHsl(hex){const r=parseInt(hex.slice(0,2),16)/255,g=parseInt(hex.slice(2,4),16)/255,b=parseInt(hex.slice(4,6),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,d=mx-mn;let h=0,s=0;if(d){s=d/(1-Math.abs(2*l-1));h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h=Math.round(h*60);if(h<0)h+=360}return[h,Math.round(s*100),Math.round(l*100)]}
+function tkMkHex(n,hex){
+  const[h,s,l]=tkHsl(hex),sat=Math.max(14,Math.min(s,34)),P=tkMkPal(h,(h+180)%360,sat,93),dk=l<75;
+  const o=P.paper;
+  o.tk='#'+hex;o.tk2=`hsl(${h} ${s}% ${Math.max(20,l-6)}%)`;o.bg=`hsl(${h} ${Math.round(s*.7)}% ${Math.max(18,l-9)}%)`;o.bg2=`hsl(${h} ${Math.round(s*.65)}% ${Math.max(14,l-16)}%)`;
+  o.line=`hsl(${h} ${Math.round(s*.6)}% ${Math.max(16,l-18)}%)`;o.acc=`hsl(${h} ${Math.max(22,Math.min(s,40))}% ${dk?18:32}%)`;o.stamp=`hsl(${(h+180)%360} 36% ${dk?24:42}%)`;
+  if(dk){o.ink=`hsl(${h} 30% 10%)`;o.word=o.ink;o.soft=`hsla(${h},30%,10%,.72)`;o.mute=`hsla(${h},30%,10%,.52)`}
+  return{n,paper:o,night:P.night};
+}
+const TK_PALS=[{n:'原味',paper:TK_THEMES.paper,night:TK_THEMES.night}].concat(TK_HEX.map(d=>tkMkHex(d[0],d[1])));
+const TK_STYLES=['classic','double','band','dots','stripe'];
+var TK_CUR={p:0,s:0},tkLast=null;
+function tkT(theme){const P=TK_PALS[TK_CUR.p]||TK_PALS[0];return P[theme==='night'?'night':'paper']}
+function tkPickVariant(){
+  let p,s,k=0;do{p=1+Math.floor(Math.random()*(TK_PALS.length-1));s=Math.floor(Math.random()*TK_STYLES.length);k++}while(k<12&&tkLast&&(tkLast.p===p||tkLast.s===s));
+  tkLast={p,s};TK_CUR={p,s};return TK_CUR;
+}
 function ticketInfo(b){
   const list=yearBooks(b.year).sort((a,c)=>monthNum(a.month)-monthNum(c.month)||sortInMonth(a,c));
   const n=Math.max(1,list.findIndex(x=>x.id===b.id)+1);
@@ -4918,7 +4947,7 @@ function tkPath(ctx,x,y,w,h,r,tearY,notch){
 const TK_W=756,TK_H=1161,TK_SCALE=1.5;
 function drawTicket(ctx,W,H,theme,b,A,info,opts={}){
   /* opts.bare：只畫票根本體，背景透明、不傾斜、沒有陰影 */
-  const T=TK_THEMES[theme]||TK_THEMES.paper,SC=opts.scale||1,bare=!!opts.bare;
+  const T=tkT(theme),ST=TK_STYLES[TK_CUR.s]||'classic',SC=opts.scale||1,bare=!!opts.bare;
   ctx.setTransform(SC,0,0,SC,0,0);ctx.globalAlpha=1;ctx.textBaseline='alphabetic';ctx.textAlign='center';
   ctx.clearRect(0,0,W,H);
   if(!bare){
@@ -4934,9 +4963,17 @@ function drawTicket(ctx,W,H,theme,b,A,info,opts={}){
   /* 紙紋 */
   const pg=ctx.createLinearGradient(0,ty,0,ty+th);pg.addColorStop(0,'rgba(255,255,255,.18)');pg.addColorStop(1,'rgba(0,0,0,.03)');ctx.fillStyle=pg;ctx.fillRect(tx,ty,tw,th);
   ctx.fillStyle=T.tk2;ctx.fillRect(tx,tearY,tw,stubH);
+  if(ST==='band'){ctx.fillStyle=T.tk2;ctx.fillRect(tx,ty,tw,128);ctx.fillStyle=T.acc;ctx.fillRect(tx,ty+126,tw,6);ctx.fillStyle=T.acc;ctx.globalAlpha=.9;ctx.fillRect(tx,tearY+stubH-14,tw,14);ctx.globalAlpha=1}
+  if(ST==='stripe'){ctx.save();ctx.strokeStyle=T.acc;ctx.globalAlpha=.28;ctx.lineWidth=7;for(const by0 of [ty,tearY-26]){ctx.save();ctx.beginPath();ctx.rect(tx,by0,tw,26);ctx.clip();for(let sx0=tx-30;sx0<tx+tw+30;sx0+=20){ctx.beginPath();ctx.moveTo(sx0,by0+26);ctx.lineTo(sx0+26,by0);ctx.stroke()}ctx.restore()}ctx.restore()}
   ctx.restore();
+  if(ST==='dots'){ctx.save();if(bare)ctx.globalCompositeOperation='destination-out';else ctx.fillStyle=T.bg;for(let py=ty+150;py<tearY-60;py+=56){for(const px of [tx,tx+tw]){ctx.beginPath();ctx.arc(px,py,9,0,Math.PI*2);ctx.fill()}}ctx.restore()}
   /* 內框 */
-  ctx.strokeStyle=T.line;ctx.lineWidth=1.5;vRound(ctx,tx+18,ty+18,tw-36,tearY-ty-36,10);ctx.stroke();
+  ctx.strokeStyle=T.line;ctx.lineWidth=1.5;
+  if(ST==='dots'){ctx.save();ctx.setLineDash([1,9]);ctx.lineCap='round';ctx.lineWidth=4;vRound(ctx,tx+22,ty+22,tw-44,tearY-ty-44,10);ctx.stroke();ctx.restore()}
+  else if(ST==='band'){ctx.save();ctx.strokeStyle=T.line;vRound(ctx,tx+18,ty+146,tw-36,tearY-ty-146-18,10);ctx.stroke();ctx.restore()}
+  else{vRound(ctx,tx+18,ty+18,tw-36,tearY-ty-36,10);ctx.stroke();
+    if(ST==='double'||ST==='stripe'){ctx.save();ctx.lineWidth=ST==='stripe'?4:1;vRound(ctx,tx+28,ty+28,tw-56,tearY-ty-56,6);ctx.stroke();ctx.restore()}
+    if(ST==='double'){ctx.fillStyle=T.brass;[[tx+18,ty+18],[tx+tw-18,ty+18],[tx+18,tearY-18],[tx+tw-18,tearY-18]].forEach(([qx,qy])=>{ctx.save();ctx.translate(qx,qy);ctx.rotate(Math.PI/4);ctx.fillRect(-6,-6,12,12);ctx.restore()})}}
   const P=tx+48,R=tx+tw-48,cx=W/2;
   /* 抬頭：LOGO＋編號 */
   const ih=56,iw=A.icon?ih*A.icon.naturalWidth/A.icon.naturalHeight:0,word=tintCanvas(A.word,T.word),wh=40,ww=word?word.width*wh/word.height:0;
@@ -4945,7 +4982,7 @@ function drawTicket(ctx,W,H,theme,b,A,info,opts={}){
   ctx.textAlign='right';ctx.fillStyle=T.mute;ctx.font=`500 22px ${VF.b}`;vSpacedRight(ctx,'READING TICKET',R,ty+66,3);
   ctx.fillStyle=T.brass;ctx.font=`italic 500 34px ${VF.n}`;ctx.fillText(`No. ${b.year}–${String(info.n).padStart(3,'0')}`,R,ty+100);
   ctx.textAlign='center';
-  ctx.strokeStyle=T.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P,ty+128);ctx.lineTo(R,ty+128);ctx.stroke();
+  if(ST!=='band'){ctx.strokeStyle=T.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P,ty+128);ctx.lineTo(R,ty+128);ctx.stroke()}
   /* 封面 */
   /* 先量好書名、作者有幾行，再決定封面能放多大；沒有句子時整組置中 */
   const titleW=R-P-20;let tfs=50;ctx.font=`700 ${tfs}px ${VF.d}`;let tl=vWrap(ctx,b.title,titleW);
