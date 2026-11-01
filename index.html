@@ -1627,7 +1627,35 @@ html,body{overscroll-behavior-y:contain}
 .slide .b3 .ao{position:absolute;left:0;right:-3px;top:0;height:calc(var(--T) * .5 + 8px);background:linear-gradient(180deg,rgba(0,0,0,.85) 0,rgba(0,0,0,.5) 10%,rgba(0,0,0,.2) 40%,rgba(0,0,0,0));z-index:4;pointer-events:none;border-radius:var(--r) 6px 0 0}
 .slide .k+.twr+h2{margin-top:8px}
 </style>
-<style>.slide .k.ktw{font-size:calc(1em + 2px);color:rgba(245,236,214,.92);letter-spacing:.32em}</style>
+<style>.slide .k.ktw{font-size:calc(1em + 2px);color:rgba(245,236,214,.92);letter-spacing:.32em}
+/* ===== 陳列模式 ===== */
+.dcase{position:relative;margin:0 -4px 18px;padding:34px 17px 0;border-radius:10px 10px 4px 4px;background:radial-gradient(120% 60% at 50% 0,rgba(255,196,120,.20),transparent 62%),linear-gradient(rgba(14,8,4,.62),rgba(14,8,4,.80)),url(stamps/wood-v.webp) 0 0/420px auto,#2a190d;box-shadow:inset 0 0 0 7px #4a3020,inset 0 0 0 8px rgba(255,220,170,.18),inset 0 12px 30px rgba(0,0,0,.55),0 26px 40px -22px rgba(0,0,0,.6);overflow:hidden;touch-action:pan-y;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.dcase .dhint{position:absolute;top:10px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.12em;color:rgba(255,232,200,.5);pointer-events:none}
+.drow{display:flex;align-items:flex-end;justify-content:flex-start;gap:3px;padding:0 4px;min-height:196px;position:relative}
+.dboard{height:16px;margin:0 -10px 22px;border-radius:2px;background:linear-gradient(180deg,rgba(255,235,200,.45) 0,rgba(255,235,200,.08) 2px,transparent 4px,rgba(0,0,0,.45) 100%),url(stamps/wood-h.webp) 0 0/700px 230px,#6b4a2f;box-shadow:0 7px 10px -3px rgba(0,0,0,.65),inset 0 -2px 3px rgba(0,0,0,.4)}
+.dbk{position:relative;flex:none;width:var(--w);display:block;padding:0;border:0;background:none;cursor:pointer;transform-origin:bottom center;transform:rotate(var(--lean));transition:transform .32s cubic-bezier(.2,.9,.25,1.15),filter .25s,margin .3s;animation:dsIn .5s cubic-bezier(.3,1.2,.5,1) both;outline:none}
+@keyframes dsIn{from{opacity:0;transform:translateY(18px) rotate(var(--lean))}to{opacity:1;transform:rotate(var(--lean))}}
+.dbk .spine{width:var(--w);height:var(--sh);box-shadow:inset 1px 0 0 rgba(255,255,255,.18),inset -1px 0 0 rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.16),1px 0 2px rgba(0,0,0,.5);transition:box-shadow .3s}
+.dcase.has-sel .dbk{filter:brightness(.62) saturate(.85)}
+.dcase.has-sel .dbk.n2{filter:brightness(.74)}
+.dcase.has-sel .dbk.n1{filter:brightness(.86);transform:translateX(var(--nx,0)) rotate(var(--lean))}
+.dcase .dbk.n1:has(~ .sel){margin-right:5px}
+.dcase .dbk.sel{filter:brightness(1.12);z-index:4;margin:0 7px;transform:translateY(-22px) rotate(0) scale(1.05)}
+.dcase .dbk.sel .spine{box-shadow:inset 1px 0 0 rgba(255,255,255,.3),inset -1px 0 0 rgba(0,0,0,.3),0 0 0 1px rgba(255,236,190,.55),0 0 22px 3px rgba(255,214,140,.38),8px 12px 18px -4px rgba(0,0,0,.7)}
+.dbk:focus-visible .spine{outline:2px solid var(--accent);outline-offset:2px}
+.dbk.out{opacity:0;transition:none}
+.dcase.pulling{box-shadow:inset 0 0 0 7px #4a3020,inset 0 0 0 8px rgba(255,220,170,.18),inset 0 12px 30px rgba(0,0,0,.55),0 26px 40px -22px rgba(0,0,0,.6)}
+.dcase.pulling:after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.55);animation:dsDim .6s ease both;pointer-events:none;z-index:6}
+@keyframes dsDim{from{opacity:0}to{opacity:1}}
+.dghost{position:fixed;z-index:2000;pointer-events:none;transform-style:preserve-3d;perspective:900px;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}
+.dghost .dg-sp,.dghost .dg-cv{position:absolute;inset:0;backface-visibility:hidden;border-radius:2px 4px 4px 2px;overflow:hidden}
+.dghost .dg-sp{background:var(--sc,#5a3a2a);transform-origin:0 0}
+.dghost .dg-sp .spine{width:100%;height:100%;box-shadow:none}
+.dghost .dg-cv{transform:rotateY(180deg);background:var(--paper-2,#eee)}
+.dghost .dg-cv img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:700px){.dcase{padding:30px 12px 0;margin-inline:-6px}.drow{min-height:176px}.dbk .spine{height:calc(var(--sh)*.92)}}
+@media (prefers-reduced-motion:reduce){.dbk{animation:none;transition:none}}
+</style>
 
 </head>
 <body>
@@ -1705,6 +1733,7 @@ html,body{overscroll-behavior-y:contain}
   <nav class="views" aria-label="檢視方式">
     <button type="button" data-view="shelf" class="on">書架</button>
     <button type="button" data-view="wall">封面牆</button>
+    <button type="button" data-view="display">陳列</button>
     <button type="button" data-view="pile">書堆</button>
     <button type="button" data-view="treasure">珍藏</button>
     <button type="button" data-view="quotes">書摘</button>
@@ -1716,7 +1745,7 @@ html,body{overscroll-behavior-y:contain}
   <div class="tidy-banner" id="loginBanner" hidden><span>登入 Google 帳號，書就會存到你的雲端硬碟，換瀏覽器、換手機都不會不見。</span><button type="button" class="btn sm primary" id="loginGo">用 Google 登入</button><button type="button" class="x" id="loginX" aria-label="不再顯示">×</button></div>
   <div class="tidy-banner" id="tidyBanner" hidden><span>封面大小不一、帶著白邊或書背嗎？可以一次自動修整，套用前會先給你看對照。</span><button type="button" class="btn sm primary" id="tidyBannerGo">整理封面</button><button type="button" class="x" id="tidyBannerX" aria-label="不再顯示">×</button></div>
   <div class="shelf-bar">
-  <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button></div>
+  <div class="stage-switch" role="group" aria-label="書架的樣子"><button type="button" data-view="shelf" class="on"><svg><use href="#i-shelf"/></svg>書架</button><button type="button" data-view="wall"><svg><use href="#i-grid"/></svg>封面牆</button><button type="button" data-view="display"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 20h16M6 20V8M9.5 20V5M13 20V9M16.5 20V6.5"/></svg>陳列</button></div>
     <div class="shelf-opts" id="shelfOpts" data-open="0">
       <button type="button" class="so-toggle" id="soToggle" aria-expanded="false" aria-controls="sortRow" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span class="so-t">書櫃設定</span></button>
       <div class="sort-row" id="sortRow" role="group" aria-label="書櫃設定">
@@ -2399,6 +2428,7 @@ function renderStage(){
   if(view==='treasure'){renderTreasure(st);return}
   if(view==='quotes'){renderQuotesView(st);return}
   if(view==='pile'){renderPile(st);return}
+  if(view==='display'){renderDisplay(st);return}
   const groups=groupByMonth(yearBooks());
   stageCtx=groups.flatMap(g=>g.items.map(b=>b.id));
   const dir=shelfDirNow();syncSortRow();syncShowRow();applyCase();syncOpts();
@@ -2423,9 +2453,9 @@ function renderTreasure(st){
 }
 function setYear(y){if(y===currentYear)return;currentYear=y;render()}
 function markViewTabs(v){
-  document.documentElement.dataset.view=v;
-  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v||(v==='wall'&&b.dataset.view==='shelf'&&!!b.closest('.tabbar'))));
-  document.querySelectorAll('nav.views [data-view]').forEach(b=>{const s=b.dataset.view===v||(v==='wall'&&b.dataset.view==='shelf');b.setAttribute('aria-selected',s?'true':'false');b.tabIndex=s?0:-1});
+  document.documentElement.dataset.view=v==='display'?'shelf':v;document.documentElement.dataset.stage=v;
+  document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===v||((v==='wall'||v==='display')&&b.dataset.view==='shelf'&&!!b.closest('.tabbar'))));
+  document.querySelectorAll('nav.views [data-view]').forEach(b=>{const s=b.dataset.view===v||((v==='wall'||v==='display')&&b.dataset.view==='shelf');b.setAttribute('aria-selected',s?'true':'false');b.tabIndex=s?0:-1});
 }
 (function(){
   const nav=document.querySelector('nav.views');if(!nav)return;
@@ -3349,7 +3379,7 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
 /* ================= 啟動 ================= */
 (async()=>{
   const savedTheme=ls.get('shelf-theme');if(savedTheme==='dark'||savedTheme==='light')document.documentElement.dataset.theme=savedTheme;syncLamp();
-  const savedView=ls.get('shelf-view');if(['shelf','wall','treasure','quotes','pile'].includes(savedView))view=savedView;markViewTabs(view);
+  const savedView=ls.get('shelf-view');if(['shelf','wall','display','treasure','quotes','pile'].includes(savedView))view=savedView;markViewTabs(view);
   try{await openDB()}catch{memMode=true;$('storageNotice').hidden=false}
   try{await seed()}catch{memMode=true;$('storageNotice').hidden=false;mem.clear();await seed()}
   /* 從示範連結進來：直接進示範，不先載入、也不顯示你自己的書 */
@@ -6092,6 +6122,115 @@ function towerDraw(ctx,lay,t,ox,oy,aw,ah,fontFam){
     ctx.restore();
   });
   return (lay.h+20)*s;
+}
+
+/* ================= 陳列模式：整面書櫃、滑過選書、抽書 ================= */
+function dsList(){
+  const dir=shelfDirNow();
+  const g=groupByMonth(yearBooks());
+  const asc=dir==='new'?g:[...g].reverse();
+  return asc.flatMap(x=>(dir==='new'?x.items:[...x.items].reverse()));
+}
+function dsSpine(b,i){
+  const t=spineTitle(b.title),h=hue(b.title);
+  const w=Math.round(Math.min(50,Math.max(30,24+t.length*1.5)));
+  const ht=150+(h%7)*6;
+  const au=String(b.author||'').split(/[、,，\/／&＆]/)[0].trim().slice(0,4);
+  const lean=(h%9===0)?((h%2)?3:-3):0;
+  if(b.cover)spineAvg(b);
+  return `<button type="button" class="dbk" data-id="${esc(b.id)}" data-i="${i}" style="--w:${w}px;--lean:${lean}deg" aria-label="《${esc(b.title)}》"><span class="spine st${h%3}${b.cover?' has-cv':''}" style="${spineCss(b)};--sw:${w}px;--sh:${ht}px${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''}"><span class="sp-t">${esc(t)}</span>${au?`<span class="sp-a">${esc(au)}</span>`:''}</span></button>`;
+}
+function dsRows(list,W){
+  const rows=[];let cur=[],used=0;
+  list.forEach((b,i)=>{
+    const t=spineTitle(b.title),w=Math.round(Math.min(50,Math.max(30,24+t.length*1.5)))+3;
+    if(cur.length&&used+w>W){rows.push(cur);cur=[];used=0}
+    cur.push(i);used+=w;
+  });
+  if(cur.length)rows.push(cur);
+  return rows;
+}
+let dsBuilt=null,dsMoved=false;
+function renderDisplay(st){
+  const list=dsList();stageCtx=list.map(b=>b.id);
+  syncSortRow();syncShowRow();applyCase();syncOpts();
+  if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button></div></div>`;const w=$('wAdd');if(w)w.onclick=()=>openEditor();return}
+  if(!list.length){st.innerHTML=`<div class="empty">${currentYear} 年的書架還空著。<br><button type="button" class="btn primary" id="emptyAdd">放上第一本書</button></div>`;$('emptyAdd').onclick=()=>openEditor();return}
+  st.innerHTML=`<div class="dcase" id="dcase"><div class="dhint" aria-hidden="true">滑過書背選書，點一下抽出來</div></div>`;
+  const cs=$('dcase');
+  const build=()=>{
+    const W=Math.max(220,cs.clientWidth-(innerWidth<700?34:70));
+    if(dsBuilt&&dsBuilt.W===W&&dsBuilt.n===list.length&&cs.querySelector('.drow'))return;
+    dsBuilt={W,n:list.length};
+    cs.querySelectorAll('.drow,.dboard').forEach(x=>x.remove());
+    const rows=dsRows(list,W);
+    cs.insertAdjacentHTML('beforeend',rows.map(r=>`<div class="drow">${r.map(i=>dsSpine(list[i],i)).join('')}</div><div class="dboard"></div>`).join(''));
+    cs.querySelectorAll('.dbk').forEach((el,k)=>{el.style.animationDelay=(Math.min(k,40)*14)+'ms'});
+  };
+  build();
+  if(window.ResizeObserver){let t;const ro=new ResizeObserver(()=>{clearTimeout(t);t=setTimeout(()=>{if(!document.body.contains(cs)){ro.disconnect();return}build()},120)});ro.observe(cs)}
+  dsBind(cs,list);
+}
+function dsSelect(cs,el){
+  const old=cs.querySelector('.dbk.sel');
+  if(old===el)return;
+  cs.querySelectorAll('.dbk.sel,.dbk.n1,.dbk.n2').forEach(x=>x.classList.remove('sel','n1','n2'));
+  cs.classList.toggle('has-sel',!!el);
+  if(!el)return;
+  el.classList.add('sel');
+  const row=el.parentElement,ks=[...row.children],i=ks.indexOf(el);
+  [-1,1].forEach(d=>ks[i+d]&&ks[i+d].classList.add('n1'));
+  [-2,2].forEach(d=>ks[i+d]&&ks[i+d].classList.add('n2'));
+  if(navigator.vibrate&&matchMedia('(pointer:coarse)').matches)try{navigator.vibrate(4)}catch(_){}
+}
+function dsNearest(cs,x,y){
+  const rows=[...cs.querySelectorAll('.drow')];let best=null,bd=1e9;
+  rows.forEach(r=>{const rr=r.getBoundingClientRect();if(y<rr.top-30||y>rr.bottom+36)return;
+    [...r.children].forEach(k=>{const b=k.getBoundingClientRect(),c=(b.left+b.right)/2,d=Math.abs(c-x);if(d<bd){bd=d;best=k}})});
+  return bd<70?best:null;
+}
+function dsBind(cs,list){
+  let pid=null,sx=0,sy=0,moved=false;
+  cs.addEventListener('pointermove',e=>{
+    if(e.pointerType==='touch'&&pid!==e.pointerId)return;
+    const el=dsNearest(cs,e.clientX,e.clientY);dsSelect(cs,el);
+    if(e.pointerType==='touch'&&Math.abs(e.clientX-sx)>6)moved=true;
+  });
+  cs.addEventListener('pointerleave',e=>{if(e.pointerType!=='touch')dsSelect(cs,null)});
+  cs.addEventListener('pointerdown',e=>{if(e.pointerType==='touch'){pid=e.pointerId;sx=e.clientX;sy=e.clientY;moved=false;dsSelect(cs,dsNearest(cs,e.clientX,e.clientY))}});
+  const end=e=>{if(e.pointerType==='touch'){dsMoved=moved;setTimeout(()=>{dsMoved=false},350);pid=null;setTimeout(()=>dsSelect(cs,null),900)}};
+  cs.addEventListener('pointerup',end);cs.addEventListener('pointercancel',end);
+  cs.addEventListener('focusin',e=>{const k=e.target.closest&&e.target.closest('.dbk');if(k)dsSelect(cs,k)});
+  cs.addEventListener('click',e=>{
+    if(dsMoved){dsMoved=false;return}
+    const k=e.target.closest('.dbk');if(!k)return;
+    dsPull(k,stageCtx);
+  });
+}
+/* 抽書：書背滑出書櫃、翻成封面，浮到畫面中央，再接到原本的「查看這本書」 */
+function dsPull(el,ctx){
+  const id=el.dataset.id,b=byId(id);if(!b)return;
+  if(reduceMotion()||document.querySelector('.dghost')){openBook(id,ctx,{intro:true});return}
+  const sp=el.querySelector('.spine'),r=sp.getBoundingClientRect();
+  const g=document.createElement('div');g.className='dghost';
+  const cw=Math.min(innerWidth*.62,260),chh=cw*1.5,s0=r.height/chh;
+  const cx0=r.left+r.width/2,cy0=r.top+r.height/2;
+  g.style.cssText=`left:${cx0-cw/2}px;top:${cy0-chh/2}px;width:${cw}px;height:${chh}px;--sc:${getComputedStyle(sp).getPropertyValue('--sc')}`;
+  const k=1/s0;
+  g.innerHTML=`<span class="dg-sp" style="left:50%;top:0;width:${r.width}px;height:${r.height}px;margin-left:${-r.width*k/2}px;transform:scale(${k})">${sp.outerHTML}</span>`+`<span class="dg-cv">${b.cover?`<img src="${esc(b.cover)}" alt="" decoding="sync">`:`<span class="pc-gen" style="--h:${hue(b.title)}"><span>${esc(spineTitle(b.title))}</span></span>`}</span>`;
+  document.body.appendChild(g);
+  el.classList.add('out');
+  const dx=innerWidth/2-cx0,dy=Math.max(chh/2+70,innerHeight*.42)-cy0;
+  g.style.transform=`translate(${dx}px,${dy}px) rotateY(-180deg) scale(1)`;
+  g.animate([
+    {transform:`translate(0,0) rotateY(0) scale(${s0})`,offset:0},
+    {transform:`translate(${dx*.1}px,${dy*.1-26}px) rotateY(-30deg) scale(${s0*1.12})`,offset:.3},
+    {transform:`translate(${dx*.7}px,${dy*.7}px) rotateY(-100deg) scale(${s0+(1-s0)*.6})`,offset:.65},
+    {transform:`translate(${dx}px,${dy}px) rotateY(-180deg) scale(1)`,offset:1}
+  ],{duration:620,easing:'cubic-bezier(.3,.7,.2,1)'});
+  g.classList.add('go');
+  document.getElementById('dcase').classList.add('pulling');
+  setTimeout(()=>{openBook(id,ctx,{intro:true});setTimeout(()=>{g.remove();el.classList.remove('out');const c=document.getElementById('dcase');if(c)c.classList.remove('pulling')},260)},560);
 }
 
 /* ================= 年度回顧：加強版（動態、成就感） ================= */
