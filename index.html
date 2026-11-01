@@ -1579,6 +1579,55 @@ html,body{overscroll-behavior-y:contain}
 .slide .bk .sp span{font-size:inherit}
 .slide .bk.has-cv .sp{background-blend-mode:normal}
 </style>
+<style>
+/* ===== 閱讀書塔（疊起來有多高）v112 ===== */
+.slide .twr{position:relative;width:100%;margin:8px 0 6px;display:flex;justify-content:center;align-items:flex-end}
+.slide .twsc{position:absolute;left:50%;bottom:0;transform-origin:50% 100%;margin-left:0;translate:-50% 0;will-change:transform}
+.slide .twi{position:relative}
+.slide .twi:not(.still){animation:twSettle .6s ease-out var(--end) both}
+@keyframes twSettle{0%{transform:translateY(0)}30%{transform:translateY(5px)}65%{transform:translateY(-1.5px)}100%{transform:translateY(0)}}
+.slide .twfl{position:absolute;height:26px;border-radius:50%;background:radial-gradient(ellipse at 50% 40%,rgba(0,0,0,.75),rgba(0,0,0,.3) 55%,rgba(0,0,0,0) 72%);transform:translateY(8px);pointer-events:none}
+.slide .tb{position:absolute;will-change:transform}
+.slide .twi:not(.still) .tb{opacity:0;animation:twDrop var(--fall) linear var(--delay) both}
+@keyframes twDrop{
+ 0%{opacity:0;transform:translateY(calc(var(--dd) * -1));animation-timing-function:cubic-bezier(.55,.085,.68,.53)}
+ 8%{opacity:1}
+ 62%{opacity:1;transform:translateY(0);animation-timing-function:cubic-bezier(.25,.46,.45,.94)}
+ 78%{transform:translateY(calc(var(--T) * -.06));animation-timing-function:ease-in-out}
+ 90%{transform:translateY(calc(var(--T) * .015));animation-timing-function:ease-out}
+ 100%{opacity:1;transform:translateY(0)}}
+.slide .twhide{opacity:0;transform:translateY(10px)}
+.slide .twhide.twshow{opacity:1;transform:none;transition:opacity .7s ease,transform .7s ease}
+.slide .b3{--sc:#444;position:absolute;inset:0;width:100%;height:100%;isolation:isolate}
+.slide .b3.fl{transform:scaleX(-1)}
+.slide .b3 .bsh{position:absolute;left:3px;right:0;top:2px;bottom:0;border-radius:var(--r) 5px 5px var(--r);box-shadow:0 calc(var(--T) * .07 + 2px) calc(var(--T) * .06 + 2px) rgba(0,0,0,.62);z-index:-1}
+.slide .b3 .board{position:absolute;left:0;right:-3px;height:var(--lip);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(0,0,0,.18)),var(--sc);z-index:0}
+.slide .b3 .board.t{top:0;border-radius:var(--r) 6px 0 0;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.slide .b3 .board.b{bottom:0;border-radius:0 0 6px var(--r);background:linear-gradient(0deg,rgba(0,0,0,.4),rgba(0,0,0,.06)),var(--sc)}
+.slide .b3 .cut{position:absolute;right:0;top:calc(var(--lip) - 1px);bottom:calc(var(--lip) - 1px);width:calc(var(--pw) + 6px);z-index:1;
+ clip-path:polygon(0 0,calc(100% - 3px) 0,100% calc(var(--T) * .035),100% calc(100% - var(--T) * .035),calc(100% - 3px) 100%,0 100%);
+ background:
+  linear-gradient(180deg,rgba(55,32,10,.42) 0,rgba(55,32,10,.1) 14%,rgba(255,255,255,.08) 42%,rgba(55,32,10,.04) 72%,rgba(55,32,10,.42) 100%),
+  linear-gradient(90deg,rgba(30,17,4,.78) 0,rgba(30,17,4,.38) 6%,rgba(30,17,4,.12) 16%,rgba(0,0,0,0) 34%,rgba(60,38,10,0) 66%,rgba(60,38,10,.32) 90%,rgba(50,30,8,.55) 100%),
+  repeating-linear-gradient(180deg,#fcf4da 0 1px,#dfcb9a 1px 1.9px,#f5e9c6 1.9px 2.8px,#e6d4a6 2.8px 3.4px),
+  repeating-linear-gradient(180deg,rgba(120,90,40,.1) 0 1.3px,rgba(255,255,255,.12) 1.3px 2.1px),#ecdcb0}
+.slide .b3 .cut:before{content:"";position:absolute;left:0;top:0;bottom:0;width:22px;background:linear-gradient(90deg,rgba(20,10,0,.55),rgba(20,10,0,0))}
+.slide .b3 .cut:after{content:"";position:absolute;right:0;top:0;bottom:0;width:7px;background:linear-gradient(90deg,rgba(90,62,22,0),rgba(90,62,22,.35))}
+.slide .b3 .face{position:absolute;left:0;top:0;bottom:0;width:calc(100% - var(--pw));border-radius:var(--r) 7px 7px var(--r) / var(--r) 38% 38% var(--r);overflow:hidden;z-index:2;background:var(--sc);box-shadow:4px 0 7px -2px rgba(0,0,0,.6),1px 0 0 rgba(255,255,255,.1)}
+.slide .b3 .face .img{position:absolute;top:0;bottom:0;left:50%;width:var(--iw);transform:translateX(-50%);background:var(--cv) 50% var(--by,50%)/100% auto no-repeat;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.slide .b3 .face:before{content:"";position:absolute;inset:0;z-index:1;background:
+  linear-gradient(180deg,rgba(0,0,0,.14) 0,rgba(255,255,255,.07) 14%,rgba(255,255,255,0) 34%,rgba(0,0,0,0) 66%,rgba(0,0,0,.16) 100%),
+  linear-gradient(90deg,rgba(0,0,0,.28) 0,rgba(0,0,0,0) calc(var(--r) * 1.3)),
+  linear-gradient(90deg,rgba(0,0,0,0) 86%,rgba(0,0,0,.12) 94%,rgba(0,0,0,.34) 100%)}
+.slide .b3 .face i.edge{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,var(--sc) 0,rgba(0,0,0,0) 26%,rgba(0,0,0,0) 74%,var(--sc) 100%);opacity:.2;pointer-events:none}
+.slide .b3 .face i.soft{position:absolute;inset:0;z-index:1;background:var(--sc)}
+.slide .b3 .face i.scrim{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:var(--sw);height:68%;z-index:2;background:radial-gradient(ellipse at center,rgba(10,8,6,.36),rgba(10,8,6,.22) 55%,rgba(10,8,6,0) 100%);-webkit-mask-image:radial-gradient(ellipse at center,#000 45%,transparent 100%);mask-image:radial-gradient(ellipse at center,#000 45%,transparent 100%)}
+.slide .b3 .face span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;max-width:88%;font-family:var(--f-display);font-weight:700;letter-spacing:.08em;font-size:var(--fs,16px);line-height:1.15;color:#fff8e4;text-shadow:0 1px 2px rgba(0,0,0,.9),0 0 8px rgba(0,0,0,.55);z-index:3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:.18em 1.2em}
+.slide .b3.fl .face span,.slide .b3.fl .face i.scrim{transform:translate(-50%,-50%) scaleX(-1)}
+.slide .b3 .ao{position:absolute;left:0;right:-3px;top:0;height:calc(var(--T) * .5 + 8px);background:linear-gradient(180deg,rgba(0,0,0,.85) 0,rgba(0,0,0,.5) 10%,rgba(0,0,0,.2) 40%,rgba(0,0,0,0));z-index:4;pointer-events:none;border-radius:var(--r) 6px 0 0}
+.slide .k+.twr+h2{margin-top:8px}
+</style>
+<style>.slide .k.ktw{font-size:calc(1em + 2px);color:rgba(245,236,214,.92);letter-spacing:.32em}</style>
 
 </head>
 <body>
@@ -2657,9 +2706,10 @@ function showSlide(){
   clearTimeout(rvTimer);
   const html=rvSlides[rvIdx];
   $('rvSlide').innerHTML=`<div class="slide">${html}</div>`;
-  $('rvProgress').querySelectorAll('i').forEach((el,i)=>{el.className=i<rvIdx?'done':'';el.style.setProperty('--dur',RV_DUR+'ms')});
+  const dm=/data-dur="(\d+)"/.exec(html),dur=dm?Math.max(RV_DUR,Number(dm[1])):RV_DUR;
+  $('rvProgress').querySelectorAll('i').forEach((el,i)=>{el.className=i<rvIdx?'done':'';el.style.setProperty('--dur',(i===rvIdx?dur:RV_DUR)+'ms')});
   const cur=$('rvProgress').children[rvIdx];void cur.offsetWidth;
-  if(rvIdx<rvSlides.length-1){cur.className='run';rvTimer=setTimeout(()=>rvGo(1),RV_DUR)}else cur.className='done';
+  if(rvIdx<rvSlides.length-1){cur.className='run';rvTimer=setTimeout(()=>rvGo(1),dur)}else cur.className='done';
   if(typeof rvAfter==='function')rvAfter();
   $('rvSlide').querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{if(b.dataset.act==='video'){openReviewVideo();return}$('reviewBox').close();if(b.dataset.act==='add')openEditor()});
 }
@@ -4997,6 +5047,15 @@ function vCover(ctx,b,img,x,y,w,h){
   ctx.restore();
 }
 
+/* 在「共讀幾本」之後加入書塔（與網頁回顧同一份書塔配置與時間軸） */
+function vWithTower(data){
+  const list=towerList(currentYear);if(!list.length)return data;
+  const n=list.length,cm=Math.round(n*TW_PAGE_CM),tl=towerTimeline(n);
+  const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
+  const d={type:'tower',k:'疊起來有多高',books:list,n,cm,p:`共 ${n} 本書（每本以 ${TW_PAGE_CM} 公分計算）\n${cmp}。`,dur:tl.total};
+  const i=data.findIndex(x=>x.type==='count'),out=data.slice();out.splice(i>=0?i+1:Math.min(1,out.length),0,d);return out;
+}
+
 /* 每張投影片拆成一疊「區塊」，由上往下排、依序淡入 */
 function vSlideItems(ctx,d,imgs){
   const it=[];
@@ -5005,7 +5064,25 @@ function vSlideItems(ctx,d,imgs){
   const hItem=(t,size=74)=>textItem(t,size,'d',VC.ink,960,1.4);
   const pItem=t=>textItem(t,38,'b',VC.soft,820,1.65);
   it.push({...kItem(d.k),gap:34});
-  if(d.type==='count'){
+  if(d.type==='tower'){
+    const lay=towerLayout(d.books,d.prep||d.books.map(()=>({img:null}))),tl=lay.tl,Ht=1040;
+    it.push({h:Ht+20,gap:22,draw:(y,lt)=>towerDraw(ctx,lay,lt,60,y,VW-120,Ht,VF.d)});
+    it.push({h:110,gap:16,draw:(y,lt)=>{
+      const a=vEase((lt-tl.end)/.6);if(a<=0)return;
+      const v=Math.round(d.cm*vEase((lt-tl.end-.1)/tl.count));
+      const f1=`700 74px ${VF.d}`,f2=`italic 500 92px ${VF.n}`;
+      ctx.save();ctx.globalAlpha*=a;ctx.textAlign='left';
+      ctx.font=f1;const w1=ctx.measureText('疊起來約 ').width,w3=ctx.measureText(' 公分高').width;
+      ctx.font=f2;const w2=ctx.measureText(String(d.cm)).width;
+      let x=(VW-(w1+w2+w3))/2;
+      ctx.font=f1;ctx.fillStyle=VC.ink;ctx.fillText('疊起來約 ',x,y+80);x+=w1;
+      ctx.font=f2;ctx.fillStyle=VC.acc;ctx.fillText(String(v),x,y+84);x+=w2;
+      ctx.font=f1;ctx.fillStyle=VC.ink;ctx.fillText(' 公分高',x,y+80);
+      ctx.restore();ctx.textAlign='center';
+    }});
+    d.p.split('\n').forEach(line=>{const pi=pItem(line);
+      it.push({h:pi.h,gap:4,draw:(y,lt)=>{const a=vEase((lt-tl.end-.1)/.6);if(a<=0)return;ctx.save();ctx.globalAlpha*=a;pi.draw(y);ctx.restore()}})});
+  }else if(d.type==='count'){
     it.push({h:400,gap:30,draw:(y,lt)=>{const v=Math.round(d.n*vEase(lt/1.3));ctx.font=`italic 500 460px ${VF.n}`;ctx.fillStyle=VC.acc;ctx.fillText(String(v),VW/2,y+350)}});
     it.push({...hItem(d.h),gap:30});it.push(pItem(d.p));
   }else if(d.type==='quote'){
@@ -5100,7 +5177,7 @@ function vChrome(ctx,assets,slides,t){
 
 function vLayout(ctx,data,imgs){
   let t=0;
-  return data.map((d,i)=>{const dur=i===data.length-1?V_LAST:V_SLIDE;const items=vSlideItems(ctx,d,imgs);
+  return data.map((d,i)=>{const dur=i===data.length-1?V_LAST:d.type==='tower'?d.dur:V_SLIDE;const items=vSlideItems(ctx,d,imgs);
     const H=items.reduce((a,b,j)=>a+b.h+(j<items.length-1?(b.gap??40):0),0);
     const s={d,items,H,t0:t,dur};t+=dur;return s});
 }
@@ -5130,6 +5207,7 @@ async function vAssets(data){
   /* 先把會用到的字載入，畫布才不會用到備用字型 */
   const txt=JSON.stringify(data.map(d=>({k:d.k,h:d.h,p:d.p,ca:d.ca,cz:d.cz,t:[d.a,d.z,...(d.books||[])].filter(Boolean).map(b=>b.title+(b.author||'')),g:d.tags})))+'0123456789頁間日子·PagesBetweenDaysshelf.needtodeco.com';
   try{await Promise.race([Promise.all([`700 80px ${VF.d}`,`400 40px ${VF.b}`,`500 40px ${VF.b}`,`italic 500 200px ${VF.n}`].map(f=>document.fonts.load(f,txt))),new Promise(r=>setTimeout(r,6000))])}catch(e){}
+  for(const d of data)if(d.type==='tower')d.prep=await towerPrepare(d.books,b=>imgs.get(b.id)||null);
   return {icon,word,imgs};
 }
 
@@ -5204,8 +5282,9 @@ async function vEncodeRecorder(canvas,draw,total,onProg){
 
 let vJob=0,vUrl=null;
 async function openReviewVideo(){
-  const data=reviewData(currentYear);
+  let data=reviewData(currentYear);
   if(!data){toast('這一年還沒有書，先放幾本上書架吧');return}
+  data=vWithTower(data);
   clearTimeout(rvTimer);
   const job=++vJob;
   const canvas=$('vCanvas'),ctx=canvas.getContext('2d'),player=$('vPlayer');
@@ -5674,6 +5753,238 @@ $('mDedupe').onclick=()=>{closeMenu();dedupeFlow(false)};
 let dupAsked=false;
 function maybeOfferDedupe(){if(dupAsked||demoMode)return;if(dupGroups().length){dupAsked=true;setTimeout(()=>{if(!document.querySelector('dialog[open]'))dedupeFlow(true)},800)}}
 
+/* ================= 閱讀書塔（年度回顧「疊起來有多高」）=================
+   網頁（DOM/CSS）與影片（Canvas）共用同一份：書籍順序、尺寸、位置、反向、落下時間軸。 */
+const TW_PAGE_CM=2.2;
+function twHash(s){let h=7;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h}
+function towerList(y){return yearBooks(y).sort((a,b)=>monthNum(a.month)-monthNum(b.month)||sortInMonth(a,b))}
+
+/* 依本數調整節奏：每本落下的間隔、落下時間、落下距離 */
+function towerTimeline(n){
+  const gap=n<=10?.5:n<=30?.26:n<=60?.14:Math.max(.05,7/n);
+  const fall=n>60?.38:.62,intro=.7,dd=n>60?150:320;
+  const end=intro+Math.max(0,n-1)*gap+fall;
+  /* 書塔落完 → 回彈 → 揭曉高度（1.3 秒數字跳動）→ 停留 */
+  return {gap,fall,intro,dd,end,count:1.3,hold:2.4,total:end+1.3+2.4};
+}
+/* 落下曲線（Canvas 用；CSS keyframes 用同一組節點）p：0~1，回傳往上的位移（負值＝在上方） */
+function twDropY(p,T,dd){
+  if(p<=0)return -dd;
+  if(p>=1)return 0;
+  const ei=x=>x*x,eo=x=>1-(1-x)*(1-x),eio=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+  if(p<.62)return -dd*(1-ei(p/.62));
+  if(p<.78)return -T*.06*eo((p-.62)/.16);
+  if(p<.9)return -T*.06+T*.075*eio((p-.78)/.12);
+  return T*.015*(1-eio((p-.9)/.1));
+}
+/* 整座塔最後的微微回彈（秒數從最後一本定位開始算） */
+function twSettleY(t){if(t<=0||t>=.6)return 0;return Math.sin(t/.6*Math.PI)*5*(1-t/.6)}
+
+/* ---------- 載入封面並取縮圖（只讀取，不改動原圖） ---------- */
+const twImgCache=new Map();
+function twLoadImg(src){
+  if(!src)return Promise.resolve(null);
+  if(twImgCache.has(src))return twImgCache.get(src);
+  const p=new Promise(r=>{const i=new Image();i.decoding='async';i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
+  twImgCache.set(src,p);return p;
+}
+function twThumb(img){
+  try{
+    const W=64,H=Math.max(24,Math.round(W*img.naturalHeight/img.naturalWidth)),c=document.createElement('canvas');c.width=W;c.height=H;
+    const g=c.getContext('2d',{willReadFrequently:true});g.drawImage(img,0,0,W,H);
+    return {W,H,d:g.getImageData(0,0,W,H).data};
+  }catch(_){return null}
+}
+/* getImg(book) 可以改成從已載入的圖取；預設從 b.cover 載入。圖載入失敗就當作沒有封面。 */
+async function towerPrepare(list,getImg){
+  return Promise.all(list.map(async b=>{
+    let img=null;
+    try{img=await (getImg?getImg(b):twLoadImg(b.cover))}catch(_){img=null}
+    if(img&&!(img.naturalWidth>0))img=null;
+    return img?{img,nw:img.naturalWidth,nh:img.naturalHeight,th:twThumb(img)}:{img:null};
+  }));
+}
+/* 在封面中挑「文字最少」的橫帶當書脊，並算出平均色 */
+function twBand(p,ratio){
+  const th=p.th;if(!th)return {by:50,en:0,sc:null};
+  const {W,H,d}=th,lum=(x,y)=>{const k=(y*W+x)*4;return .3*d[k]+.59*d[k+1]+.11*d[k+2]};
+  const bh=Math.max(4,Math.min(H-1,Math.round(W*ratio)));
+  const en=new Array(H).fill(0);
+  for(let y=1;y<H;y++)for(let x=1;x<W;x++)en[y]+=Math.abs(lum(x,y)-lum(x-1,y))+Math.abs(lum(x,y)-lum(x,y-1));
+  let best=0,be=1e18;
+  for(let y=0;y+bh<=H;y++){let s=0;for(let k=0;k<bh;k++)s+=en[y+k];s*=1+Math.abs((y+bh/2)/H-.5)*.25;if(s<be){be=s;best=y}}
+  let R=0,G=0,B=0,n=0;
+  for(let y=best;y<best+bh;y++)for(let x=0;x<W;x++){const k=(y*W+x)*4;R+=d[k];G+=d[k+1];B+=d[k+2];n++}
+  return {by:H-bh>0?best/(H-bh)*100:50,en:be/(bh*W*24),sc:`rgb(${Math.round(R/n*.82)},${Math.round(G/n*.82)},${Math.round(B/n*.82)})`};
+}
+
+/* ---------- 共用配置：每一本的尺寸、位置、反向、封面帶 ---------- */
+function towerLayout(list,prep){
+  const n=list.length,tl=towerTimeline(n);
+  const g=n<=8?1.35:n<=16?1.15:1;               /* 書少時書本厚一點，構圖才不會太瘦 */
+  let prev=0,yb=0,maxL=0;
+  const items=list.map((b,k)=>{
+    const p=prep[k]||{img:null},h=twHash((b.title||'')+'#'+k),r=(h>>>3)%1000/1000;
+    const L=Math.round(640+((h>>>2)%8)*16+(((h>>>7)%5)-2)*8),T=Math.round((34+((h>>>5)%7)*4)*g);
+    let dx=prev*.4+(r-.5)*60;dx=Math.max(-42,Math.min(42,dx));prev=dx;
+    const pw=Math.round((T*1.1+L*.04)*.68),fw=L-pw,lip=Math.max(2,T*.072),rad=Math.min(T*.4,16);
+    let iw=0,by=50,sc=`hsl(${hue(b.title)} 30% 36%)`,soft=0;
+    if(p.img){
+      iw=Math.round(Math.max(Math.min(fw,p.nw*1.9),T*p.nw/p.nh));
+      const bd=twBand(p,T/iw);by=bd.by;if(bd.sc)sc=bd.sc;soft=Math.max(0,Math.min(.32,(bd.en-.5)*.9));
+    }
+    const title=String(b.title||''),len=[...title].length;
+    const fs=Math.max(15,Math.min(T*.52,34,fw*.84/Math.max(2,len*1.08)));
+    const it={b,k,L,T,pw,fw,lip,rad,dx,fl:(h>>>9)%100<21,iw,by,sc,soft,fs,title,img:p.img,
+      sw:Math.min(92,Math.round((len*fs*1.15+40)/fw*100)),yb,top:0,left:0,ov:lip+1};
+    maxL=Math.max(maxL,L);yb+=T-it.ov;return it;
+  });
+  const last=items[items.length-1];
+  const H=last?last.yb+last.T:0,W=maxL+100;
+  items.forEach(it=>{it.top=H-it.yb-it.T;it.left=(W-it.L)/2+it.dx});
+  return {items,w:W,h:H,tl,n};
+}
+function towerFit(lay,aw,ah,cap=1.25){return Math.max(.05,Math.min(aw/lay.w,ah/Math.max(1,lay.h+20),cap))}
+
+/* ---------- 網頁（DOM/CSS） ---------- */
+function twBookHTML(it,lay){
+  const tl=lay.tl,delay=Math.round((tl.intro+it.k*tl.gap)*1000),cv=it.img?`;--cv:url(&quot;${esc(it.b.cover)}&quot;)`:'';
+  const last=it.k===lay.n-1,hasTitle=it.T>=30&&it.title;
+  return `<div class="tb" style="left:${it.left.toFixed(1)}px;top:${it.top.toFixed(1)}px;width:${it.L}px;height:${it.T}px;z-index:${it.k+1};--dd:${tl.dd}px;--T:${it.T}px;--delay:${delay}ms;--fall:${Math.round(tl.fall*1000)}ms"><div class="b3${it.fl?' fl':''}${it.img?' hascv':''}" style="--L:${it.L}px;--T:${it.T}px;--pw:${it.pw}px;--lip:${it.lip.toFixed(1)}px;--r:${it.rad.toFixed(1)}px;--sc:${it.sc};--by:${it.by.toFixed(1)}%;--iw:${it.iw}px;--fs:${it.fs.toFixed(1)}px;--sw:${it.sw}%${cv}"><i class="bsh"></i><i class="board t"></i><i class="board b"></i><div class="cut"></div><div class="face">${it.img?'<i class="img"></i>':''}<i class="edge"></i>${it.soft>.02?`<i class="soft" style="opacity:${it.soft.toFixed(2)}"></i>`:''}${hasTitle?`<i class="scrim"></i><span>${esc(it.title)}</span>`:''}</div>${last?'':'<i class="ao"></i>'}</div></div>`;
+}
+let twTok=0;
+async function towerMount(){
+  const el=document.querySelector('#rvSlide .twr');if(!el)return;
+  const tok=++twTok,y=Number(el.dataset.year)||currentYear,list=towerList(y);
+  if(!list.length)return;
+  const slide=el.parentNode,hides=[...slide.querySelectorAll('.twhide')],num=slide.querySelector('[data-tcount]');
+  const still=reduceMotion();
+  let prep;try{prep=await towerPrepare(list)}catch(_){prep=list.map(()=>({img:null}))}
+  if(tok!==twTok||!el.isConnected)return;
+  const lay=towerLayout(list,prep),tl=lay.tl;
+  const ah=Math.round(Math.max(220,Math.min(innerHeight*.56,600))),aw=Math.max(200,el.clientWidth-8),s=towerFit(lay,aw,ah);
+  el.style.height=Math.round(lay.h*s+22)+'px';
+  el.innerHTML=`<div class="twsc" style="width:${lay.w}px;height:${lay.h+20}px;transform:scale(${s.toFixed(4)})"><i class="twfl" style="left:${(lay.w-lay.items.reduce((a,b)=>Math.max(a,b.L),0))/2}px;width:${lay.items.reduce((a,b)=>Math.max(a,b.L),0)}px;bottom:2px"></i><div class="twi${still?' still':''}" style="width:${lay.w}px;height:${lay.h}px;--end:${Math.round(tl.end*1000)}ms">${lay.items.map(it=>twBookHTML(it,lay)).join('')}</div></div>`;
+  const reveal=()=>{
+    if(tok!==twTok||!el.isConnected)return;
+    hides.forEach(h=>h.classList.add('twshow'));
+    const to=Number(num&&num.dataset.tcount)||0;
+    if(!num)return;
+    if(still){num.textContent=to;return}
+    const t0=performance.now(),dur=tl.count*1000;
+    const step=t=>{if(tok!==twTok||!num.isConnected)return;const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);num.textContent=Math.round(to*e);if(p<1)requestAnimationFrame(step);else num.textContent=to};
+    requestAnimationFrame(step);
+  };
+  if(still)reveal();else setTimeout(reveal,Math.round(tl.end*1000));
+}
+
+/* ---------- 影片（Canvas）：與網頁同一份配置與時間軸 ---------- */
+function twRR(ctx,x,y,w,h,r){ /* r: [tl,tr,br,bl]，可帶橢圓以外的簡單圓角 */
+  const [a,b,c,d]=Array.isArray(r)?r:[r,r,r,r];
+  ctx.beginPath();ctx.moveTo(x+a,y);ctx.lineTo(x+w-b,y);ctx.quadraticCurveTo(x+w,y,x+w,y+b);ctx.lineTo(x+w,y+h-c);ctx.quadraticCurveTo(x+w,y+h,x+w-c,y+h);ctx.lineTo(x+d,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-d);ctx.lineTo(x,y+a);ctx.quadraticCurveTo(x,y,x+a,y);ctx.closePath();
+}
+function twFitText(ctx,text,maxW){
+  if(ctx.measureText(text).width<=maxW)return text;
+  let s=[...text];while(s.length>1&&ctx.measureText(s.join('')+'…').width>maxW)s.pop();return s.join('')+'…';
+}
+/* 在自然座標 (0,0)-(L,T) 畫一本書。sc：畫布縮放（影子的模糊與位移不受 transform 影響，要自己乘上）。 */
+function twDrawBook(ctx,it,s,withAO,fontFam){
+  const {L,T,pw,fw,lip,rad,sc}=it,H=T;
+  /* 落地影子（整本書的外形） */
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.62)';ctx.shadowBlur=(T*.06+2)*s;ctx.shadowOffsetY=(T*.07+2)*s;
+  twRR(ctx,2,2,L,H-2,[rad,5,5,rad]);ctx.fillStyle='#000';ctx.fill();
+  ctx.restore();
+  ctx.save();
+  if(it.fl){ctx.translate(L,0);ctx.scale(-1,1)}
+  /* 上下封面板 */
+  const bt=ctx.createLinearGradient(0,0,0,lip);bt.addColorStop(0,'rgba(255,255,255,.14)');bt.addColorStop(1,'rgba(0,0,0,.18)');
+  twRR(ctx,0,0,L+3,lip,[rad,6,0,0]);ctx.fillStyle=sc;ctx.fill();ctx.fillStyle=bt;ctx.fill();
+  const bb=ctx.createLinearGradient(0,H-lip,0,H);bb.addColorStop(0,'rgba(0,0,0,.06)');bb.addColorStop(1,'rgba(0,0,0,.4)');
+  twRR(ctx,0,H-lip,L+3,lip,[0,0,6,rad]);ctx.fillStyle=sc;ctx.fill();ctx.fillStyle=bb;ctx.fill();
+  /* 書頁 */
+  const px=L-pw-6,pyT=lip-1,pH=H-2*lip+2,pwid=pw+6,tp=T*.035;
+  ctx.save();
+  ctx.beginPath();ctx.moveTo(px,pyT);ctx.lineTo(px+pwid-3,pyT);ctx.lineTo(px+pwid,pyT+tp);ctx.lineTo(px+pwid,pyT+pH-tp);ctx.lineTo(px+pwid-3,pyT+pH);ctx.lineTo(px,pyT+pH);ctx.closePath();ctx.clip();
+  ctx.fillStyle='#ecdcb0';ctx.fillRect(px,pyT,pwid,pH);
+  /* 不規則的細頁線 */
+  const seed=twHash(it.title+it.k);let yy=pyT,i=0;
+  while(yy<pyT+pH){const r=((seed>>>(i%20))+i*7919)%100/100,gap=2.4+r*1.4;
+    ctx.fillStyle=r>.55?`rgba(120,90,40,${.12+r*.12})`:`rgba(255,255,255,${.1+r*.14})`;ctx.fillRect(px,yy,pwid,r>.8?1.3:.9);yy+=gap;i++}
+  let g=ctx.createLinearGradient(0,pyT,0,pyT+pH);g.addColorStop(0,'rgba(55,32,10,.42)');g.addColorStop(.14,'rgba(55,32,10,.1)');g.addColorStop(.42,'rgba(255,255,255,.08)');g.addColorStop(.72,'rgba(55,32,10,.04)');g.addColorStop(1,'rgba(55,32,10,.42)');ctx.fillStyle=g;ctx.fillRect(px,pyT,pwid,pH);
+  g=ctx.createLinearGradient(px,0,px+pwid,0);g.addColorStop(0,'rgba(30,17,4,.78)');g.addColorStop(.06,'rgba(30,17,4,.38)');g.addColorStop(.16,'rgba(30,17,4,.12)');g.addColorStop(.34,'rgba(0,0,0,0)');g.addColorStop(.66,'rgba(60,38,10,0)');g.addColorStop(.9,'rgba(60,38,10,.32)');g.addColorStop(1,'rgba(50,30,8,.55)');ctx.fillStyle=g;ctx.fillRect(px,pyT,pwid,pH);
+  g=ctx.createLinearGradient(px,0,px+22,0);g.addColorStop(0,'rgba(20,10,0,.55)');g.addColorStop(1,'rgba(20,10,0,0)');ctx.fillStyle=g;ctx.fillRect(px,pyT,22,pH);
+  g=ctx.createLinearGradient(px+pwid-7,0,px+pwid,0);g.addColorStop(0,'rgba(90,62,22,0)');g.addColorStop(1,'rgba(90,62,22,.35)');ctx.fillStyle=g;ctx.fillRect(px+pwid-7,pyT,7,pH);
+  ctx.restore();
+  /* 書脊面（真實封面帶） */
+  ctx.save();
+  twRR(ctx,0,0,fw,H,[rad,7,7,rad]);
+  ctx.shadowColor='rgba(0,0,0,.6)';ctx.shadowBlur=7*s;ctx.shadowOffsetX=(it.fl?-4:4)*s;ctx.fillStyle=sc;ctx.fill();
+  ctx.shadowColor='transparent';
+  twRR(ctx,0,0,fw,H,[rad,7,7,rad]);ctx.clip();
+  ctx.fillStyle=sc;ctx.fillRect(0,0,fw,H);
+  if(it.img){
+    const sk=it.iw/it.img.naturalWidth,srcH=Math.min(it.img.naturalHeight,T/sk),sy=(it.img.naturalHeight-srcH)*it.by/100;
+    ctx.drawImage(it.img,0,sy,it.img.naturalWidth,srcH,(fw-it.iw)/2,0,it.iw,srcH*sk);
+    /* 兩側淡出回書皮色 */
+    const x0=(fw-it.iw)/2,fwid=it.iw*.06;
+    let m=ctx.createLinearGradient(x0,0,x0+fwid,0);m.addColorStop(0,sc);m.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=m;ctx.fillRect(x0,0,fwid,H);
+    m=ctx.createLinearGradient(x0+it.iw-fwid,0,x0+it.iw,0);m.addColorStop(0,'rgba(0,0,0,0)');m.addColorStop(1,sc);ctx.fillStyle=m;ctx.fillRect(x0+it.iw-fwid,0,fwid,H);
+  }
+  /* 圓弧光影 */
+  g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(0,0,0,.14)');g.addColorStop(.14,'rgba(255,255,255,.07)');g.addColorStop(.34,'rgba(255,255,255,0)');g.addColorStop(.66,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.16)');ctx.fillStyle=g;ctx.fillRect(0,0,fw,H);
+  g=ctx.createLinearGradient(0,0,rad*1.3,0);g.addColorStop(0,'rgba(0,0,0,.28)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,rad*1.3,H);
+  g=ctx.createLinearGradient(fw*.86,0,fw,0);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.57,'rgba(0,0,0,.12)');g.addColorStop(1,'rgba(0,0,0,.34)');ctx.fillStyle=g;ctx.fillRect(fw*.86,0,fw*.14,H);
+  /* 上下邊緣淡入書皮色（柔化被切到的封面字） */
+  g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,sc);g.addColorStop(.26,'rgba(0,0,0,0)');g.addColorStop(.74,'rgba(0,0,0,0)');g.addColorStop(1,sc);ctx.globalAlpha=.2;ctx.fillStyle=g;ctx.fillRect(0,0,fw,H);ctx.globalAlpha=1;
+  if(it.soft>.02){ctx.globalAlpha=it.soft;ctx.fillStyle=sc;ctx.fillRect(0,0,fw,H);ctx.globalAlpha=1}
+  ctx.restore();
+  /* 上方書本在這本上的壓痕 */
+  if(withAO){
+    ctx.save();twRR(ctx,0,0,L+3,H,[rad,6,6,rad]);ctx.clip();
+    const ah=T*.5+8;g=ctx.createLinearGradient(0,0,0,ah);g.addColorStop(0,'rgba(0,0,0,.85)');g.addColorStop(.1,'rgba(0,0,0,.5)');g.addColorStop(.4,'rgba(0,0,0,.2)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,L+3,ah);ctx.restore();
+  }
+  ctx.restore();
+  /* 書名（不跟著鏡射，永遠是正向） */
+  if(T>=30&&it.title){
+    const cx=it.fl?L-fw/2:fw/2,cy=T/2;
+    ctx.save();ctx.font=`700 ${it.fs}px ${fontFam}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    const txt=twFitText(ctx,it.title,fw*.88-it.fs*.36*2),tw=ctx.measureText(txt).width;
+    const sw=Math.min(fw*.92,tw+it.fs*2.4),sh=T*.68;
+    ctx.translate(cx,cy);ctx.scale(sw/2,sh/2);
+    const rg=ctx.createRadialGradient(0,0,0,0,0,1);rg.addColorStop(0,'rgba(10,8,6,.36)');rg.addColorStop(.55,'rgba(10,8,6,.22)');rg.addColorStop(1,'rgba(10,8,6,0)');
+    ctx.fillStyle=rg;ctx.fillRect(-1,-1,2,2);
+    ctx.restore();
+    ctx.save();ctx.font=`700 ${it.fs}px ${fontFam}`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.shadowColor='rgba(0,0,0,.9)';ctx.shadowBlur=2*s;ctx.shadowOffsetY=1*s;ctx.fillStyle='#fff8e4';
+    ctx.fillText(txt,cx,cy+it.fs*.04);
+    ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=8*s;ctx.shadowOffsetY=0;ctx.fillText(txt,cx,cy+it.fs*.04);
+    ctx.restore();
+  }
+}
+/* 畫整座塔。t：從這一幕開始算起的秒數；(ox,oy,aw,ah)：可用區域；回傳實際用掉的高度。 */
+function towerDraw(ctx,lay,t,ox,oy,aw,ah,fontFam){
+  const s=towerFit(lay,aw,ah,1.25),tl=lay.tl,dipT=t-tl.end,dip=twSettleY(dipT);
+  const x0=ox+(aw-lay.w*s)/2,y0=oy+(ah-(lay.h+20)*s);       /* 靠下對齊（書塔放在地面上） */
+  /* 落地陰影 */
+  const maxL=lay.items.reduce((a,b)=>Math.max(a,b.L),0);
+  ctx.save();
+  const fx=x0+lay.w*s/2,fy=y0+lay.h*s+2*s,fr=maxL*s*.5;
+  ctx.translate(fx,fy);ctx.scale(1,.07);
+  const rg=ctx.createRadialGradient(0,0,0,0,0,fr);rg.addColorStop(0,'rgba(0,0,0,.75)');rg.addColorStop(.6,'rgba(0,0,0,.3)');rg.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.globalAlpha*=Math.min(1,Math.max(0,(t-tl.intro)/.6));ctx.fillStyle=rg;ctx.fillRect(-fr,-fr,fr*2,fr*2);
+  ctx.restore();
+  lay.items.forEach(it=>{
+    const p=(t-(tl.intro+it.k*tl.gap))/tl.fall;if(p<=0)return;
+    const dy=twDropY(Math.min(1,p),it.T,tl.dd)+dip;
+    ctx.save();ctx.globalAlpha*=Math.min(1,p/.08);
+    ctx.translate(x0+it.left*s,y0+(it.top+dy)*s);ctx.scale(s,s);
+    twDrawBook(ctx,it,s,it.k<lay.n-1,fontFam);
+    ctx.restore();
+  });
+  return (lay.h+20)*s;
+}
+
 /* ================= 年度回顧：加強版（動態、成就感） ================= */
 function rvTitle(n){
   if(n>=100)return '書海傳說';if(n>=50)return '書海領航員';if(n>=24)return '閱讀達人';
@@ -5710,17 +6021,10 @@ function reviewInject(y,D,out){
         const cs=list.slice(0,48),cols=cs.length<=6?3:cs.length<=12?4:cs.length<=24?6:8;
         res.push(`<div class="k">這一年的書</div><div class="cwall" style="--cols:${cols}">${cs.map((b,k)=>`<div class="cw" style="animation-delay:${(k*(1400/cs.length)).toFixed(0)}ms">${coverInner(b)}</div>`).join('')}</div><p>${n>48?`一共 ${n} 本，這裡先放上前 48 本。`:'每一本，都在這裡了。'}</p>`);
       }
-      if(n>=2){
-        const cm=Math.round(n*2.2),h=Math.max(10,Math.min(24,Math.floor(300/n)));
+      if(n>=1){
+        const cm=Math.round(n*TW_PAGE_CM),tl=towerTimeline(n),dur=Math.max(RV_DUR,Math.round(tl.total*1000));
         const cmp=cm<25?'差不多一個保溫瓶的高度':cm<60?'已經到你的膝蓋了':cm<110?'比一張書桌還高':cm<170?'比你的腰還高':'比一個人還高了';
-        list.forEach(b=>{try{spineAvg(b)}catch(_){}});
-        const budget=Math.min(n>24?540:470,Math.floor(innerHeight*(n>24?.6:.58)));
-        const wg=list.map((b,k)=>(n>24?.85:.6)+(hue(b.title+k)%8)*(n>24?.05:.14)),sw=wg.reduce((x,y)=>x+y,0),unit=Math.min(34/1.2,(budget-n)/sw);
-        const hts=wg.map(g=>Math.max(n>24?7:6,Math.round(g*unit)));
-        const books=list.map((b,k)=>{const hs=hue(b.title+k),bh=hts[k],j=((hs%13)-6)*1.8,rot=(((hs>>3)%9)-4)*.1,w=Math.min(innerWidth-110,190+(hs%7)*14),st=hs%3,fl=((hs>>4)%4===0)?' fl':'';
-          return `<div class="bk st${st}${fl}${b.cover?' has-cv':''}" style="${spineCss(b)};--bh:${bh}px;--bw:${w}px;--j:${j}px;--r:${rot}deg${b.cover?`;--cv:url(&quot;${esc(b.cover)}&quot;)`:''};animation-delay:${(k*(1500/n)).toFixed(0)}ms"><div class="sp">${bh>=12?`<span style="font-size:${Math.min(12,Math.round(bh*.62))}px">${esc(spineTitle(b.title))}</span>`:''}</div><div class="pg"></div>${b.series&&String(b.seriesNo||'').trim()&&bh>=15?`<i class="sb">${esc(String(b.seriesNo).trim())}</i>`:''}${b.favorite&&bh>=13?'<em class="rib"></em>':''}</div>`});
-        const tot=hts.reduce((x,y)=>x+y,0)+n;
-        res.push(`<div class="k">疊起來有多高</div><div class="rcols1" data-cm="${cm}" style="height:${tot+6}px">${books.join('')}</div><h2>疊起來約 <span class="rnum" data-count="${cm}">0</span> 公分高</h2><p>${esc(cmp)}（每本以 2.2 公分計算）。</p>`);
+        res.push(`<div class="k ktw">疊起來有多高</div><div class="twr" data-tower="1" data-year="${y}" data-n="${n}" data-dur="${dur}"></div><h2 class="twhide">疊起來約 <span class="rnum" data-tcount="${cm}">0</span> 公分高</h2><p class="twhide">共 ${n} 本書（每本以 ${TW_PAGE_CM} 公分計算）<br>${esc(cmp)}。</p>`);
       }
     }
     if(d.type==='bars'&&bestRun>=3){
@@ -5826,6 +6130,7 @@ function rvSounds(box){
 }
 function rvAfter(){
   const box=$('rvSlide'),rev=$('review');
+  if(typeof towerMount==='function')towerMount();
   rvSounds(box);
   if(rev&&!$('rvMute')){const m=document.createElement('button');m.type='button';m.id='rvMute';m.className='rvmute';m.setAttribute('aria-label','背景音樂開關');m.onclick=()=>{albMuted=!albMuted;ls.set('album-mute',albMuted?'1':'0');m.dataset.m=albMuted?'1':'0';m.textContent=albMuted?'音樂 關':'音樂 開';if(albMuted)rvPadStop();else{rvSounds($('rvSlide'))}};rev.appendChild(m)}
   const mb=$('rvMute');if(mb){mb.dataset.m=albMuted?'1':'0';mb.textContent=albMuted?'音樂 關':'音樂 開'}
