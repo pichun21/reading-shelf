@@ -6234,7 +6234,8 @@ function dsBind(cs){
     cs.classList.toggle('fl',can&&sc.scrollLeft>8);cs.classList.toggle('fr',can&&sc.scrollLeft<max-8);
   };
   let raf=0;
-  sc.addEventListener('scroll',()=>{upd();if(!coarse)return;cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>dsSelect(cs,dsCenter(cs)))},{passive:true});
+  let clr=0;
+  sc.addEventListener('scroll',()=>{upd();if(!coarse)return;cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>dsSelect(cs,dsCenter(cs)));clearTimeout(clr);clr=setTimeout(()=>dsSelect(cs,null),1300)},{passive:true});
   addEventListener('resize',upd);
   L.onclick=()=>sc.scrollBy({left:-sc.clientWidth*.7,behavior:'smooth'});
   R.onclick=()=>sc.scrollBy({left:sc.clientWidth*.7,behavior:'smooth'});
@@ -6251,7 +6252,7 @@ function dsBind(cs){
     if(Math.abs(sc.scrollLeft-sl)>8)return;
     dsSelect(cs,k);dsPull(k,stageCtx);
   });
-  requestAnimationFrame(()=>{upd();if(coarse)dsSelect(cs,dsCenter(cs))});
+  requestAnimationFrame(upd);
 }
 function dsPull(el,ctx){
   const id=el.dataset.id,b=byId(id);if(!b)return;
