@@ -1630,7 +1630,7 @@ html,body{overscroll-behavior-y:contain}
 <style>.slide .k.ktw{font-size:calc(1em + 2px);color:rgba(245,236,214,.92);letter-spacing:.32em}
 /* ===== 陳列模式（單排）：共用「書架」的木櫃樣式（.bookcase），只改成單層、可橫向捲動 ===== */
 .dwrap{position:relative;padding-top:22px;--dink:var(--ink)}
-.bookcase.dcase{--row:392px;--fw:14px;flex-wrap:nowrap;padding:0 14px;display:block;margin-bottom:26px}
+.bookcase.dcase{--row:432px;--fw:14px;flex-wrap:nowrap;padding:0 14px;display:block;margin-bottom:26px}
 .dscroll{height:var(--row);padding:0 6px var(--pl);display:flex;align-items:flex-end;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .dscroll::-webkit-scrollbar{display:none}
 .drow{display:flex;align-items:flex-end;gap:3px;width:max-content;min-width:100%;padding:0 4px;box-sizing:border-box}
@@ -1645,13 +1645,15 @@ html,body{overscroll-behavior-y:contain}
 .dwrap.pulling:after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.55);animation:dsDim .5s ease both;z-index:1500;pointer-events:none}
 @keyframes dsDim{from{opacity:0}to{opacity:1}}
 html[data-stage="display"] .so-shelf{display:none}
-@media (max-width:700px){.bookcase.dcase{--row:372px;--fw:10px;padding:0 8px}.dnav{display:none}}
+@media (max-width:700px){.bookcase.dcase{--row:420px;--fw:10px;padding:0 8px}.dnav{display:none}}
 .dnav{position:absolute;top:44%;z-index:6;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,236,200,.4);background:rgba(20,11,5,.6);color:#fbf1de;font-size:24px;line-height:34px;text-align:center;cursor:pointer;top:40%}
 .dnav.l{left:8px}.dnav.r{right:8px}.dnav:hover{background:rgba(60,34,16,.9)}
 .dbk{position:relative;flex:none;width:var(--w);height:var(--h);display:block;padding:0;border:0;background:none;cursor:pointer;transform-origin:bottom center;transform:rotate(var(--lean));transition:transform .34s cubic-bezier(.2,.9,.25,1.15),filter .25s,margin .3s;outline:none}
 .dsp{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;box-sizing:border-box;padding:16px 0 10px;border-radius:2px 3px 3px 2px;background:linear-gradient(90deg,rgba(0,0,0,.2),rgba(255,255,255,.1) 30%,rgba(0,0,0,.05) 70%,rgba(0,0,0,.22)),var(--bg,#7a5a40);color:var(--fg,#fbf4e6);box-shadow:inset 1px 0 0 rgba(255,255,255,.22),inset -1px 0 0 rgba(0,0,0,.3),2px 0 3px rgba(0,0,0,.4);overflow:hidden;gap:8px}
 .dsp .dt{writing-mode:vertical-rl;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.06em;line-height:1.12;flex:none;overflow:hidden;font-synthesis:none;text-align:start}
-.dsp .da{writing-mode:vertical-rl;font-size:10.5px;letter-spacing:.1em;opacity:.78;flex:none;max-height:70px;overflow:hidden}
+.dsp .da{writing-mode:vertical-rl;font-size:11px;letter-spacing:.12em;opacity:.82;flex:none;max-height:68px;overflow:hidden}
+.dsp .dl{display:block;width:64%;height:1px;background:currentColor;opacity:.3;flex:none}
+.dsp .dt+.dl{margin-top:auto}
 .dsp .dn{font-size:9.5px;letter-spacing:.04em;opacity:.55;flex:none;font-variant-numeric:tabular-nums}
 .dcase.has-sel .dbk{filter:brightness(.76) saturate(.9)}
 .dcase.has-sel .dbk.n2{filter:brightness(.84)}
@@ -6170,8 +6172,8 @@ function dsColor(b){
   im.onerror=()=>{};im.src=b.cover;
 }
 /* 書名排版：短的單欄大字；長的縮小字級排成兩欄；超長最多三欄再加「…」，完整書名在下方說明列 */
-function dsFit(t,ht){
-  const avail=ht-112,chars=[...t];
+function dsFit(t,ht,hasAu){
+  const avail=ht-112-(hasAu?84:0),chars=[...t];
   for(const f of [17,15,13.5,12]){
     const per=Math.floor(avail/(f*1.12)),cols=Math.ceil(chars.length/per);
     if(cols<=(f>=15?1:2)||(f===12&&cols<=3))return {f,cols,txt:t};
@@ -6188,15 +6190,15 @@ function dsBal(t,cols){
 }
 function dsSpine(b,i){
   const t=spineTitle(b.title),h=hue(b.title);
-  const ht=256+(h%6)*7,fit=dsFit(t,ht);
-  const w=Math.round(Math.max(36,16+fit.cols*fit.f*1.28)+(h%4));
   const au=String(b.author||'').split(/[、,，\/／&＆]/)[0].trim().slice(0,5);
+  const ht=292+(h%6)*8,fit=dsFit(t,ht,!!au),avail=ht-112-(au?84:0);
+  const w=Math.round(Math.max(38,16+fit.cols*fit.f*1.28)+(h%4));
   const lean=(h%11===0)?((h%2)?2:-2):0;
   dsColor(b);
   const c=dsCol.get(b.id),[hh,ss,ll]=spineHue(b);
   const bg=c?c.bg:`hsl(${hh} ${ss}% ${ll+8}%)`,fg=c?c.fg:'#fbf4e6';
   const num=String(i+1).padStart(2,'0');
-  return `<button type="button" class="dbk" data-id="${esc(b.id)}" data-i="${i}" data-t="${esc(b.title)}" data-a="${esc(b.author||'')}" style="--w:${w}px;--h:${ht}px;--lean:${lean}deg" aria-label="《${esc(b.title)}》"><span class="dsp" style="--bg:${bg};--fg:${fg}"><span class="dt" style="font-size:${fit.f}px;height:${ht-112}px">${dsBal(fit.txt,fit.cols)}</span>${au?`<span class="da">${esc(au)}</span>`:''}<span class="dn">${num}</span></span></button>`;
+  return `<button type="button" class="dbk" data-id="${esc(b.id)}" data-i="${i}" data-t="${esc(b.title)}" data-a="${esc(b.author||'')}" style="--w:${w}px;--h:${ht}px;--lean:${lean}deg" aria-label="《${esc(b.title)}》"><span class="dsp" style="--bg:${bg};--fg:${fg}"><span class="dt" style="font-size:${fit.f}px;height:${avail}px">${dsBal(fit.txt,fit.cols)}</span>${au?`<i class="dl"></i><span class="da">${esc(au)}</span>`:''}<i class="dl"></i><span class="dn">${num}</span></span></button>`;
 }
 function renderDisplay(st){
   const list=dsList();stageCtx=list.map(b=>b.id);
