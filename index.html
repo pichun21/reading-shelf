@@ -2265,7 +2265,7 @@ async function tidyCover(src){
   if(!changed)return {src,changed:false};
   const s=Math.min(1,560/h),o=document.createElement('canvas');o.width=Math.round(w*s);o.height=Math.round(h*s);
   const oc=o.getContext('2d');oc.imageSmoothingQuality='high';oc.drawImage(c,L,T,w,h,0,0,o.width,o.height);
-  return {src:o.toDataURL('image/jpeg',.88),changed:true,spine,ratio:h/w};
+  return {src:o.toDataURL('image/jpeg',.94),changed:true,spine,ratio:h/w};
 }
 
 /* ================= 儲存層（沿用原本的 readingShelfDB，舊資料直接相容） ================= */
@@ -2873,7 +2873,7 @@ $('coverZoom').addEventListener('input',e=>cropSetZoom(Number(e.target.value)||1
 $('zoomIn').onclick=()=>cropSetZoom((Number(pendingCrop.zoom)||1)+.15);$('zoomOut').onclick=()=>cropSetZoom((Number(pendingCrop.zoom)||1)-.15);
 $('resetCrop').onclick=resetPendingCrop;
 async function compress(file){
-  return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=520;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.78))};img.src=fr.result};fr.readAsDataURL(file)})
+  return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fr.error);fr.onload=()=>{const img=new Image();img.onerror=()=>rej(new Error('圖片讀取失敗'));img.onload=()=>{let w=img.width,h=img.height,max=1000;if(w>max||h>max){const s=Math.min(max/w,max/h);w=Math.round(w*s);h=Math.round(h*s)}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/webp',.92))};img.src=fr.result};fr.readAsDataURL(file)})
 }
 /* 網路封面存成圖片本身，避免來源網址失效後破圖 */
 async function localizeCover(url){
@@ -2882,7 +2882,7 @@ async function localizeCover(url){
     const r=await fetch(url,{mode:'cors',signal:ctl.signal});clearTimeout(t);if(!r.ok)return url;
     const blob=await r.blob();if(!String(blob.type).startsWith('image/'))return url;
     const u=URL.createObjectURL(blob);
-    return await new Promise(res=>{const im=new Image();im.onload=()=>{try{const s=Math.min(1,520/im.naturalWidth,520/im.naturalHeight);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/webp',.8))}catch{res(url)}finally{URL.revokeObjectURL(u)}};im.onerror=()=>{URL.revokeObjectURL(u);res(url)};im.src=u});
+    return await new Promise(res=>{const im=new Image();im.onload=()=>{try{const s=Math.min(1,1000/im.naturalWidth,1000/im.naturalHeight);const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*s));c.height=Math.max(1,Math.round(im.naturalHeight*s));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/webp',.92))}catch{res(url)}finally{URL.revokeObjectURL(u)}};im.onerror=()=>{URL.revokeObjectURL(u);res(url)};im.src=u});
   }catch{return url}
 }
 $('chooseCover').onclick=()=>$('bookCoverFile').click();
@@ -3209,8 +3209,8 @@ async function parseStyles(zip){
 }
 function styleLooksHighlighted(styleIdx,styles){const fid=styles.styleFill[Number(styleIdx)||0]||0;if(fid<=1)return false;const c=String(styles.fillColors[fid]||'').toUpperCase();if(!c)return true;if(['0','1','FFFFFFFF','00FFFFFF','FFFFFF'].includes(c))return false;return true}
 async function resizeExcelImage(blob){
-  try{const bmp=await createImageBitmap(blob);const scale=Math.min(1,500/bmp.width,750/bmp.height),w=Math.max(1,Math.round(bmp.width*scale)),h=Math.max(1,Math.round(bmp.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close?.();return c.toDataURL('image/jpeg',.84)}catch{
-    return await new Promise((res,rej)=>{const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{const scale=Math.min(1,500/im.naturalWidth,750/im.naturalHeight),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*scale));c.height=Math.max(1,Math.round(im.naturalHeight*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.84))};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('圖片讀取失敗'))};im.src=u})
+  try{const bmp=await createImageBitmap(blob);const scale=Math.min(1,800/bmp.width,1200/bmp.height),w=Math.max(1,Math.round(bmp.width*scale)),h=Math.max(1,Math.round(bmp.height*scale));const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close?.();return c.toDataURL('image/jpeg',.92)}catch{
+    return await new Promise((res,rej)=>{const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{const scale=Math.min(1,800/im.naturalWidth,1200/im.naturalHeight),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.naturalWidth*scale));c.height=Math.max(1,Math.round(im.naturalHeight*scale));c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.92))};im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('圖片讀取失敗'))};im.src=u})
   }
 }
 async function parseXlsx(file,opts={}){
@@ -5790,7 +5790,7 @@ function stripLocal(r){const {...x}=r;return JSON.parse(JSON.stringify(x))}
 async function coverBytes(dataUrl){
   const m=String(dataUrl).match(/^data:(image\/[\w+]+);base64,(.+)$/);if(!m)return null;
   if(m[1]==='image/jpeg')return bytesFromB64(m[2]);
-  try{const im=await loadImg(dataUrl);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return bytesFromB64(c.toDataURL('image/jpeg',.88).split(',')[1])}catch{return bytesFromB64(m[2])}
+  try{const im=await loadImg(dataUrl);const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);return bytesFromB64(c.toDataURL('image/jpeg',.95).split(',')[1])}catch{return bytesFromB64(m[2])}
 }
 
 /* ---------------- 第一次連上：問要合併還是以雲端為準 ---------------- */
