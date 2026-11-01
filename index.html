@@ -1628,32 +1628,29 @@ html,body{overscroll-behavior-y:contain}
 .slide .k+.twr+h2{margin-top:8px}
 </style>
 <style>.slide .k.ktw{font-size:calc(1em + 2px);color:rgba(245,236,214,.92);letter-spacing:.32em}
-/* ===== 陳列模式（單排） ===== */
-.dcase{--fw:13px;--dink:#fbf1de;position:relative;margin:0 -4px 20px;padding:0 0 0;border:var(--fw) solid transparent;border-radius:6px;overflow:hidden;-webkit-tap-highlight-color:transparent;
-  background-color:var(--wood);
-  background-image:linear-gradient(to bottom,rgba(0,0,0,.55) 0,rgba(0,0,0,.15) 10px,var(--lamp) 26px,var(--lamp2) 130px,transparent 62%),radial-gradient(ellipse 80% 70% at 50% 36%,var(--case-glow),transparent 78%),linear-gradient(var(--dim),var(--dim)),linear-gradient(var(--back),var(--back)),url(stamps/wood-back.webp),linear-gradient(90deg,rgba(255,236,200,.34) 0,transparent 3px,transparent calc(100% - 4px),rgba(0,0,0,.35) 100%),linear-gradient(var(--dim),var(--dim)),url(stamps/wood-v.webp);
-  background-size:100% 100%,100% 100%,100% 100%,100% 100%,cover,100% 100%,100% 100%,64px 900px;
-  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,repeat;
-  background-origin:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box;
-  background-clip:padding-box,padding-box,padding-box,padding-box,padding-box,border-box,border-box,border-box;
-  box-shadow:inset 0 0 0 1px rgba(30,16,6,.55),inset 22px 0 22px -16px rgba(0,0,0,.5),inset -22px 0 22px -16px rgba(0,0,0,.5),0 0 0 1px rgba(60,35,15,.4),0 28px 40px -24px var(--shadow)}
-.dcase .dhint{position:absolute;top:12px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em;color:var(--dink);opacity:.62;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.25)}
-.dscroll{overflow-x:auto;overflow-y:visible;padding:52px 22px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scroll-snap-type:none}
+/* ===== 陳列模式（單排）：共用「書架」的木櫃樣式（.bookcase），只改成單層、可橫向捲動 ===== */
+.dwrap{position:relative;padding-top:22px;--dink:var(--ink)}
+.bookcase.dcase{--row:392px;--fw:14px;flex-wrap:nowrap;padding:0 14px;display:block;margin-bottom:26px}
+.dscroll{height:var(--row);padding:0 6px var(--pl);display:flex;align-items:flex-end;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
 .dscroll::-webkit-scrollbar{display:none}
-.drow{display:flex;align-items:flex-end;gap:3px;width:max-content;min-width:100%;padding:0 6px;box-sizing:border-box}
-.dboard{height:22px;margin:0 -2px 0;background:linear-gradient(180deg,rgba(255,240,205,.55) 0,rgba(255,240,205,.12) 2px,transparent 5px,rgba(0,0,0,.4) 100%),linear-gradient(var(--dim),var(--dim)),url(stamps/wood-h.webp) 0 0/760px 250px,var(--wood-hi);box-shadow:0 9px 12px -3px rgba(0,0,0,.6),inset 0 -2px 3px rgba(0,0,0,.35);position:relative;z-index:2}
+.drow{display:flex;align-items:flex-end;gap:3px;width:max-content;min-width:100%;padding:0 4px;box-sizing:border-box}
 .dscroll{-webkit-mask-image:linear-gradient(90deg,#000,#000);mask-image:linear-gradient(90deg,#000,#000)}
-.dcase.fl .dscroll{-webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000);mask-image:linear-gradient(90deg,transparent,#000 30px,#000)}
-.dcase.fr .dscroll{-webkit-mask-image:linear-gradient(90deg,#000,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(90deg,#000,#000 calc(100% - 30px),transparent)}
-.dcase.fl.fr .dscroll{-webkit-mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent);mask-image:linear-gradient(90deg,transparent,#000 30px,#000 calc(100% - 30px),transparent)}
+.dcase.fl .dscroll{-webkit-mask-image:linear-gradient(90deg,transparent,#000 26px,#000);mask-image:linear-gradient(90deg,transparent,#000 26px,#000)}
+.dcase.fr .dscroll{-webkit-mask-image:linear-gradient(90deg,#000,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,#000,#000 calc(100% - 26px),transparent)}
+.dcase.fl.fr .dscroll{-webkit-mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+.dcap{min-height:48px;padding:0 14px;text-align:center;color:var(--ink);line-height:1.4}
+.dcap b{font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dcap span{font-size:12.5px;color:var(--ink-soft)}
+.dhint{text-align:center;font-size:11.5px;letter-spacing:.12em;color:var(--ink-soft);opacity:.8;margin:4px 0 6px}
+.dwrap.pulling:after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.55);animation:dsDim .5s ease both;z-index:1500;pointer-events:none}
+@keyframes dsDim{from{opacity:0}to{opacity:1}}
+html[data-stage="display"] .so-shelf{display:none}
+@media (max-width:700px){.bookcase.dcase{--row:372px;--fw:10px;padding:0 8px}.dnav{display:none}}
 .dnav{position:absolute;top:44%;z-index:6;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,236,200,.4);background:rgba(20,11,5,.6);color:#fbf1de;font-size:24px;line-height:34px;text-align:center;cursor:pointer;top:40%}
 .dnav.l{left:8px}.dnav.r{right:8px}.dnav:hover{background:rgba(60,34,16,.9)}
 .dbk{position:relative;flex:none;width:var(--w);height:var(--h);display:block;padding:0;border:0;background:none;cursor:pointer;transform-origin:bottom center;transform:rotate(var(--lean));transition:transform .34s cubic-bezier(.2,.9,.25,1.15),filter .25s,margin .3s;outline:none}
 .dsp{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;height:100%;box-sizing:border-box;padding:16px 0 10px;border-radius:2px 3px 3px 2px;background:linear-gradient(90deg,rgba(0,0,0,.2),rgba(255,255,255,.1) 30%,rgba(0,0,0,.05) 70%,rgba(0,0,0,.22)),var(--bg,#7a5a40);color:var(--fg,#fbf4e6);box-shadow:inset 1px 0 0 rgba(255,255,255,.22),inset -1px 0 0 rgba(0,0,0,.3),2px 0 3px rgba(0,0,0,.4);overflow:hidden;gap:8px}
 .dsp .dt{writing-mode:vertical-rl;font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:.06em;line-height:1.12;flex:none;overflow:hidden;font-synthesis:none;text-align:start}
-.dcap{min-height:50px;padding:12px 14px 10px;text-align:center;color:var(--dink);text-shadow:0 1px 2px rgba(0,0,0,.28);font-size:14px;line-height:1.4}
-.dcap b{display:block;font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.04em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.dcap span{font-size:12px;opacity:.7}
 .dsp .da{writing-mode:vertical-rl;font-size:10.5px;letter-spacing:.1em;opacity:.78;flex:none;max-height:70px;overflow:hidden}
 .dsp .dn{font-size:9.5px;letter-spacing:.04em;opacity:.55;flex:none;font-variant-numeric:tabular-nums}
 .dcase.has-sel .dbk{filter:brightness(.76) saturate(.9)}
@@ -1663,20 +1660,13 @@ html,body{overscroll-behavior-y:contain}
 .dcase .dbk.sel .dsp{box-shadow:inset 1px 0 0 rgba(255,255,255,.3),inset -1px 0 0 rgba(0,0,0,.3),0 0 0 1px rgba(255,236,190,.55),0 0 24px 3px rgba(255,214,140,.38),8px 14px 20px -4px rgba(0,0,0,.7)}
 .dbk:focus-visible .dsp{outline:2px solid var(--accent);outline-offset:2px}
 .dbk.out{opacity:0;transition:none}
-.dcase.pulling:after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.55);animation:dsDim .5s ease both;z-index:7;pointer-events:none}
-@keyframes dsDim{from{opacity:0}to{opacity:1}}
-html[data-stage="display"] .so-shelf{display:none}
-:root[data-case="nordic"] .dcase{--dink:#3b3a33}
-:root[data-case="nordic"] .dcase .dhint,:root[data-case="nordic"] .dcap{text-shadow:none}
-:root[data-case="nordic"][data-theme="dark"] .dcase{--dink:#fbf1de}
-@media (prefers-color-scheme:dark){:root[data-case="nordic"]:not([data-theme="light"]) .dcase{--dink:#fbf1de}}
+
 .dghost{position:fixed;z-index:2000;pointer-events:none;filter:drop-shadow(0 18px 22px rgba(0,0,0,.55))}
 .dghost .dg-sp,.dghost .dg-cv{position:absolute;border-radius:2px 4px 4px 2px;overflow:hidden}
 .dghost .dg-sp{transform-origin:0 0}
 .dghost .dg-sp .dsp{width:100%;height:100%;box-shadow:none}
 .dghost .dg-cv{inset:0;opacity:0;background:var(--paper-2,#eee)}
 .dghost .dg-cv img{width:100%;height:100%;object-fit:cover;display:block}
-@media (max-width:700px){.dscroll{padding:44px 18px 0}.dnav{display:none}}
 @media (prefers-reduced-motion:reduce){.dbk{transition:none}}
 </style>
 
@@ -6213,7 +6203,7 @@ function renderDisplay(st){
   syncSortRow();syncShowRow();applyCase();syncOpts();
   if(!books.length){st.innerHTML=`<div class="empty welcome"><p>歡迎來到頁間日子。書架還是空的，從這裡開始：</p><div class="welcome-acts"><button type="button" class="btn primary" id="wAdd">放上第一本書</button></div></div>`;const w=$('wAdd');if(w)w.onclick=()=>openEditor();return}
   if(!list.length){st.innerHTML=`<div class="empty">${currentYear} 年的書架還空著。<br><button type="button" class="btn primary" id="emptyAdd">放上第一本書</button></div>`;$('emptyAdd').onclick=()=>openEditor();return}
-  st.innerHTML=`<div class="dcase" id="dcase"><div class="dhint" aria-hidden="true">${list.length} 本・左右滑動選書，點一下抽出來</div><div class="dscroll" id="dscroll"><div class="drow">${list.map((b,i)=>dsSpine(b,i)).join('')}</div></div><div class="dboard"></div><div class="dcap" id="dcap" aria-live="polite"></div><button type="button" class="dnav l" aria-label="往左" hidden>‹</button><button type="button" class="dnav r" aria-label="往右" hidden>›</button></div>`;
+  st.innerHTML=`<div class="dwrap" id="dwrap"><div class="bookcase dcase" id="dcase"><div class="dscroll" id="dscroll"><div class="drow">${list.map((b,i)=>dsSpine(b,i)).join('')}</div></div><button type="button" class="dnav l" aria-label="往左" hidden>‹</button><button type="button" class="dnav r" aria-label="往右" hidden>›</button></div><div class="dcap" id="dcap" aria-live="polite"></div><div class="dhint">${list.length} 本・左右滑動選書，點一下抽出來</div></div>`;
   dsBind($('dcase'));
 }
 function dsSelect(cs,el){
@@ -6235,19 +6225,16 @@ function dsCenter(cs){
   cs.querySelectorAll('.dbk').forEach(k=>{const b=k.getBoundingClientRect(),d=Math.abs((b.left+b.right)/2-mid);if(d<bd){bd=d;best=k}});
   return best;
 }
-let dsMoved=false;
 function dsBind(cs){
   const sc=cs.querySelector('.dscroll'),L=cs.querySelector('.dnav.l'),R=cs.querySelector('.dnav.r');
   const coarse=matchMedia('(hover:none)').matches;
   const upd=()=>{
-    const max=sc.scrollWidth-sc.clientWidth;
-    const can=max>8;
+    const max=sc.scrollWidth-sc.clientWidth,can=max>8;
     L.hidden=!can||sc.scrollLeft<8||coarse;R.hidden=!can||sc.scrollLeft>max-8||coarse;
     cs.classList.toggle('fl',can&&sc.scrollLeft>8);cs.classList.toggle('fr',can&&sc.scrollLeft<max-8);
   };
-  let raf=0,tmr=0;
-  const onScroll=()=>{upd();if(!coarse)return;cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>dsSelect(cs,dsCenter(cs)));dsMoved=true;clearTimeout(tmr);tmr=setTimeout(()=>{dsMoved=false},220)};
-  sc.addEventListener('scroll',onScroll,{passive:true});
+  let raf=0;
+  sc.addEventListener('scroll',()=>{upd();if(!coarse)return;cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>dsSelect(cs,dsCenter(cs)))},{passive:true});
   addEventListener('resize',upd);
   L.onclick=()=>sc.scrollBy({left:-sc.clientWidth*.7,behavior:'smooth'});
   R.onclick=()=>sc.scrollBy({left:sc.clientWidth*.7,behavior:'smooth'});
@@ -6256,16 +6243,16 @@ function dsBind(cs){
     cs.addEventListener('pointerleave',()=>dsSelect(cs,null));
   }
   cs.addEventListener('focusin',e=>{const k=e.target.closest&&e.target.closest('.dbk');if(k)dsSelect(cs,k)});
+  /* 點一下就抽出那本；如果手指是在滑動書櫃（捲動距離超過一點點），就不算點 */
+  let sx=0,sl=0;
+  cs.addEventListener('pointerdown',e=>{sx=e.clientX;sl=sc.scrollLeft},{passive:true});
   cs.addEventListener('click',e=>{
     const k=e.target.closest('.dbk');if(!k)return;
-    if(dsMoved)return;
-    if(coarse&&!k.classList.contains('sel')){dsSelect(cs,k);k.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});return}
-    dsPull(k,stageCtx);
+    if(Math.abs(sc.scrollLeft-sl)>8)return;
+    dsSelect(cs,k);dsPull(k,stageCtx);
   });
-  /* 讓第一本（手機上是中間那本）先站出來，並把書櫃捲到上次選的位置 */
   requestAnimationFrame(()=>{upd();if(coarse)dsSelect(cs,dsCenter(cs))});
 }
-/* 抽書：書背滑出書櫃、翻成封面，浮到畫面中央，再接到原本的「查看這本書」 */
 function dsPull(el,ctx){
   const id=el.dataset.id,b=byId(id);if(!b)return;
   if(reduceMotion()||document.querySelector('.dghost')){openBook(id,ctx,{intro:true});return}
@@ -6289,8 +6276,8 @@ function dsPull(el,ctx){
   ],{duration:D,easing:flipEase});
   g.querySelector('.dg-sp').animate([{opacity:1,offset:0},{opacity:1,offset:.5},{opacity:0,offset:.52},{opacity:0,offset:1}],{duration:D,fill:'forwards'});
   g.querySelector('.dg-cv').animate([{opacity:0,offset:0},{opacity:0,offset:.52},{opacity:1,offset:.56},{opacity:1,offset:1}],{duration:D,fill:'forwards'});
-  const cs=document.getElementById('dcase');if(cs)cs.classList.add('pulling');
-  setTimeout(()=>{openBook(id,ctx,{intro:true});setTimeout(()=>{g.remove();el.classList.remove('out');const c=document.getElementById('dcase');if(c)c.classList.remove('pulling')},260)},D-60);
+  const cs=document.getElementById('dwrap');if(cs)cs.classList.add('pulling');
+  setTimeout(()=>{openBook(id,ctx,{intro:true});setTimeout(()=>{g.remove();el.classList.remove('out');const c=document.getElementById('dwrap');if(c)c.classList.remove('pulling')},260)},D-60);
 }
 
 /* ================= 年度回顧：加強版（動態、成就感） ================= */
