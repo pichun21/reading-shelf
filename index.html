@@ -1670,6 +1670,8 @@ html[data-stage="display"] .so-shelf{display:none}
 .dghost .dg-cv{inset:0;opacity:0;background:var(--paper-2,#eee)}
 .dghost .dg-cv img{width:100%;height:100%;object-fit:cover;display:block}
 @media (prefers-reduced-motion:reduce){.dbk{transition:none}}
+/* 手機：輸入框字級至少 16px，iOS 才不會在點進欄位時自動放大、把畫面切掉 */
+@media (max-width:900px){input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea{font-size:16px !important}.sheet{overflow-x:hidden}}
 </style>
 
 </head>
@@ -1876,7 +1878,7 @@ html[data-stage="display"] .so-shelf{display:none}
         </div>
         <div class="field">
           <label for="bookSeriesNo">第幾集<small>選填</small></label>
-          <input id="bookSeriesNo" maxlength="8" inputmode="decimal" autocomplete="off" placeholder="1、2、上、下">
+          <input id="bookSeriesNo" maxlength="8" inputmode="text" autocomplete="off" autocapitalize="off" placeholder="1、2、上、下">
         </div>
         <div class="field">
           <label for="bookShelfShow">在書櫃上的樣子<small>選填</small></label>
