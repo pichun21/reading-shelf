@@ -2961,6 +2961,7 @@ $('editForm').onsubmit=async e=>{
   if(isRemoteCover(cover)){btn.textContent='正在保存封面…';cover=await localizeCover(cover)}
   const b={...(old||{}),id:old?.id||('b'+Date.now()),title,year:formYear(),month,author:$('bookAuthor').value.trim(),translator:$('bookTranslator').value.trim(),...seriesFields(),favorite:$('bookFav').checked,note:$('bookNote').value.trim(),tags:[...editTags],cover,coverX:pendingCrop.x,coverY:pendingCrop.y,coverZoom:pendingCrop.zoom};
   if(editFeel)b.feel=editFeel;else delete b.feel;
+  if(isNew){const sib=books.filter(x=>String(x.id)!==String(b.id)&&Number(x.year)===Number(b.year)&&monthNum(x.month)===monthNum(b.month));if(sib.length)b.ord=Math.max(...sib.map(ordKey))+1;else delete b.ord}
   delete b.status;delete b.due;if(editSource)b.source=editSource;else delete b.source;if(editFormat)b.format=editFormat;else delete b.format;
   if(cover&&pendingCoverSource)b.coverSource=pendingCoverSource;else if(!cover)delete b.coverSource;
   if(cover&&pendingOriginal&&pendingOriginal!==cover)b.coverOriginal=pendingOriginal;else delete b.coverOriginal;
