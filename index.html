@@ -974,6 +974,15 @@ html[data-view="pile"] #intro{display:none}
 @media (max-width:360px){.pile-grid{grid-template-columns:repeat(3,1fr)}}
 
 /* ================= 集郵冊 ================= */
+
+/* 翻頁：整張內頁翻起來 */
+.alb-turn{position:absolute;inset:0;transform-origin:left center;transform-style:preserve-3d;z-index:6;pointer-events:none;will-change:transform,opacity}
+.alb-turn .tf,.alb-turn .tb{position:absolute;inset:0;border-radius:6px 14px 14px 6px;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.alb-turn .tf .alb-page{visibility:visible!important;transition:none!important}
+.alb-turn .tb{transform:rotateY(180deg);background:var(--alb-paper);background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,#827f6b08 4px),linear-gradient(to left,rgba(0,0,0,.22),rgba(0,0,0,0) 38%);box-shadow:inset -6px 0 14px -6px #0004}
+.alb-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,rgba(40,30,10,0) 0%,rgba(40,30,10,.18) 45%,rgba(40,30,10,.5) 100%);opacity:0}
+.alb-leaf.hold .stamp.land,.alb-leaf.hold .stamp.land *{animation-play-state:paused!important}
+.alb-cast{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:6px 14px 14px 6px;background:linear-gradient(to right,rgba(30,20,5,.34),rgba(30,20,5,.12) 45%,rgba(30,20,5,0) 80%);opacity:0}
 :root{--alb-paper:#f7f2e7;--alb-ink:#263c39;--alb-soft:#69776f;--alb-rule:#d8d8ca;--alb-spine:#60756b;--alb-mark:#a34d45;--alb-desk:#2a3a37;--alb-desk2:#1a2625;--alb-mys:#eae9df;--alb-mysb:#c1c4b2}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--alb-paper:#292d27;--alb-ink:#ece7dc;--alb-soft:#b6bdb6;--alb-rule:#505a52;--alb-spine:#667d6c;--alb-mark:#dc9b8e;--alb-mys:#343c32;--alb-mysb:#70816f}}
 :root[data-theme="dark"]{--alb-paper:#292d27;--alb-ink:#ece7dc;--alb-soft:#b6bdb6;--alb-rule:#505a52;--alb-spine:#667d6c;--alb-mark:#dc9b8e;--alb-mys:#343c32;--alb-mysb:#70816f}
@@ -4613,23 +4622,47 @@ function albShut(){
   if(albBusy||!albOpenState)return;albBusy=true;albClear();albEl('albDetail').open&&albEl('albDetail').close();
   const stg=albEl('albStage');stg.classList.add('closing','moving');albSetState(false);albSound('close');albLater(()=>{albBusy=false;stg.classList.remove('closing','moving');albLater(albCloseDialog,reduceMotion()?0:260)},reduceMotion()?60:1050);
 }
-/* 翻頁：舊頁像紙一樣翻走；往回翻則是前一頁從左邊蓋回來 */
+/* 翻頁：整張內頁以書脊為軸翻起來（有明暗、落影與紙背）；往回翻則是前一頁從左邊翻回來蓋住 */
 function albTurn(dir){
   const to=albPage+dir;if(albBusy||to<0||to>=ALB_PAGES)return;albBusy=true;albEl('albDetail').open&&albEl('albDetail').close();
-  const wrap=albEl('albLeaf'),grid=albEl('albGrid'),count=albCount();
-  const fromHTML=grid.innerHTML,toHTML=albGridHTML(to,count,false);
-  albSound('flip');albEl('albTz').hidden=to!==ALB_PAGES-2;
-  albEl('albPageNo').textContent=`${to+1} / ${ALB_PAGES}`;albEl('albNote').textContent=ALB_NOTE[to]||'';albEl('albPrev').disabled=to===0;albEl('albNextPg').disabled=to===ALB_PAGES-1;
-  const fin=()=>{albPage=to;albRender(true);albBusy=false};
-  if(reduceMotion()){fin();return}
-  const ov=document.createElement('div');ov.className='alb-grid alb-over';
-  if(dir>0){ov.innerHTML=fromHTML;grid.innerHTML=toHTML}else{ov.innerHTML=toHTML}
-  wrap.appendChild(ov);
-  const a=ov.animate(dir>0
-    ?[{transform:'rotateY(0deg)',opacity:1,filter:'brightness(1)'},{transform:'rotateY(-95deg)',opacity:.2,filter:'brightness(.8)'}]
-    :[{transform:'rotateY(-95deg)',opacity:.2,filter:'brightness(.8)'},{transform:'rotateY(0deg)',opacity:1,filter:'brightness(1)'}],
-    {duration:460,easing:'cubic-bezier(.4,.1,.3,1)',fill:'forwards'});
-  a.onfinish=()=>{ov.remove();fin()};
+  const count=albCount(),fwHTML=albGridHTML(to,count,true),bwHTML=albGridHTML(to,count,false);
+  const upd=(root,html)=>{
+    const q=id=>root.querySelector('#'+id);
+    q('albGrid').innerHTML=html;q('albTz').hidden=to!==ALB_PAGES-2;
+    q('albPageNo').textContent=`${to+1} / ${ALB_PAGES}`;q('albNote').textContent=ALB_NOTE[to]||'';
+    q('albPrev').disabled=to===0;q('albNextPg').disabled=to===ALB_PAGES-1;
+  };
+  const leaf=albEl('albLeaf');
+  const fin=()=>{leaf.classList.remove('hold');albPage=to;albRender(true);albBusy=false};
+  albSound('flip');
+  if(reduceMotion()){upd(document,bwHTML);fin();return}
+  const page=document.querySelector('#albStage .alb-page'),book=page.parentNode;
+  const clone=page.cloneNode(true);
+  if(dir<0)upd(clone,bwHTML);                              /* 往回翻：翻過來的是「前一頁」的樣子 */
+  clone.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+  clone.querySelectorAll('.land').forEach(e=>e.classList.remove('land'));
+  clone.removeAttribute('aria-label');clone.setAttribute('aria-hidden','true');clone.inert=true;
+  clone.querySelectorAll('button,a').forEach(e=>e.tabIndex=-1);
+  const turn=document.createElement('div');turn.className='alb-turn';
+  const tf=document.createElement('div');tf.className='tf';tf.appendChild(clone);
+  const sh=document.createElement('div');sh.className='alb-shade';tf.appendChild(sh);
+  const tb=document.createElement('div');tb.className='tb';
+  turn.append(tf,tb);
+  const cast=document.createElement('div');cast.className='alb-cast';
+  book.append(cast,turn);
+  if(dir>0){upd(document,fwHTML);leaf.classList.add('hold')}   /* 往前翻：底下先換成下一頁（還沒蓋的郵票先留空位，翻完才蓋章） */
+  const D=860,E='cubic-bezier(.5,.04,.25,1)';
+  const fw=dir>0;
+  const kf=(f,r)=>fw?f:r;
+  const turnKF=fw
+    ?[{transform:'rotateY(0deg)',opacity:1,offset:0},{transform:'rotateY(-96deg)',opacity:1,offset:.55},{transform:'rotateY(-168deg)',opacity:1,offset:.85},{transform:'rotateY(-176deg)',opacity:0,offset:1}]
+    :[{transform:'rotateY(-176deg)',opacity:0,offset:0},{transform:'rotateY(-168deg)',opacity:1,offset:.15},{transform:'rotateY(-96deg)',opacity:1,offset:.45},{transform:'rotateY(0deg)',opacity:1,offset:1}];
+  const shadeKF=fw?[{opacity:0},{opacity:.95,offset:.5},{opacity:1}]:[{opacity:1},{opacity:.95,offset:.5},{opacity:0}];
+  const castKF=fw?[{opacity:0},{opacity:.9,offset:.35},{opacity:.55,offset:.7},{opacity:0}]:[{opacity:0},{opacity:.55,offset:.3},{opacity:.9,offset:.65},{opacity:0}];
+  const a1=turn.animate(turnKF,{duration:D,easing:E,fill:'forwards'});
+  sh.animate(shadeKF,{duration:D,easing:E,fill:'forwards'});
+  cast.animate(castKF,{duration:D,easing:E,fill:'forwards'});
+  a1.onfinish=()=>{if(dir<0)upd(document,bwHTML);turn.remove();cast.remove();fin()};
 }
 /* ---- 放大看郵票 ---- */
 var albChosen=null;
