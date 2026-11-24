@@ -981,6 +981,7 @@ html[data-view="pile"] #intro{display:none}
 .alb-turn .tf .alb-page{visibility:visible!important;transition:none!important}
 .alb-turn .tb{transform:rotateY(180deg);background:var(--alb-paper);background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,#827f6b08 4px),linear-gradient(to left,rgba(0,0,0,.22),rgba(0,0,0,0) 38%);box-shadow:inset -6px 0 14px -6px #0004}
 .alb-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,rgba(40,30,10,0) 0%,rgba(40,30,10,.18) 45%,rgba(40,30,10,.5) 100%);opacity:0}
+.alb-stage.turning .alb-prog .track{backface-visibility:visible!important;-webkit-backface-visibility:visible!important}
 .alb-leaf.hold .stamp.land,.alb-leaf.hold .stamp.land *{animation-play-state:paused!important}
 .alb-cast{position:absolute;inset:0;z-index:3;pointer-events:none;border-radius:6px 14px 14px 6px;background:linear-gradient(to right,rgba(30,20,5,.34),rgba(30,20,5,.12) 45%,rgba(30,20,5,0) 80%);opacity:0}
 :root{--alb-paper:#f7f2e7;--alb-ink:#263c39;--alb-soft:#69776f;--alb-rule:#d8d8ca;--alb-spine:#60756b;--alb-mark:#a34d45;--alb-desk:#2a3a37;--alb-desk2:#1a2625;--alb-mys:#eae9df;--alb-mysb:#c1c4b2}
@@ -4633,9 +4634,11 @@ function albTurn(dir){
     q('albPrev').disabled=to===0;q('albNextPg').disabled=to===ALB_PAGES-1;
   };
   const leaf=albEl('albLeaf');
-  const fin=()=>{leaf.classList.remove('hold');albPage=to;albRender(true);albBusy=false};
+  const stg=albEl('albStage');
+  const fin=()=>{stg.classList.remove('turning');leaf.classList.remove('hold');albPage=to;albRender(true);albBusy=false};
   albSound('flip');
   if(reduceMotion()){upd(document,bwHTML);fin();return}
+  stg.classList.add('turning');
   const page=document.querySelector('#albStage .alb-page'),book=page.parentNode;
   const clone=page.cloneNode(true);
   if(dir<0)upd(clone,bwHTML);                              /* 往回翻：翻過來的是「前一頁」的樣子 */
@@ -4655,8 +4658,8 @@ function albTurn(dir){
   const fw=dir>0;
   const kf=(f,r)=>fw?f:r;
   const turnKF=fw
-    ?[{transform:'rotateY(0deg)',opacity:1,offset:0},{transform:'rotateY(-96deg)',opacity:1,offset:.55},{transform:'rotateY(-168deg)',opacity:1,offset:.85},{transform:'rotateY(-176deg)',opacity:0,offset:1}]
-    :[{transform:'rotateY(-176deg)',opacity:0,offset:0},{transform:'rotateY(-168deg)',opacity:1,offset:.15},{transform:'rotateY(-96deg)',opacity:1,offset:.45},{transform:'rotateY(0deg)',opacity:1,offset:1}];
+    ?[{transform:'rotateY(0deg)',opacity:1,offset:0},{transform:'rotateY(-92deg)',opacity:1,offset:.46},{transform:'rotateY(-132deg)',opacity:.7,offset:.64},{transform:'rotateY(-152deg)',opacity:0,offset:.8},{transform:'rotateY(-152deg)',opacity:0,offset:1}]
+    :[{transform:'rotateY(-152deg)',opacity:0,offset:0},{transform:'rotateY(-152deg)',opacity:0,offset:.2},{transform:'rotateY(-132deg)',opacity:.7,offset:.36},{transform:'rotateY(-92deg)',opacity:1,offset:.54},{transform:'rotateY(0deg)',opacity:1,offset:1}];
   const shadeKF=fw?[{opacity:0},{opacity:.95,offset:.5},{opacity:1}]:[{opacity:1},{opacity:.95,offset:.5},{opacity:0}];
   const castKF=fw?[{opacity:0},{opacity:.9,offset:.35},{opacity:.55,offset:.7},{opacity:0}]:[{opacity:0},{opacity:.55,offset:.3},{opacity:.9,offset:.65},{opacity:0}];
   const a1=turn.animate(turnKF,{duration:D,easing:E,fill:'forwards'});
