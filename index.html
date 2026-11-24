@@ -4431,21 +4431,37 @@ function showNotionPreview(file,result){
 })();
 
 /* ================= 閱讀集郵冊：每讀完 4 本收藏一枚郵票，40 本集滿十枚 ================= */
-const ALB_STAMPS=[
+/* 每一年各有一組郵票。要新增下一年：把圖放進 stamps/年份/（s01–s10、c01、c02、cover，.webp），再仿照 2027 那一段加一組。
+   沒有設定的年份，會沿用最近一個有設定的年份（所以 2027 在圖到齊之前，看到的還是 2026 這組）。 */
+const ALB_SETS={
+  2026:{dir:'stamps/',cover:'stamps/cover.webp',alt:'2026 橡果藏書：墨綠布紋與燙金松鼠的閱讀集郵冊封面',
+    note:['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —','— 典藏款 · 04 —'],
+    stamps:[
   {n:4,name:'茶杯',f:'s01'},{n:8,name:'書本嫩芽',f:'s02'},{n:12,name:'司康',f:'s03'},{n:16,name:'窗邊盆栽',f:'s04'},
   {n:20,name:'夜讀檯燈',f:'s05'},{n:24,name:'舒適閱讀椅',f:'s06'},{n:28,name:'完整小書房',f:'s07'},{n:32,name:'閱讀松鼠',f:'s08'},
   {n:36,name:'湖畔閱讀小船',f:'s09'},{n:40,name:'樹屋祕密圖書館',f:'s10'}
-];
-/* 典藏款：集滿十枚之外的兩枚額外郵票（一年讀滿 45 本／一年十二個月都有讀） */
-const ALB_RARE=[
+],
+    rare:[
   {k:'count',name:'雨窗讀書天',f:'c02',n:45,need:'一年讀滿 45 本',short:'年讀 45 本'},
   {k:'months',name:'樹蔭吊床',f:'c01',need:'一年十二個月都有讀',short:'每月都有讀'}
-];
+]}
+  ,2027:{dir:'stamps/2027/',cover:'stamps/2027/cover.webp',alt:'2027 刺蝟四季：酒紅布紋與燙金刺蝟的閱讀集郵冊封面',
+    note:['— 閱讀的起點 · 01 —','— 四季慢慢走過 · 02 —','— 特別紀念 · 03 —','— 典藏款 · 04 —'],
+    stamps:[{n:4,name:'蘋果花下午茶',f:'s01'},{n:8,name:'櫻花野餐',f:'s02'},{n:12,name:'雨天圖書館',f:'s03'},{n:16,name:'海邊躺椅',f:'s04'},{n:20,name:'檸檬樹手帳',f:'s05'},{n:24,name:'黃昏提燈',f:'s06'},{n:28,name:'楓葉散步',f:'s07'},{n:32,name:'南瓜小屋',f:'s08'},{n:36,name:'雪窗暖毯',f:'s09'},{n:40,name:'壁爐書房',f:'s10'}],
+    rare:[{k:'count',name:'極光列車',f:'c02',n:45,need:'一年讀滿 45 本',short:'年讀 45 本'},{k:'months',name:'星空樹屋圖書館',f:'c01',need:'一年十二個月都有讀',short:'每月都有讀'}]}
+};
+var ALB_STAMPS,ALB_RARE,ALB_NOTE,ALB_DIR,ALB_PAGES,ALB_USED=0;
 const ALB_RARE_BASE=100;
-const ALB_PER=4,ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER)+1;
+const ALB_PER=4;
 const albStampAt=i=>i>=ALB_RARE_BASE?ALB_RARE[i-ALB_RARE_BASE]:ALB_STAMPS[i];
 const albPageOf=i=>i>=ALB_RARE_BASE?ALB_PAGES-1:Math.floor(i/ALB_PER);
-const ALB_NOTE=['— 閱讀的起點 · 01 —','— 書房慢慢成形 · 02 —','— 特別紀念 · 03 —','— 典藏款 · 04 —'];
+function albSetKey(y){const ks=Object.keys(ALB_SETS).map(Number).sort((a,b)=>a-b);let k=ks[0];for(const x of ks)if(x<=Number(y))k=x;return k}
+function albUse(y){
+  const k=albSetKey(y);if(k===ALB_USED)return;ALB_USED=k;const S=ALB_SETS[k];
+  ALB_STAMPS=S.stamps;ALB_RARE=S.rare;ALB_NOTE=S.note;ALB_DIR=S.dir;ALB_PAGES=Math.ceil(ALB_STAMPS.length/ALB_PER)+1;
+  const im=document.querySelector('#albCover .face.front img');if(im){im.src=S.cover;im.alt=S.alt}
+}
+albUse(2026);
 function albYearBooks(y){return books.filter(b=>Number(b.year)===Number(y))}
 function albMonthsOf(list){const m=new Set();list.forEach(b=>{const n=monthNum(b.month);if(n)m.add(n)});return m}
 function albRareProg(r,y=albCurYear(),list=albYearBooks(y),extra=(demoMode?albDemoExtra:0)){
@@ -4453,14 +4469,14 @@ function albRareProg(r,y=albCurYear(),list=albYearBooks(y),extra=(demoMode?albDe
   const m=Math.min(12,albMonthsOf(list).size+extra);return {have:m,need:12,done:m>=12};
 }
 function albRareDone(){return ALB_RARE.filter(r=>albRareProg(r).done).length}
-const albImg=s=>`stamps/${s.f}.webp`;
+const albImg=s=>`${ALB_DIR}${s.f}.webp`;
 var albForce=false,albPage=0,albOpenState=false,albBusy=false,albDemoExtra=0,albSeenMem=new Set(),albMuted=ls.get('album-mute')==='1',albT=[];
 /* 集郵冊是「年度」的：每一年各有一本，只算那一年讀完的書。從 2026 年開始。 */
 const ALB_FIRST=2026;
 var albYear=null;
 function albYearCount(y){return books.filter(b=>Number(b.year)===Number(y)).length}
 function albYears(){const now=new Date().getFullYear(),mx=Math.max(now,...books.map(b=>Number(b.year)||0));const a=[];for(let y=ALB_FIRST;y<=mx;y++)a.push(y);return a}
-function albCurYear(){const ys=albYears();if(albYear==null||!ys.includes(albYear))albYear=ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1];return albYear}
+function albCurYear(){const ys=albYears();if(albYear==null||!ys.includes(albYear))albYear=ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1];albUse(albYear);return albYear}
 function albCount(){return albYearCount(albCurYear())+(demoMode?albDemoExtra:0)}
 function albOwned(c=albCount()){return Math.min(ALB_STAMPS.length,Math.floor(c/4))}
 /* 已看過的郵票：每年各記一份（舊版存的是一串數字，當作 2026 年） */
@@ -4674,13 +4690,14 @@ albEl('albSim').onclick=()=>{
 function albCelebrateIn(i){albRender(true);albBusy=false}
 $('mAlbum').onclick=()=>{closeMenu();albYear=null;albOpenDialog()};
 function albLatestYear(){const ys=albYears();return ys.includes(Number(currentYear))?Number(currentYear):ys[ys.length-1]}
-function albMenuLabel(){const y=albLatestYear(),o=albOwned(albYearCount(y)+(demoMode?albDemoExtra:0));const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`${y} 年・${o}／${ALB_STAMPS.length} 枚`}
+function albMenuLabel(){const y=albLatestYear();albUse(y);const o=albOwned(albYearCount(y)+(demoMode?albDemoExtra:0));const sp=$('mAlbum')?.querySelector('span');if(sp)sp.textContent=`${y} 年・${o}／${ALB_STAMPS.length} 枚`}
 albMenuLabel();
 
 /* ---- 讀完一本書：剛好湊滿 4 本時，蓋章慶祝 ---- */
 function albAfterFinish(b,before,done){
   albYear=Number(b.year)>=ALB_FIRST?Number(b.year):null;
   if(Number(b.year)<ALB_FIRST){albMenuLabel();done&&done();return}
+  albUse(Number(b.year));
   const after=albYearCount(b.year),o0=albOwned(before),o1=albOwned(after);
   albMenuLabel();renderStampRow();
   const yl=albYearBooks(b.year),yb=yl.filter(x=>x.id!==b.id);
@@ -4726,6 +4743,7 @@ function renderStampRow(){
   const el=$('stampRow');if(!el)return;
   const y=Number(currentYear);
   if(!y||y<ALB_FIRST||view==='pile'){el.hidden=true;return}
+  albUse(y);
   const cnt=albYearCount(y)+(demoMode&&y===albLatestYear()?albDemoExtra:0),owned=albOwned(cnt),next=ALB_STAMPS.find(s=>s.n>cnt);
   const prev=owned?ALB_STAMPS[owned-1].n:0,pct=next?Math.round(100*(cnt-prev)/(next.n-prev)):100;
   const shown=ALB_STAMPS.slice(Math.max(0,owned-3),owned);
